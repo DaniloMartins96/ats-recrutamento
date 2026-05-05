@@ -826,6 +826,215 @@
     }
 
     /* =========================================================
+       BADGE "RECOMENDADO"
+    ========================================================= */
+    .badge-rec {
+      display: inline-flex;
+      align-items: center;
+      background: rgba(34,197,94,.12);
+      border: 1px solid rgba(34,197,94,.3);
+      color: var(--success);
+      font-size: .68rem;
+      font-weight: 700;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+      padding: 2px 8px;
+      border-radius: 100px;
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+
+    /* =========================================================
+       UPLOAD ZONE
+    ========================================================= */
+    .upload-zone {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--bg-input);
+      padding: 28px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color .25s, background .25s, box-shadow .25s;
+      position: relative;
+    }
+
+    .upload-zone:hover,
+    .upload-zone.dragover {
+      border-color: var(--accent);
+      background: rgba(108,99,255,.06);
+      box-shadow: 0 0 0 3px rgba(108,99,255,.12);
+    }
+
+    .upload-zone.has-file {
+      border-color: var(--success);
+      border-style: solid;
+      background: rgba(34,197,94,.04);
+    }
+
+    .upload-zone input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+
+    .upload-icon {
+      font-size: 2rem;
+      margin-bottom: 10px;
+      display: block;
+      transition: transform .3s ease;
+    }
+
+    .upload-zone:hover .upload-icon,
+    .upload-zone.dragover .upload-icon {
+      transform: translateY(-4px);
+    }
+
+    .upload-text {
+      font-size: .85rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .upload-text strong { color: var(--accent-light); }
+
+    .upload-text small {
+      display: block;
+      font-size: .74rem;
+      color: var(--text-sub);
+      margin-top: 4px;
+    }
+
+    .upload-preview {
+      display: none;
+      align-items: center;
+      gap: 10px;
+      margin-top: 10px;
+      background: rgba(34,197,94,.08);
+      border: 1px solid rgba(34,197,94,.25);
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      font-size: .83rem;
+      color: var(--success);
+      font-weight: 500;
+    }
+
+    .upload-preview.visible { display: flex; }
+
+    .upload-preview__name {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: var(--text);
+      font-size: .83rem;
+    }
+
+    .upload-remove {
+      background: none;
+      border: none;
+      color: var(--text-sub);
+      cursor: pointer;
+      font-size: 1rem;
+      line-height: 1;
+      padding: 0 2px;
+      flex-shrink: 0;
+      transition: color .2s;
+    }
+
+    .upload-remove:hover { color: var(--error); }
+
+    .field.has-error .upload-zone { border-color: var(--error); }
+
+    /* =========================================================
+       SEÇÃO PERGUNTAS COMPORTAMENTAIS
+    ========================================================= */
+    .behavioral-section {
+      margin: 32px 0 24px;
+      padding-top: 28px;
+      border-top: 1px solid var(--border);
+    }
+
+    .behavioral-section__title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .behavioral-section__sub {
+      font-size: .82rem;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+    }
+
+    .behavioral-q {
+      margin-bottom: 22px;
+    }
+
+    .behavioral-q label {
+      display: block;
+      font-size: .82rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 7px;
+      letter-spacing: .02em;
+      line-height: 1.5;
+    }
+
+    .behavioral-q textarea {
+      width: 100%;
+      background: var(--bg-input);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      font-family: inherit;
+      font-size: .92rem;
+      padding: 11px 14px;
+      outline: none;
+      resize: vertical;
+      min-height: 100px;
+      transition: border-color .25s, box-shadow .25s;
+    }
+
+    .behavioral-q textarea::placeholder { color: var(--text-sub); }
+
+    .behavioral-q textarea:focus {
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 3px rgba(108,99,255,.18);
+    }
+
+    .behavioral-q.has-error textarea { border-color: var(--error); }
+
+    .behavioral-q .field-error {
+      display: none;
+      font-size: .75rem;
+      color: var(--error);
+      margin-top: 5px;
+    }
+
+    .behavioral-q.has-error .field-error { display: block; }
+
+    .q-number {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      height: 20px;
+      background: rgba(108,99,255,.15);
+      border: 1px solid rgba(108,99,255,.3);
+      border-radius: 50%;
+      font-size: .68rem;
+      font-weight: 700;
+      color: var(--accent-light);
+      margin-right: 6px;
+      flex-shrink: 0;
+      vertical-align: middle;
+    }
+
+    /* =========================================================
        SCROLL REVEAL
     ========================================================= */
     .reveal {
@@ -1134,6 +1343,92 @@
             <span class="field-error" id="err-resumo" role="alert">Descreva seu perfil (mínimo 100 caracteres).</span>
           </div>
 
+          <!-- Upload de currículo (PDF) -->
+          <div class="field" id="field-curriculo">
+            <label>
+              Currículo (PDF)
+              <span class="badge-rec">Recomendado</span>
+            </label>
+            <div class="upload-zone" id="upload-zone"
+                 role="button" tabindex="0" aria-label="Área de upload do currículo PDF"
+                 ondragover="handleDragOver(event)" ondragleave="handleDragLeave()" ondrop="handleDrop(event)">
+              <input type="file" id="curriculo_file" accept=".pdf"
+                     aria-label="Selecionar arquivo PDF do currículo"
+                     onchange="handleFileSelect(event)" />
+              <span class="upload-icon" aria-hidden="true">📄</span>
+              <div class="upload-text">
+                <strong>Arraste seu PDF aqui</strong> ou clique para selecionar
+                <small>Apenas PDF · Máximo 5 MB</small>
+              </div>
+            </div>
+            <div class="upload-preview" id="upload-preview" role="status" aria-live="polite">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              <span class="upload-preview__name" id="upload-filename"></span>
+              <button type="button" class="upload-remove" onclick="removeFile()" aria-label="Remover arquivo">✕</button>
+            </div>
+            <span class="field-error" id="err-curriculo" role="alert">O arquivo excede o limite de 5 MB. Selecione um arquivo menor.</span>
+          </div>
+
+          <!-- Perguntas Comportamentais -->
+          <div class="behavioral-section">
+            <h3 class="behavioral-section__title">Conte-nos mais sobre você</h3>
+            <p class="behavioral-section__sub">Respostas honestas nos ajudam a fazer uma análise mais precisa do seu perfil.</p>
+
+            <!-- Pergunta 1 -->
+            <div class="behavioral-q" id="bq-1">
+              <label for="comportamental_1">
+                <span class="q-number" aria-hidden="true">1</span>
+                Descreva uma situação profissional desafiadora que você enfrentou e como a resolveu.
+                <span class="required" aria-hidden="true">*</span>
+              </label>
+              <textarea
+                id="comportamental_1" name="comportamental_1"
+                rows="4" maxlength="2000"
+                aria-required="true" aria-describedby="bq1-counter"
+                placeholder="Descreva a situação, o desafio, as ações que você tomou e qual foi o resultado. Seja específico e mencione números ou impactos quando possível..."
+                oninput="updateBehavCounter(1)"
+              ></textarea>
+              <div class="char-counter" id="bq1-counter" aria-live="polite">0 / 2000 · mínimo 80</div>
+              <span class="field-error" id="err-bq1" role="alert">Responda a pergunta (mínimo 80 caracteres).</span>
+            </div>
+
+            <!-- Pergunta 2 -->
+            <div class="behavioral-q" id="bq-2">
+              <label for="comportamental_2">
+                <span class="q-number" aria-hidden="true">2</span>
+                Como você lida com feedbacks negativos ou críticas ao seu trabalho? Dê um exemplo real.
+                <span class="required" aria-hidden="true">*</span>
+              </label>
+              <textarea
+                id="comportamental_2" name="comportamental_2"
+                rows="4" maxlength="2000"
+                aria-required="true" aria-describedby="bq2-counter"
+                placeholder="Conte sobre uma situação específica em que recebeu feedback difícil, como você reagiu e o que aprendeu com isso..."
+                oninput="updateBehavCounter(2)"
+              ></textarea>
+              <div class="char-counter" id="bq2-counter" aria-live="polite">0 / 2000 · mínimo 80</div>
+              <span class="field-error" id="err-bq2" role="alert">Responda a pergunta (mínimo 80 caracteres).</span>
+            </div>
+
+            <!-- Pergunta 3 -->
+            <div class="behavioral-q" id="bq-3">
+              <label for="comportamental_3">
+                <span class="q-number" aria-hidden="true">3</span>
+                Descreva seu maior projeto ou conquista profissional até hoje.
+                <span class="required" aria-hidden="true">*</span>
+              </label>
+              <textarea
+                id="comportamental_3" name="comportamental_3"
+                rows="4" maxlength="2000"
+                aria-required="true" aria-describedby="bq3-counter"
+                placeholder="Qual foi seu papel, quais recursos você tinha, quais obstáculos enfrentou e qual foi o impacto final do projeto..."
+                oninput="updateBehavCounter(3)"
+              ></textarea>
+              <div class="char-counter" id="bq3-counter" aria-live="polite">0 / 2000 · mínimo 80</div>
+              <span class="field-error" id="err-bq3" role="alert">Responda a pergunta (mínimo 80 caracteres).</span>
+            </div>
+          </div>
+
           <div class="form-actions">
             <button type="button" class="btn btn--ghost" onclick="goToStep1()" aria-label="Voltar para etapa 1">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
@@ -1258,6 +1553,92 @@
     });
 
     /* ----------------------------------------------------------
+       Estado do upload de currículo
+    ---------------------------------------------------------- */
+    let uploadedFileBase64 = '';
+    let uploadedFileName   = '';
+
+    function handleDragOver(e) {
+      e.preventDefault();
+      document.getElementById('upload-zone').classList.add('dragover');
+    }
+
+    function handleDragLeave() {
+      document.getElementById('upload-zone').classList.remove('dragover');
+    }
+
+    function handleDrop(e) {
+      e.preventDefault();
+      handleDragLeave();
+      const file = e.dataTransfer.files[0];
+      if (file) processFile(file);
+    }
+
+    function handleFileSelect(e) {
+      const file = e.target.files[0];
+      if (file) processFile(file);
+    }
+
+    function processFile(file) {
+      const errEl = document.getElementById('err-curriculo');
+      setError('field-curriculo', 'err-curriculo', false);
+
+      if (file.type !== 'application/pdf') {
+        errEl.textContent = 'Apenas arquivos PDF são aceitos.';
+        setError('field-curriculo', 'err-curriculo', true);
+        return;
+      }
+
+      if (file.size > 5 * 1024 * 1024) {
+        errEl.textContent = 'O arquivo excede o limite de 5 MB. Selecione um arquivo menor.';
+        setError('field-curriculo', 'err-curriculo', true);
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = function (ev) {
+        uploadedFileBase64 = ev.target.result.split(',')[1];
+        uploadedFileName   = file.name;
+        document.getElementById('upload-filename').textContent = file.name;
+        document.getElementById('upload-preview').classList.add('visible');
+        document.getElementById('upload-zone').classList.add('has-file');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function removeFile() {
+      uploadedFileBase64 = '';
+      uploadedFileName   = '';
+      document.getElementById('curriculo_file').value = '';
+      document.getElementById('upload-preview').classList.remove('visible');
+      document.getElementById('upload-zone').classList.remove('has-file');
+    }
+
+    /* ----------------------------------------------------------
+       Contador de caracteres das perguntas comportamentais
+    ---------------------------------------------------------- */
+    function updateBehavCounter(n) {
+      const ta      = document.getElementById('comportamental_' + n);
+      const counter = document.getElementById('bq' + n + '-counter');
+      const len     = ta.value.length;
+      counter.textContent = len + ' / 2000' + (len < 80 ? ' · mínimo 80' : '');
+      counter.className = 'char-counter';
+      if (len >= 80)   counter.classList.add('ok');
+      if (len > 1800)  counter.classList.add('warn');
+    }
+
+    /* ----------------------------------------------------------
+       Helper de erro para perguntas comportamentais
+    ---------------------------------------------------------- */
+    function setBehavError(n, hasError) {
+      const q = document.getElementById('bq-' + n);
+      const e = document.getElementById('err-bq' + n);
+      q.classList.toggle('has-error', hasError);
+      e.style.display = hasError ? 'block' : 'none';
+      return !hasError;
+    }
+
+    /* ----------------------------------------------------------
        Contador de caracteres do resumo profissional
     ---------------------------------------------------------- */
     function updateCharCounter() {
@@ -1316,18 +1697,24 @@
        Validação da Etapa 2
     ---------------------------------------------------------- */
     function validateStep2() {
-      const area     = document.getElementById('area_atuacao').value;
-      const senior   = document.getElementById('senioridade').value;
-      const exp      = document.getElementById('experiencia_anos').value;
-      const modal    = document.querySelector('input[name="modalidade"]:checked');
-      const resumo   = document.getElementById('resumo_texto').value.trim();
+      const area   = document.getElementById('area_atuacao').value;
+      const senior = document.getElementById('senioridade').value;
+      const exp    = document.getElementById('experiencia_anos').value;
+      const modal  = document.querySelector('input[name="modalidade"]:checked');
+      const resumo = document.getElementById('resumo_texto').value.trim();
+      const bq1    = document.getElementById('comportamental_1').value.trim();
+      const bq2    = document.getElementById('comportamental_2').value.trim();
+      const bq3    = document.getElementById('comportamental_3').value.trim();
 
       const ok = [
-        setError('field-area',       'err-area',       !area),
-        setError('field-senioridade','err-senioridade', !senior),
-        setError('field-experiencia','err-experiencia', !exp),
-        setError('field-modalidade', 'err-modalidade',  !modal),
-        setError('field-resumo',     'err-resumo',      resumo.length < 100),
+        setError('field-area',        'err-area',        !area),
+        setError('field-senioridade', 'err-senioridade',  !senior),
+        setError('field-experiencia', 'err-experiencia',  !exp),
+        setError('field-modalidade',  'err-modalidade',   !modal),
+        setError('field-resumo',      'err-resumo',       resumo.length < 100),
+        setBehavError(1, bq1.length < 80),
+        setBehavError(2, bq2.length < 80),
+        setBehavError(3, bq3.length < 80),
       ];
       return ok.every(Boolean);
     }
@@ -1389,17 +1776,22 @@
     ---------------------------------------------------------- */
     function buildPayload() {
       return {
-        nome:             document.getElementById('nome').value.trim(),
-        email:            document.getElementById('email').value.trim().toLowerCase(),
-        telefone:         document.getElementById('telefone').value.replace(/\D/g, ''),
-        linkedin:         document.getElementById('linkedin').value.trim(),
-        area_atuacao:     document.getElementById('area_atuacao').value,
-        senioridade:      document.getElementById('senioridade').value,
-        experiencia_anos: document.getElementById('experiencia_anos').value,
-        modalidade:       (document.querySelector('input[name="modalidade"]:checked') || {}).value || '',
+        nome:               document.getElementById('nome').value.trim(),
+        email:              document.getElementById('email').value.trim().toLowerCase(),
+        telefone:           document.getElementById('telefone').value.replace(/\D/g, ''),
+        linkedin:           document.getElementById('linkedin').value.trim(),
+        area_atuacao:       document.getElementById('area_atuacao').value,
+        senioridade:        document.getElementById('senioridade').value,
+        experiencia_anos:   document.getElementById('experiencia_anos').value,
+        modalidade:         (document.querySelector('input[name="modalidade"]:checked') || {}).value || '',
         pretensao_salarial: document.getElementById('pretensao_salarial').value || 'Prefiro não informar',
-        resumo_texto:     document.getElementById('resumo_texto').value.trim(),
-        origem:           'landing_page'
+        resumo_texto:       document.getElementById('resumo_texto').value.trim(),
+        comportamental_1:   document.getElementById('comportamental_1').value.trim(),
+        comportamental_2:   document.getElementById('comportamental_2').value.trim(),
+        comportamental_3:   document.getElementById('comportamental_3').value.trim(),
+        curriculo_base64:   uploadedFileBase64,
+        curriculo_nome:     uploadedFileName,
+        origem:             'landing_page'
       };
     }
 
@@ -1482,6 +1874,11 @@
 
       document.querySelectorAll('input[name="modalidade"]').forEach(r => {
         r.addEventListener('change', () => setError('field-modalidade', 'err-modalidade', false));
+      });
+
+      [1, 2, 3].forEach(n => {
+        const ta = document.getElementById('comportamental_' + n);
+        if (ta) ta.addEventListener('input', () => setBehavError(n, false));
       });
     })();
 
