@@ -1,0 +1,1300 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TechRecruit AI — Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0a0f;--surface:#13131a;--surface2:#1a1a24;--surface3:#22222f;
+  --border:#2a2a3a;--accent:#6c63ff;--accent2:#a78bfa;--accent-dim:#6c63ff22;
+  --text:#e2e2f0;--muted:#6b6b8a;--danger:#ff4d6d;--success:#10b981;--warn:#f59e0b;
+  --header:60px;--sidebar:240px;
+}
+html,body{height:100%}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5}
+
+/* ── LOGIN ── */
+#login-screen{
+  position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:1000;
+}
+.login-box{
+  background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:48px 40px;width:100%;max-width:400px;
+  box-shadow:0 24px 80px #00000080;
+}
+.login-logo{display:flex;align-items:center;gap:10px;margin-bottom:32px;justify-content:center}
+.login-logo .logo-icon{width:36px;height:36px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:8px;display:flex;align-items:center;justify-content:center}
+.login-logo .logo-icon svg{width:20px;height:20px;fill:#fff}
+.login-logo span{font-size:18px;font-weight:700;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.login-box h2{text-align:center;font-size:22px;font-weight:700;margin-bottom:6px}
+.login-box p{text-align:center;color:var(--muted);font-size:13px;margin-bottom:28px}
+.login-field label{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em}
+.login-field input{
+  width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;
+  padding:12px 14px;color:var(--text);font-size:14px;font-family:inherit;outline:none;
+  transition:border-color .2s;
+}
+.login-field input:focus{border-color:var(--accent)}
+.login-error{color:var(--danger);font-size:12px;margin-top:8px;min-height:16px}
+.login-btn{
+  width:100%;margin-top:20px;padding:13px;background:linear-gradient(135deg,var(--accent),var(--accent2));
+  border:none;border-radius:8px;color:#fff;font-size:15px;font-weight:600;font-family:inherit;
+  cursor:pointer;transition:opacity .2s;
+}
+.login-btn:hover{opacity:.9}
+@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+.shake{animation:shake .4s ease}
+
+/* ── SHELL ── */
+#app{display:none;height:100vh;overflow:hidden}
+
+/* header */
+.admin-header{
+  position:fixed;top:0;left:0;right:0;height:var(--header);
+  background:var(--surface);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0 24px;gap:16px;z-index:100;
+}
+.header-logo{display:flex;align-items:center;gap:8px;font-weight:700;font-size:15px;width:var(--sidebar);flex-shrink:0}
+.header-logo .dot{width:8px;height:8px;background:var(--accent);border-radius:50%;margin-right:2px}
+.header-spacer{flex:1}
+.header-user{display:flex;align-items:center;gap:10px}
+.header-badge{
+  width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));
+  display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;
+}
+.header-user-name{font-size:13px;font-weight:500}
+.header-user-role{font-size:11px;color:var(--muted)}
+.logout-btn{
+  margin-left:8px;padding:6px 14px;background:transparent;border:1px solid var(--border);
+  border-radius:6px;color:var(--muted);font-size:12px;font-family:inherit;cursor:pointer;
+  transition:all .2s;
+}
+.logout-btn:hover{border-color:var(--danger);color:var(--danger)}
+
+/* sidebar */
+.admin-sidebar{
+  position:fixed;top:var(--header);left:0;bottom:0;width:var(--sidebar);
+  background:var(--surface);border-right:1px solid var(--border);padding:20px 12px;overflow-y:auto;
+}
+.sidebar-section{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;padding:0 8px;margin:16px 0 6px}
+.nav-item{
+  display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;
+  cursor:pointer;color:var(--muted);font-size:13px;font-weight:500;
+  transition:all .15s;margin-bottom:2px;
+}
+.nav-item:hover{background:var(--surface2);color:var(--text)}
+.nav-item.active{background:var(--accent-dim);color:var(--accent)}
+.nav-item svg{width:16px;height:16px;flex-shrink:0}
+.nav-badge{margin-left:auto;background:var(--accent);color:#fff;font-size:10px;font-weight:700;padding:1px 7px;border-radius:10px}
+
+/* main */
+.admin-main{
+  margin-left:var(--sidebar);margin-top:var(--header);height:calc(100vh - var(--header));
+  overflow-y:auto;padding:28px 32px;
+}
+
+/* sections */
+.section{display:none}
+.section.active{display:block}
+.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+.page-title{font-size:20px;font-weight:700}
+.page-sub{font-size:13px;color:var(--muted);margin-top:2px}
+
+/* stats row */
+.stats-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;margin-bottom:28px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;position:relative;overflow:hidden}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--accent2))}
+.stat-value{font-size:28px;font-weight:800;margin-bottom:4px}
+.stat-label{font-size:12px;color:var(--muted)}
+
+/* btn */
+.btn{
+  display:inline-flex;align-items:center;gap:8px;padding:9px 18px;border-radius:8px;
+  font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;border:none;transition:all .2s;
+}
+.btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff}
+.btn-primary:hover{opacity:.9;transform:translateY(-1px)}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text)}
+.btn-outline:hover{border-color:var(--accent);color:var(--accent)}
+.btn-ghost{background:transparent;border:none;color:var(--muted);padding:6px 10px}
+.btn-ghost:hover{color:var(--text)}
+.btn-danger{background:transparent;border:1px solid var(--danger);color:var(--danger)}
+.btn-danger:hover{background:var(--danger);color:#fff}
+.btn-sm{padding:6px 12px;font-size:12px}
+.btn svg{width:14px;height:14px}
+
+/* table */
+.table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.table-toolbar{display:flex;align-items:center;gap:12px;padding:16px 20px;border-bottom:1px solid var(--border)}
+.search-input{
+  flex:1;max-width:300px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;
+  padding:8px 14px;color:var(--text);font-size:13px;font-family:inherit;outline:none;
+}
+.search-input:focus{border-color:var(--accent)}
+table{width:100%;border-collapse:collapse}
+thead tr{border-bottom:1px solid var(--border)}
+th{padding:10px 20px;text-align:left;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;white-space:nowrap}
+td{padding:12px 20px;border-bottom:1px solid var(--border);font-size:13px}
+tr:last-child td{border-bottom:none}
+tbody tr{cursor:pointer;transition:background .15s}
+tbody tr:hover{background:var(--surface2)}
+
+/* badges */
+.badge{display:inline-flex;align-items:center;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:600}
+.badge-purple{background:#6c63ff22;color:#a78bfa}
+.badge-green{background:#10b98122;color:#10b981}
+.badge-yellow{background:#f59e0b22;color:#f59e0b}
+.badge-red{background:#ff4d6d22;color:#ff4d6d}
+.badge-blue{background:#3b82f622;color:#60a5fa}
+.badge-gray{background:#6b6b8a22;color:#9b9bba}
+
+/* tags */
+.tag-cloud{display:flex;flex-wrap:wrap;gap:6px}
+.tag-chip{
+  display:inline-flex;align-items:center;gap:5px;background:var(--accent-dim);color:var(--accent2);
+  border-radius:6px;padding:3px 10px;font-size:11px;font-weight:600;
+}
+.tag-chip button{background:none;border:none;color:inherit;cursor:pointer;padding:0;font-size:14px;line-height:1;opacity:.7}
+.tag-chip button:hover{opacity:1}
+.tag-input-wrap{display:flex;flex-wrap:wrap;gap:6px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;align-items:center;min-height:44px}
+.tag-input-wrap:focus-within{border-color:var(--accent)}
+.tag-input-wrap input{background:none;border:none;color:var(--text);font-size:13px;font-family:inherit;outline:none;flex:1;min-width:100px}
+.tag-hint{font-size:11px;color:var(--muted);margin-top:4px}
+
+/* modal */
+.modal-overlay{
+  position:fixed;inset:0;background:#00000099;backdrop-filter:blur(6px);
+  display:flex;align-items:center;justify-content:center;z-index:200;
+  opacity:0;pointer-events:none;transition:opacity .25s;
+}
+.modal-overlay.open{opacity:1;pointer-events:auto}
+.modal{
+  background:var(--surface);border:1px solid var(--border);border-radius:16px;
+  width:100%;max-width:680px;max-height:90vh;overflow-y:auto;
+  transform:translateY(16px) scale(.98);transition:transform .25s;
+}
+.modal-overlay.open .modal{transform:none}
+.modal-header{display:flex;align-items:center;justify-content:space-between;padding:24px 28px 0}
+.modal-title{font-size:18px;font-weight:700}
+.modal-close{background:none;border:none;color:var(--muted);cursor:pointer;font-size:22px;line-height:1;transition:color .15s}
+.modal-close:hover{color:var(--text)}
+.modal-body{padding:24px 28px}
+.modal-footer{display:flex;justify-content:flex-end;gap:10px;padding:0 28px 24px}
+
+/* form */
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.form-group{margin-bottom:16px}
+.form-group.full{grid-column:1/-1}
+.form-label{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em}
+.form-input,.form-select,.form-textarea{
+  width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;
+  padding:10px 14px;color:var(--text);font-size:13px;font-family:inherit;outline:none;
+  transition:border-color .2s;
+}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--accent)}
+.form-select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b6b8a' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center}
+.form-textarea{resize:vertical;min-height:80px;line-height:1.6}
+.form-select option{background:var(--surface)}
+
+/* sliders */
+.slider-group{margin-bottom:12px}
+.slider-row{display:flex;align-items:center;gap:12px}
+.slider-label{flex:1;font-size:13px;font-weight:500}
+.slider-val{width:40px;text-align:right;font-size:13px;font-weight:700;color:var(--accent)}
+input[type=range]{
+  flex:2;-webkit-appearance:none;height:5px;border-radius:3px;
+  background:var(--surface3);outline:none;cursor:pointer;
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:16px;height:16px;border-radius:50%;
+  background:var(--accent);cursor:pointer;transition:transform .15s;
+}
+input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
+.slider-sum{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 14px;border-radius:8px;background:var(--surface2);margin-top:6px;
+  font-size:13px;font-weight:600;border:1px solid transparent;transition:border-color .2s;
+}
+.slider-sum.ok{border-color:#10b98144;color:var(--success)}
+.slider-sum.warn{border-color:#ff4d6d44;color:var(--danger)}
+
+/* slide-over */
+.slideover{
+  position:fixed;top:0;right:0;bottom:0;width:560px;max-width:95vw;
+  background:var(--surface);border-left:1px solid var(--border);
+  z-index:300;transform:translateX(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);
+  display:flex;flex-direction:column;overflow:hidden;
+}
+.slideover.open{transform:none}
+.slideover-backdrop{
+  position:fixed;inset:0;background:#00000066;z-index:299;
+  opacity:0;pointer-events:none;transition:opacity .3s;
+}
+.slideover-backdrop.open{opacity:1;pointer-events:auto}
+.so-header{display:flex;align-items:flex-start;justify-content:space-between;padding:24px 24px 0;flex-shrink:0}
+.so-header-info{}
+.so-name{font-size:18px;font-weight:700;margin-bottom:4px}
+.so-meta{font-size:12px;color:var(--muted)}
+.so-close{background:none;border:none;color:var(--muted);font-size:24px;cursor:pointer;line-height:1;transition:color .15s}
+.so-close:hover{color:var(--text)}
+.so-body{flex:1;overflow-y:auto;padding:20px 24px}
+.so-footer{padding:16px 24px;border-top:1px solid var(--border);display:flex;gap:10px;flex-shrink:0}
+
+/* score circle */
+.score-ring{display:flex;flex-direction:column;align-items:center;margin-bottom:24px}
+.score-circle{
+  width:88px;height:88px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-direction:column;
+  background:conic-gradient(var(--accent) var(--pct, 0%), var(--surface3) 0%);
+  box-shadow:0 0 0 4px var(--surface);margin:0 auto 12px;position:relative;
+}
+.score-circle::after{
+  content:'';position:absolute;inset:8px;border-radius:50%;background:var(--surface);
+}
+.score-inner{position:relative;z-index:1;text-align:center}
+.score-num{font-size:22px;font-weight:800}
+.score-max{font-size:10px;color:var(--muted)}
+.score-label{font-size:13px;color:var(--muted)}
+
+/* dimension bars */
+.dim-bars{margin-bottom:24px}
+.dim-item{margin-bottom:12px}
+.dim-head{display:flex;justify-content:space-between;margin-bottom:5px;font-size:12px}
+.dim-name{font-weight:600}
+.dim-pct{font-weight:700}
+.dim-bar{height:6px;border-radius:3px;background:var(--surface3);overflow:hidden}
+.dim-fill{height:100%;border-radius:3px;transition:width .6s ease}
+
+/* accordion */
+.accordion-item{border:1px solid var(--border);border-radius:8px;margin-bottom:8px;overflow:hidden}
+.accordion-head{
+  display:flex;align-items:center;justify-content:space-between;padding:12px 16px;
+  cursor:pointer;font-size:13px;font-weight:600;
+  background:var(--surface2);transition:background .15s;
+}
+.accordion-head:hover{background:var(--surface3)}
+.accordion-arrow{transition:transform .2s;color:var(--muted)}
+.accordion-item.open .accordion-arrow{transform:rotate(180deg)}
+.accordion-body{padding:0 16px;max-height:0;overflow:hidden;transition:max-height .3s ease,padding .3s}
+.accordion-item.open .accordion-body{max-height:400px;padding:12px 16px}
+.star-section{margin-bottom:10px}
+.star-letter{
+  display:inline-block;width:22px;height:22px;border-radius:5px;background:var(--accent-dim);
+  color:var(--accent2);font-size:11px;font-weight:800;text-align:center;line-height:22px;margin-right:6px;
+}
+.star-text{font-size:12px;color:var(--muted);line-height:1.6}
+
+/* status pill in table */
+.status-select{
+  background:transparent;border:none;color:inherit;font-family:inherit;font-size:11px;
+  font-weight:600;cursor:pointer;outline:none;
+}
+
+/* toast */
+.toast-container{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px}
+.toast{
+  background:var(--surface);border:1px solid var(--border);border-radius:10px;
+  padding:12px 16px;display:flex;align-items:center;gap:10px;min-width:280px;max-width:360px;
+  box-shadow:0 8px 32px #00000060;font-size:13px;font-weight:500;
+  animation:toastIn .3s ease;
+}
+.toast.removing{animation:toastOut .3s ease forwards}
+@keyframes toastIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:none}}
+@keyframes toastOut{to{opacity:0;transform:translateX(20px)}}
+.toast-icon{width:18px;height:18px;flex-shrink:0}
+.toast-success{border-left:3px solid var(--success)}
+.toast-success .toast-icon{color:var(--success)}
+.toast-error{border-left:3px solid var(--danger)}
+.toast-error .toast-icon{color:var(--danger)}
+.toast-info{border-left:3px solid var(--accent)}
+.toast-info .toast-icon{color:var(--accent)}
+.toast-warn{border-left:3px solid var(--warn)}
+.toast-warn .toast-icon{color:var(--warn)}
+
+/* config */
+.config-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:20px}
+.config-card h3{font-size:15px;font-weight:700;margin-bottom:4px}
+.config-card p{font-size:12px;color:var(--muted);margin-bottom:20px}
+.config-row{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:end}
+
+/* empty state */
+.empty-state{text-align:center;padding:60px 20px;color:var(--muted)}
+.empty-state svg{width:48px;height:48px;margin:0 auto 16px;opacity:.4}
+.empty-state p{font-size:14px}
+
+/* skeleton */
+.skeleton{background:linear-gradient(90deg,var(--surface2) 25%,var(--surface3) 50%,var(--surface2) 75%);background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:6px}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.sk-row{display:flex;gap:20px;padding:14px 20px;border-bottom:1px solid var(--border)}
+.sk-row:last-child{border:none}
+.sk-cell{height:14px}
+
+/* divider */
+.divider{height:1px;background:var(--border);margin:20px 0}
+
+/* scrollbar */
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--muted)}
+</style>
+</head>
+<body>
+
+<!-- ══════════════ LOGIN ══════════════ -->
+<div id="login-screen">
+  <div class="login-box" id="login-box">
+    <div class="login-logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      </div>
+      <span>TechRecruit AI</span>
+    </div>
+    <h2>Painel Administrativo</h2>
+    <p>Acesso restrito a administradores</p>
+    <div class="login-field">
+      <label>Senha</label>
+      <input type="password" id="login-pwd" placeholder="••••••••••••" autocomplete="current-password">
+      <div class="login-error" id="login-err"></div>
+    </div>
+    <button class="login-btn" id="login-btn">Entrar</button>
+  </div>
+</div>
+
+<!-- ══════════════ APP SHELL ══════════════ -->
+<div id="app">
+
+  <!-- header -->
+  <header class="admin-header">
+    <div class="header-logo">
+      <span class="dot"></span>
+      TechRecruit AI
+    </div>
+    <div class="header-spacer"></div>
+    <div class="header-user">
+      <div class="header-badge">A</div>
+      <div>
+        <div class="header-user-name">Administrador</div>
+        <div class="header-user-role">Acesso total</div>
+      </div>
+      <button class="logout-btn" id="logout-btn">Sair</button>
+    </div>
+  </header>
+
+  <!-- sidebar -->
+  <aside class="admin-sidebar">
+    <div class="sidebar-section">Menu</div>
+    <div class="nav-item active" data-nav="vagas">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+      Vagas
+      <span class="nav-badge" id="nav-badge-vagas">3</span>
+    </div>
+    <div class="nav-item" data-nav="candidatos">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Candidatos
+      <span class="nav-badge" id="nav-badge-cand">3</span>
+    </div>
+    <div class="sidebar-section" style="margin-top:24px">Sistema</div>
+    <div class="nav-item" data-nav="config">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+      Configurações
+    </div>
+  </aside>
+
+  <!-- main -->
+  <main class="admin-main">
+
+    <!-- ── VAGAS ── -->
+    <section class="section active" id="sec-vagas">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Vagas</div>
+          <div class="page-sub">Gerencie as oportunidades abertas</div>
+        </div>
+        <button class="btn btn-primary" id="btn-nova-vaga">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Nova Vaga
+        </button>
+      </div>
+      <div class="stats-row" id="vagas-stats"></div>
+      <div class="table-wrap">
+        <div class="table-toolbar">
+          <input class="search-input" type="text" id="vagas-search" placeholder="Buscar vagas...">
+          <div style="margin-left:auto;display:flex;gap:8px" id="vagas-filters"></div>
+        </div>
+        <div id="vagas-table-body"></div>
+      </div>
+    </section>
+
+    <!-- ── CANDIDATOS ── -->
+    <section class="section" id="sec-candidatos">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Candidatos</div>
+          <div class="page-sub">Análise e triagem de candidaturas</div>
+        </div>
+      </div>
+      <div class="stats-row" id="cand-stats"></div>
+      <div class="table-wrap">
+        <div class="table-toolbar">
+          <input class="search-input" type="text" id="cand-search" placeholder="Buscar candidatos...">
+          <div style="margin-left:auto;display:flex;gap:8px">
+            <select class="form-select" id="cand-filter-status" style="width:160px">
+              <option value="">Todos os status</option>
+              <option value="Em análise">Em análise</option>
+              <option value="Aprovado">Aprovado</option>
+              <option value="Reprovado">Reprovado</option>
+              <option value="Entrevista">Entrevista</option>
+            </select>
+          </div>
+        </div>
+        <div id="cand-table-body"></div>
+      </div>
+    </section>
+
+    <!-- ── CONFIG ── -->
+    <section class="section" id="sec-config">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Configurações</div>
+          <div class="page-sub">Preferências e integrações do sistema</div>
+        </div>
+      </div>
+
+      <div class="config-card">
+        <h3>IA — Pesos de Avaliação</h3>
+        <p>Defina a importância de cada dimensão no score final dos candidatos. A soma deve ser 100%.</p>
+        <div class="slider-group">
+          <div class="slider-row">
+            <span class="slider-label">Habilidades Técnicas</span>
+            <input type="range" min="0" max="100" value="35" id="sl-tecnico" oninput="updatePeso()">
+            <span class="slider-val" id="sv-tecnico">35%</span>
+          </div>
+        </div>
+        <div class="slider-group">
+          <div class="slider-row">
+            <span class="slider-label">Experiência Profissional</span>
+            <input type="range" min="0" max="100" value="25" id="sl-exp" oninput="updatePeso()">
+            <span class="slider-val" id="sv-exp">25%</span>
+          </div>
+        </div>
+        <div class="slider-group">
+          <div class="slider-row">
+            <span class="slider-label">Competências Comportamentais</span>
+            <input type="range" min="0" max="100" value="20" id="sl-comp" oninput="updatePeso()">
+            <span class="slider-val" id="sv-comp">20%</span>
+          </div>
+        </div>
+        <div class="slider-group">
+          <div class="slider-row">
+            <span class="slider-label">Fit Cultural</span>
+            <input type="range" min="0" max="100" value="20" id="sl-cult" oninput="updatePeso()">
+            <span class="slider-val" id="sv-cult">20%</span>
+          </div>
+        </div>
+        <div class="slider-sum ok" id="slider-sum-box">
+          <span>Soma dos pesos</span>
+          <span id="slider-sum-val">100%</span>
+        </div>
+        <button class="btn btn-primary btn-sm" style="margin-top:14px" onclick="salvarPesos()">Salvar Configuração</button>
+      </div>
+
+      <div class="config-card">
+        <h3>Integrações</h3>
+        <p>Configure as integrações com ferramentas externas.</p>
+        <div class="form-group">
+          <label class="form-label">WhatsApp Business (número)</label>
+          <div class="config-row">
+            <input class="form-input" type="text" id="cfg-whatsapp" placeholder="+55 11 99999-9999">
+            <button class="btn btn-outline btn-sm" onclick="salvarIntegracao('whatsapp')">Salvar</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Link Calendly (entrevistas)</label>
+          <div class="config-row">
+            <input class="form-input" type="url" id="cfg-calendly" placeholder="https://calendly.com/...">
+            <button class="btn btn-outline btn-sm" onclick="salvarIntegracao('calendly')">Salvar</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="config-card">
+        <h3>Segurança</h3>
+        <p>Altere a senha de acesso ao painel administrativo.</p>
+        <div class="form-row" style="margin-bottom:0">
+          <div class="form-group">
+            <label class="form-label">Nova Senha</label>
+            <input class="form-input" type="password" id="cfg-nova-senha" placeholder="••••••••">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Confirmar Senha</label>
+            <input class="form-input" type="password" id="cfg-conf-senha" placeholder="••••••••">
+          </div>
+        </div>
+        <button class="btn btn-outline btn-sm" style="margin-top:4px" onclick="alterarSenha()">Alterar Senha</button>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ══════════════ MODAL NOVA/EDITAR VAGA ══════════════ -->
+<div class="modal-overlay" id="modal-vaga">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-vaga-title">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-vaga-title">Nova Vaga</div>
+      <button class="modal-close" id="modal-vaga-close">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Título da Vaga *</label>
+          <input class="form-input" type="text" id="mv-titulo" placeholder="Ex: Engenheiro Full-Stack Sr.">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Departamento *</label>
+          <select class="form-select" id="mv-departamento">
+            <option value="">Selecione</option>
+            <option>Tecnologia</option>
+            <option>Design</option>
+            <option>Marketing</option>
+            <option>Comercial/Vendas</option>
+            <option>RH</option>
+            <option>Financeiro</option>
+            <option>Operações</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Nível de Senioridade *</label>
+          <select class="form-select" id="mv-nivel">
+            <option value="">Selecione</option>
+            <option>Estágio</option>
+            <option>Júnior</option>
+            <option>Pleno</option>
+            <option>Sênior</option>
+            <option>Especialista</option>
+            <option>Líder / Gerente</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Modalidade *</label>
+          <select class="form-select" id="mv-modalidade">
+            <option value="">Selecione</option>
+            <option>Remoto</option>
+            <option>Presencial</option>
+            <option>Híbrido</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Localização</label>
+          <input class="form-input" type="text" id="mv-local" placeholder="Ex: São Paulo, SP">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Faixa Salarial</label>
+          <input class="form-input" type="text" id="mv-salario" placeholder="Ex: R$ 8.000 – 12.000">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Descrição da Vaga</label>
+        <textarea class="form-textarea" id="mv-descricao" rows="3" placeholder="Descreva as responsabilidades e o impacto do cargo..."></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Stack Técnico</label>
+        <div class="tag-input-wrap" id="tag-wrap-stack">
+          <input type="text" id="tag-input-stack" placeholder="Ex: React, Node.js — pressione Enter para adicionar">
+        </div>
+        <div class="tag-hint">Pressione Enter ou vírgula para adicionar cada tecnologia</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Competências Requeridas</label>
+        <div class="tag-input-wrap" id="tag-wrap-comp">
+          <input type="text" id="tag-input-comp" placeholder="Ex: Comunicação, Liderança — pressione Enter">
+        </div>
+        <div class="tag-hint">Pressione Enter ou vírgula para adicionar cada competência</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Status da Vaga</label>
+        <select class="form-select" id="mv-status">
+          <option value="ativa">Ativa</option>
+          <option value="pausada">Pausada</option>
+          <option value="encerrada">Encerrada</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" id="mv-cancel">Cancelar</button>
+      <button class="btn btn-primary" id="mv-save">Publicar Vaga</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ SLIDE-OVER CANDIDATO ══════════════ -->
+<div class="slideover-backdrop" id="so-backdrop"></div>
+<div class="slideover" id="slideover-cand">
+  <div class="so-header">
+    <div class="so-header-info">
+      <div class="so-name" id="so-nome"></div>
+      <div class="so-meta" id="so-meta"></div>
+    </div>
+    <button class="so-close" id="so-close">&times;</button>
+  </div>
+  <div class="so-body">
+    <div class="score-ring">
+      <div class="score-circle" id="so-score-circle">
+        <div class="score-inner">
+          <div class="score-num" id="so-score-num">—</div>
+          <div class="score-max">/100</div>
+        </div>
+      </div>
+      <div class="score-label" id="so-score-label">Score IA</div>
+    </div>
+
+    <div class="dim-bars" id="so-dims"></div>
+    <div class="divider"></div>
+
+    <div style="font-size:13px;font-weight:700;margin-bottom:12px">Análise STAR das Respostas</div>
+    <div id="so-accordions"></div>
+
+    <div class="divider"></div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:8px;font-weight:600">CURRÍCULO</div>
+    <div id="so-cv-info" style="font-size:13px;color:var(--muted)">Nenhum arquivo enviado</div>
+  </div>
+  <div class="so-footer">
+    <button class="btn btn-danger btn-sm" id="so-btn-rejeitar">Rejeitar</button>
+    <button class="btn btn-outline btn-sm" id="so-btn-entrevista">Agendar Entrevista</button>
+    <button class="btn btn-primary btn-sm" style="margin-left:auto" id="so-btn-aprovar">Aprovar</button>
+  </div>
+</div>
+
+<!-- ══════════════ TOASTS ══════════════ -->
+<div class="toast-container" id="toasts"></div>
+
+<script>
+// ─── CONSTANTS ───────────────────────────────────────────────────
+const BASE_URL = 'https://webhook.danns.com.br/webhook';
+let adminPassword = sessionStorage.getItem('admin_pwd') || 'TechRecruit@2025';
+
+// ─── MOCK DATA ────────────────────────────────────────────────────
+const MOCK_VAGAS = [
+  {
+    id:'v1', titulo:'Engenheiro Full-Stack Sênior', departamento:'Tecnologia',
+    nivel:'Sênior', modalidade:'Híbrido', local:'São Paulo, SP', salario:'R$ 15.000 – 20.000',
+    descricao:'Desenvolver e manter microsserviços de alta disponibilidade. Contribuir com arquitetura técnica.',
+    stack:['Node.js','React','PostgreSQL','Docker','AWS'], competencias:['Comunicação','Autonomia','Resolução de problemas'],
+    status:'ativa', criado_em: new Date(Date.now()-3*864e5).toISOString(), candidatos:8
+  },
+  {
+    id:'v2', titulo:'Product Designer', departamento:'Design',
+    nivel:'Pleno', modalidade:'Remoto', local:'Remoto', salario:'R$ 8.000 – 11.000',
+    descricao:'Criar experiências digitais centradas no usuário desde a pesquisa até a entrega.',
+    stack:['Figma','Protopie','FigJam'], competencias:['Empatia','Criatividade','Colaboração'],
+    status:'ativa', criado_em: new Date(Date.now()-10*864e5).toISOString(), candidatos:5
+  },
+  {
+    id:'v3', titulo:'Analista de Marketing Digital', departamento:'Marketing',
+    nivel:'Júnior', modalidade:'Presencial', local:'Rio de Janeiro, RJ', salario:'R$ 4.000 – 6.000',
+    descricao:'Planejar e executar campanhas de mídia paga e orgânica com foco em performance.',
+    stack:['Google Ads','Meta Ads','GA4','SEMrush'], competencias:['Analítico','Proatividade'],
+    status:'pausada', criado_em: new Date(Date.now()-20*864e5).toISOString(), candidatos:12
+  }
+];
+
+const MOCK_CANDIDATOS = [
+  {
+    id:'c1', nome:'Ana Beatriz Costa', email:'ana.costa@email.com',
+    vaga:'Engenheiro Full-Stack Sênior', vaga_id:'v1',
+    nivel_experiencia:'Sênior (5+ anos)', nivel_ingles:'Avançado',
+    score:87, status:'Em análise',
+    dimensoes:[
+      {nome:'Técnico', pct:92},{nome:'Experiência', pct:85},{nome:'Comportamental', pct:80},{nome:'Fit Cultural', pct:88}
+    ],
+    curriculo_nome:'ana_costa_cv.pdf',
+    respostas:[
+      {
+        pergunta:'Descreva um desafio técnico complexo que você resolveu',
+        star:{
+          S:'Nossa plataforma de pagamentos apresentava timeout em 15% das transações no pico.',
+          T:'Identificar a causa raiz e resolver sem downtime em menos de uma semana.',
+          A:'Profiler de queries, otimização de índices no PostgreSQL e implementação de circuit breaker.',
+          R:'Timeouts caíram para 0,2%. Throughput aumentou 40%. Deploy sem interrupção.'
+        }
+      },
+      {
+        pergunta:'Fale sobre liderança técnica ou mentoria',
+        star:{
+          S:'Time júnior com dificuldade em code review — PRs demoravam 3 dias em média.',
+          T:'Criar cultura de feedback rápido e construtivo sem bloquear entregas.',
+          A:'Implantar template de PR, sessões de pair programming semanais e checklist de qualidade.',
+          R:'Tempo médio de review caiu para 4h. Dois devs júniors promovidos após 6 meses.'
+        }
+      },
+      {
+        pergunta:'Como você lida com prazos apertados e pressão?',
+        star:{
+          S:'Sprint final antes do lançamento — escopo aumentou 30% na última semana.',
+          T:'Entregar MVP sem comprometer qualidade crítica.',
+          A:'Priorizei features por impacto, negociei corte de nice-to-haves e dividi o time em squads focados.',
+          R:'Lançamento no prazo. NPS pós-lançamento: 72.'
+        }
+      }
+    ]
+  },
+  {
+    id:'c2', nome:'Rafael Mendes', email:'rafael.m@email.com',
+    vaga:'Product Designer', vaga_id:'v2',
+    nivel_experiencia:'Pleno (2-5 anos)', nivel_ingles:'Intermediário',
+    score:74, status:'Entrevista',
+    dimensoes:[
+      {nome:'Técnico', pct:78},{nome:'Experiência', pct:72},{nome:'Comportamental', pct:75},{nome:'Fit Cultural', pct:70}
+    ],
+    curriculo_nome:'rafael_mendes_portfolio.pdf',
+    respostas:[
+      {
+        pergunta:'Conte sobre um projeto de design do qual se orgulha',
+        star:{
+          S:'App de saúde com baixíssima adesão — apenas 12% dos usuários completavam o onboarding.',
+          T:'Redesenhar o onboarding para aumentar ativação sem aumentar tempo de desenvolvimento.',
+          A:'Pesquisa com 20 usuários, mapa de jornada, 3 rodadas de teste de usabilidade.',
+          R:'Taxa de conclusão subiu para 67%. Tempo médio de onboarding reduziu 40%.'
+        }
+      },
+      {
+        pergunta:'Como você equilibra estética e funcionalidade?',
+        star:{
+          S:'Dashboard financeiro com 60+ métricas — equipe de negócios queria gráficos elaborados.',
+          T:'Apresentar dados complexos de forma clara sem sacrificar a riqueza visual.',
+          A:'Card system com hierarquia visual clara, micro-interações sutis e paleta de dados acessível.',
+          R:'Aprovação do stakeholder em primeira revisão. Redução de 30% em tickets de suporte sobre o dashboard.'
+        }
+      }
+    ]
+  },
+  {
+    id:'c3', nome:'Julia Ferreira', email:'julia.f@email.com',
+    vaga:'Analista de Marketing Digital', vaga_id:'v3',
+    nivel_experiencia:'Júnior (0-2 anos)', nivel_ingles:'Básico',
+    score:61, status:'Em análise',
+    dimensoes:[
+      {nome:'Técnico', pct:55},{nome:'Experiência', pct:60},{nome:'Comportamental', pct:70},{nome:'Fit Cultural', pct:65}
+    ],
+    curriculo_nome:null,
+    respostas:[
+      {
+        pergunta:'Descreva uma campanha que você criou ou participou',
+        star:{
+          S:'Campanha de Black Friday para e-commerce de moda com orçamento limitado de R$ 5.000.',
+          T:'Maximizar ROAS dentro do orçamento disponível.',
+          A:'Segmentação por comportamento de compra, criativos dinâmicos e remarketing agressivo.',
+          R:'ROAS de 4,2x. Faturamento 18% acima da meta.'
+        }
+      }
+    ]
+  }
+];
+
+// ─── STATE ────────────────────────────────────────────────────────
+let vagas = [];
+let candidatos = [];
+let currentVagaId = null;
+let tagData = { stack:[], comp:[] };
+let currentCandidatoId = null;
+
+// ─── LOGIN ────────────────────────────────────────────────────────
+function checkAuth() {
+  if (sessionStorage.getItem('admin_auth') === '1') showApp();
+}
+
+document.getElementById('login-btn').onclick = doLogin;
+document.getElementById('login-pwd').onkeydown = e => { if(e.key==='Enter') doLogin(); };
+
+function doLogin() {
+  const val = document.getElementById('login-pwd').value;
+  if (val === adminPassword) {
+    sessionStorage.setItem('admin_auth','1');
+    showApp();
+  } else {
+    document.getElementById('login-err').textContent = 'Senha incorreta. Tente novamente.';
+    document.getElementById('login-box').classList.add('shake');
+    setTimeout(()=>document.getElementById('login-box').classList.remove('shake'), 400);
+    document.getElementById('login-pwd').value = '';
+  }
+}
+
+function showApp() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  init();
+}
+
+document.getElementById('logout-btn').onclick = () => {
+  sessionStorage.removeItem('admin_auth');
+  location.reload();
+};
+
+// ─── NAV ──────────────────────────────────────────────────────────
+document.querySelectorAll('.nav-item').forEach(el => {
+  el.onclick = () => {
+    document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+    el.classList.add('active');
+    const nav = el.dataset.nav;
+    document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+    document.getElementById('sec-'+nav).classList.add('active');
+  };
+});
+
+// ─── INIT ─────────────────────────────────────────────────────────
+async function init() {
+  loadConfig();
+  await Promise.all([carregarVagas(), carregarCandidatos()]);
+  initTagInputs();
+}
+
+// ─── VAGAS ────────────────────────────────────────────────────────
+async function carregarVagas() {
+  try {
+    const r = await fetch(BASE_URL+'/ats-admin-vagas', {signal: AbortSignal.timeout(5000)});
+    if (!r.ok) throw new Error();
+    const data = await r.json();
+    vagas = Array.isArray(data) ? data : MOCK_VAGAS;
+  } catch { vagas = MOCK_VAGAS; }
+  renderVagas();
+}
+
+function renderVagas() {
+  const q = document.getElementById('vagas-search').value.toLowerCase();
+  const filtered = vagas.filter(v =>
+    v.titulo.toLowerCase().includes(q) ||
+    v.departamento.toLowerCase().includes(q)
+  );
+
+  // stats
+  const stats = document.getElementById('vagas-stats');
+  stats.innerHTML = `
+    <div class="stat-card"><div class="stat-value">${vagas.length}</div><div class="stat-label">Total de Vagas</div></div>
+    <div class="stat-card"><div class="stat-value">${vagas.filter(v=>v.status==='ativa').length}</div><div class="stat-label">Vagas Ativas</div></div>
+    <div class="stat-card"><div class="stat-value">${vagas.reduce((s,v)=>s+(v.candidatos||0),0)}</div><div class="stat-label">Candidaturas Recebidas</div></div>
+    <div class="stat-card"><div class="stat-value">${vagas.filter(v=>v.status==='pausada').length}</div><div class="stat-label">Vagas Pausadas</div></div>
+  `;
+  document.getElementById('nav-badge-vagas').textContent = vagas.filter(v=>v.status==='ativa').length;
+
+  // table
+  const tbody = document.getElementById('vagas-table-body');
+  if (!filtered.length) {
+    tbody.innerHTML = `<div class="empty-state"><p>Nenhuma vaga encontrada.</p></div>`;
+    return;
+  }
+  const statusBadge = s => s==='ativa' ? 'badge-green' : s==='pausada' ? 'badge-yellow' : 'badge-gray';
+  const statusLabel = s => s==='ativa' ? 'Ativa' : s==='pausada' ? 'Pausada' : 'Encerrada';
+
+  tbody.innerHTML = `
+    <table>
+      <thead><tr>
+        <th>Vaga</th><th>Departamento</th><th>Nível</th><th>Modalidade</th>
+        <th>Candidatos</th><th>Status</th><th></th>
+      </tr></thead>
+      <tbody>
+        ${filtered.map(v=>`
+          <tr onclick="editarVaga('${v.id}')">
+            <td><div style="font-weight:600">${v.titulo}</div><div style="font-size:11px;color:var(--muted)">${v.local||'—'}</div></td>
+            <td><span class="badge badge-purple">${v.departamento}</span></td>
+            <td><span style="font-size:12px">${v.nivel}</span></td>
+            <td><span class="badge badge-blue">${v.modalidade}</span></td>
+            <td><span style="font-weight:700;color:var(--accent)">${v.candidatos||0}</span></td>
+            <td><span class="badge ${statusBadge(v.status)}">${statusLabel(v.status)}</span></td>
+            <td onclick="event.stopPropagation()">
+              <button class="btn btn-ghost btn-sm" onclick="editarVaga('${v.id}')">Editar</button>
+            </td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+document.getElementById('vagas-search').oninput = renderVagas;
+
+// ─── NOVA/EDITAR VAGA ─────────────────────────────────────────────
+document.getElementById('btn-nova-vaga').onclick = () => abrirModalVaga(null);
+document.getElementById('modal-vaga-close').onclick = fecharModalVaga;
+document.getElementById('mv-cancel').onclick = fecharModalVaga;
+document.getElementById('modal-vaga').onclick = e => { if(e.target===e.currentTarget) fecharModalVaga(); };
+
+function abrirModalVaga(id) {
+  currentVagaId = id;
+  tagData = { stack:[], comp:[] };
+
+  if (id) {
+    const v = vagas.find(x=>x.id===id);
+    if (!v) return;
+    document.getElementById('modal-vaga-title').textContent = 'Editar Vaga';
+    document.getElementById('mv-save').textContent = 'Salvar Alterações';
+    document.getElementById('mv-titulo').value = v.titulo||'';
+    document.getElementById('mv-departamento').value = v.departamento||'';
+    document.getElementById('mv-nivel').value = v.nivel||'';
+    document.getElementById('mv-modalidade').value = v.modalidade||'';
+    document.getElementById('mv-local').value = v.local||'';
+    document.getElementById('mv-salario').value = v.salario||'';
+    document.getElementById('mv-descricao').value = v.descricao||'';
+    document.getElementById('mv-status').value = v.status||'ativa';
+    tagData.stack = [...(v.stack||[])];
+    tagData.comp = [...(v.competencias||[])];
+  } else {
+    document.getElementById('modal-vaga-title').textContent = 'Nova Vaga';
+    document.getElementById('mv-save').textContent = 'Publicar Vaga';
+    ['mv-titulo','mv-local','mv-salario','mv-descricao'].forEach(id=>document.getElementById(id).value='');
+    ['mv-departamento','mv-nivel','mv-modalidade'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('mv-status').value = 'ativa';
+  }
+
+  renderTags('stack');
+  renderTags('comp');
+  document.getElementById('modal-vaga').classList.add('open');
+}
+
+function fecharModalVaga() {
+  document.getElementById('modal-vaga').classList.remove('open');
+  currentVagaId = null;
+}
+
+function editarVaga(id) { abrirModalVaga(id); }
+
+document.getElementById('mv-save').onclick = async () => {
+  const titulo = document.getElementById('mv-titulo').value.trim();
+  const dept = document.getElementById('mv-departamento').value;
+  const nivel = document.getElementById('mv-nivel').value;
+  const modal = document.getElementById('mv-modalidade').value;
+
+  if (!titulo || !dept || !nivel || !modal) {
+    showToast('Preencha todos os campos obrigatórios.','error'); return;
+  }
+
+  const payload = {
+    id: currentVagaId || ('v'+Date.now()),
+    titulo, departamento:dept, nivel, modalidade:modal,
+    local: document.getElementById('mv-local').value.trim(),
+    salario: document.getElementById('mv-salario').value.trim(),
+    descricao: document.getElementById('mv-descricao').value.trim(),
+    stack: tagData.stack,
+    competencias: tagData.comp,
+    status: document.getElementById('mv-status').value,
+    criado_em: currentVagaId ? (vagas.find(v=>v.id===currentVagaId)||{}).criado_em : new Date().toISOString(),
+    candidatos: currentVagaId ? (vagas.find(v=>v.id===currentVagaId)||{candidatos:0}).candidatos : 0
+  };
+
+  try {
+    await fetch(BASE_URL+'/ats-admin-criar-vaga', {
+      method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload),
+      signal: AbortSignal.timeout(5000)
+    });
+  } catch { /* offline – update locally */ }
+
+  if (currentVagaId) {
+    const idx = vagas.findIndex(v=>v.id===currentVagaId);
+    if (idx>-1) vagas[idx] = payload;
+  } else {
+    vagas.unshift(payload);
+  }
+
+  fecharModalVaga();
+  renderVagas();
+  showToast(currentVagaId ? 'Vaga atualizada com sucesso!' : 'Vaga criada com sucesso!', 'success');
+};
+
+// ─── TAG INPUTS ───────────────────────────────────────────────────
+function initTagInputs() {
+  setupTagInput('stack');
+  setupTagInput('comp');
+}
+
+function setupTagInput(store) {
+  const inp = document.getElementById('tag-input-'+store);
+  inp.addEventListener('keydown', e => {
+    if (e.key==='Enter' || e.key===',') {
+      e.preventDefault();
+      addTag(store, inp.value);
+      inp.value = '';
+    }
+  });
+  inp.addEventListener('blur', () => {
+    if (inp.value.trim()) { addTag(store, inp.value); inp.value = ''; }
+  });
+}
+
+function addTag(store, val) {
+  const v = val.trim().replace(/,$/, '');
+  if (!v || tagData[store].includes(v)) return;
+  tagData[store].push(v);
+  renderTags(store);
+}
+
+function removeTag(store, idx) {
+  tagData[store].splice(idx,1);
+  renderTags(store);
+}
+
+function renderTags(store) {
+  const wrap = document.getElementById('tag-wrap-'+store);
+  const inp = document.getElementById('tag-input-'+store);
+  wrap.querySelectorAll('.tag-chip').forEach(el=>el.remove());
+  tagData[store].forEach((t,i) => {
+    const chip = document.createElement('span');
+    chip.className = 'tag-chip';
+    chip.innerHTML = `${t}<button type="button" onclick="removeTag('${store}',${i})">&times;</button>`;
+    wrap.insertBefore(chip, inp);
+  });
+}
+
+// ─── CANDIDATOS ───────────────────────────────────────────────────
+async function carregarCandidatos() {
+  try {
+    const r = await fetch(BASE_URL+'/ats-admin-candidatos', {signal: AbortSignal.timeout(5000)});
+    if (!r.ok) throw new Error();
+    const data = await r.json();
+    candidatos = Array.isArray(data) ? data : MOCK_CANDIDATOS;
+  } catch { candidatos = MOCK_CANDIDATOS; }
+  renderCandidatos();
+}
+
+function renderCandidatos() {
+  const q = document.getElementById('cand-search').value.toLowerCase();
+  const fs = document.getElementById('cand-filter-status').value;
+  const filtered = candidatos.filter(c => {
+    const matchQ = c.nome.toLowerCase().includes(q) || c.vaga.toLowerCase().includes(q) || c.email.toLowerCase().includes(q);
+    const matchS = !fs || c.status===fs;
+    return matchQ && matchS;
+  });
+
+  // stats
+  const stats = document.getElementById('cand-stats');
+  const avg = candidatos.length ? Math.round(candidatos.reduce((s,c)=>s+c.score,0)/candidatos.length) : 0;
+  stats.innerHTML = `
+    <div class="stat-card"><div class="stat-value">${candidatos.length}</div><div class="stat-label">Total de Candidatos</div></div>
+    <div class="stat-card"><div class="stat-value">${candidatos.filter(c=>c.status==='Em análise').length}</div><div class="stat-label">Em Análise</div></div>
+    <div class="stat-card"><div class="stat-value">${candidatos.filter(c=>c.status==='Aprovado').length}</div><div class="stat-label">Aprovados</div></div>
+    <div class="stat-card"><div class="stat-value">${avg}%</div><div class="stat-label">Score Médio IA</div></div>
+  `;
+  document.getElementById('nav-badge-cand').textContent = candidatos.filter(c=>c.status==='Em análise').length;
+
+  const tbody = document.getElementById('cand-table-body');
+  if (!filtered.length) {
+    tbody.innerHTML = `<div class="empty-state"><p>Nenhum candidato encontrado.</p></div>`;
+    return;
+  }
+
+  const statusColor = s => s==='Aprovado'?'badge-green':s==='Reprovado'?'badge-red':s==='Entrevista'?'badge-blue':'badge-yellow';
+  const scoreColor = n => n>=80?'var(--success)':n>=60?'var(--warn)':'var(--danger)';
+
+  tbody.innerHTML = `
+    <table>
+      <thead><tr>
+        <th>Candidato</th><th>Vaga</th><th>Nível</th><th>Score IA</th><th>Status</th><th></th>
+      </tr></thead>
+      <tbody>
+        ${filtered.map(c=>`
+          <tr onclick="abrirCandidato('${c.id}')">
+            <td>
+              <div style="font-weight:600">${c.nome}</div>
+              <div style="font-size:11px;color:var(--muted)">${c.email}</div>
+            </td>
+            <td style="font-size:12px">${c.vaga}</td>
+            <td style="font-size:12px;color:var(--muted)">${c.nivel_experiencia||'—'}</td>
+            <td>
+              <span style="font-weight:700;color:${scoreColor(c.score)}">${c.score}</span>
+              <span style="color:var(--muted);font-size:11px">/100</span>
+            </td>
+            <td><span class="badge ${statusColor(c.status)}">${c.status}</span></td>
+            <td onclick="event.stopPropagation()">
+              <button class="btn btn-ghost btn-sm" onclick="abrirCandidato('${c.id}')">Ver</button>
+            </td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+document.getElementById('cand-search').oninput = renderCandidatos;
+document.getElementById('cand-filter-status').onchange = renderCandidatos;
+
+// ─── SLIDE-OVER CANDIDATO ─────────────────────────────────────────
+function abrirCandidato(id) {
+  const c = candidatos.find(x=>x.id===id);
+  if (!c) return;
+  currentCandidatoId = id;
+
+  document.getElementById('so-nome').textContent = c.nome;
+  document.getElementById('so-meta').textContent = `${c.vaga} · ${c.nivel_experiencia||'Não informado'} · Inglês: ${c.nivel_ingles||'—'}`;
+
+  // score circle
+  const pct = c.score / 100 * 360;
+  const circle = document.getElementById('so-score-circle');
+  circle.style.setProperty('--pct', `${c.score}%`);
+  document.getElementById('so-score-num').textContent = c.score;
+
+  // dimension bars
+  const dims = document.getElementById('so-dims');
+  dims.innerHTML = (c.dimensoes||[]).map(d=>`
+    <div class="dim-item">
+      <div class="dim-head">
+        <span class="dim-name">${d.nome}</span>
+        <span class="dim-pct" style="color:${scoreColor(d.pct)}">${d.pct}%</span>
+      </div>
+      <div class="dim-bar"><div class="dim-fill" style="width:${d.pct}%;background:${scoreColor(d.pct)}"></div></div>
+    </div>
+  `).join('');
+
+  // STAR accordions
+  const accEl = document.getElementById('so-accordions');
+  accEl.innerHTML = (c.respostas||[]).map((r,i)=>`
+    <div class="accordion-item" id="acc-${i}">
+      <div class="accordion-head" onclick="toggleAccordion('acc-${i}')">
+        <span>${r.pergunta}</span>
+        <svg class="accordion-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="accordion-body">
+        ${r.star ? Object.entries(r.star).map(([k,v])=>`
+          <div class="star-section">
+            <span class="star-letter">${k[0].toUpperCase()}</span>
+            <span style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">${starLabel(k)}</span>
+            <div class="star-text" style="margin-top:4px">${v}</div>
+          </div>
+        `).join('') : `<div class="star-text">${r.resposta||'—'}</div>`}
+      </div>
+    </div>
+  `).join('');
+
+  // CV
+  document.getElementById('so-cv-info').textContent = c.curriculo_nome
+    ? `📄 ${c.curriculo_nome}`
+    : 'Nenhum arquivo enviado';
+
+  document.getElementById('slideover-cand').classList.add('open');
+  document.getElementById('so-backdrop').classList.add('open');
+}
+
+function fecharSlideover() {
+  document.getElementById('slideover-cand').classList.remove('open');
+  document.getElementById('so-backdrop').classList.remove('open');
+  currentCandidatoId = null;
+}
+
+document.getElementById('so-close').onclick = fecharSlideover;
+document.getElementById('so-backdrop').onclick = fecharSlideover;
+
+function toggleAccordion(id) {
+  const el = document.getElementById(id);
+  el.classList.toggle('open');
+}
+
+function starLabel(k) {
+  const m = {S:'Situação',T:'Tarefa',A:'Ação',R:'Resultado'};
+  return m[k.toUpperCase()]||k;
+}
+
+function scoreColor(n) {
+  return n>=80?'var(--success)':n>=60?'var(--warn)':'var(--danger)';
+}
+
+// slide-over action buttons
+document.getElementById('so-btn-aprovar').onclick = () => mudarStatusCandidato('Aprovado');
+document.getElementById('so-btn-rejeitar').onclick = () => mudarStatusCandidato('Reprovado');
+document.getElementById('so-btn-entrevista').onclick = () => {
+  const cfg = localStorage.getItem('cfg_calendly');
+  if (cfg) window.open(cfg,'_blank');
+  mudarStatusCandidato('Entrevista');
+};
+
+function mudarStatusCandidato(novoStatus) {
+  if (!currentCandidatoId) return;
+  const c = candidatos.find(x=>x.id===currentCandidatoId);
+  if (!c) return;
+  c.status = novoStatus;
+  renderCandidatos();
+  fecharSlideover();
+  const msgs = {Aprovado:'Candidato aprovado!', Reprovado:'Candidato reprovado.', Entrevista:'Entrevista agendada!'};
+  const tipos = {Aprovado:'success', Reprovado:'error', Entrevista:'info'};
+  showToast(msgs[novoStatus]||'Status atualizado.', tipos[novoStatus]||'info');
+}
+
+// ─── SLIDERS CONFIG ───────────────────────────────────────────────
+function updatePeso() {
+  const ids = ['tecnico','exp','comp','cult'];
+  let sum = 0;
+  ids.forEach(id => {
+    const val = parseInt(document.getElementById('sl-'+id).value);
+    document.getElementById('sv-'+id).textContent = val+'%';
+    sum += val;
+  });
+  const box = document.getElementById('slider-sum-box');
+  document.getElementById('slider-sum-val').textContent = sum+'%';
+  box.className = 'slider-sum '+(sum===100?'ok':'warn');
+}
+
+function salvarPesos() {
+  const ids = ['tecnico','exp','comp','cult'];
+  const sum = ids.reduce((s,id)=>s+parseInt(document.getElementById('sl-'+id).value),0);
+  if (sum!==100) { showToast('A soma dos pesos deve ser 100%. Atual: '+sum+'%.','error'); return; }
+  const pesos = {};
+  ids.forEach(id=>pesos[id]=parseInt(document.getElementById('sl-'+id).value));
+  localStorage.setItem('cfg_pesos', JSON.stringify(pesos));
+  showToast('Pesos salvos com sucesso!','success');
+}
+
+// ─── INTEGRAÇÕES / SEGURANÇA ──────────────────────────────────────
+function loadConfig() {
+  const pesos = JSON.parse(localStorage.getItem('cfg_pesos')||'null');
+  if (pesos) {
+    const ids = ['tecnico','exp','comp','cult'];
+    ids.forEach(id=>{ if(pesos[id]!==undefined) document.getElementById('sl-'+id).value=pesos[id]; });
+    updatePeso();
+  }
+  document.getElementById('cfg-whatsapp').value = localStorage.getItem('cfg_whatsapp')||'';
+  document.getElementById('cfg-calendly').value = localStorage.getItem('cfg_calendly')||'';
+}
+
+function salvarIntegracao(tipo) {
+  const val = document.getElementById('cfg-'+tipo).value.trim();
+  localStorage.setItem('cfg_'+tipo, val);
+  showToast(tipo==='whatsapp'?'WhatsApp salvo!':'Calendly salvo!','success');
+}
+
+function alterarSenha() {
+  const nova = document.getElementById('cfg-nova-senha').value;
+  const conf = document.getElementById('cfg-conf-senha').value;
+  if (!nova || nova.length < 6) { showToast('A senha deve ter ao menos 6 caracteres.','error'); return; }
+  if (nova !== conf) { showToast('As senhas não coincidem.','error'); return; }
+  adminPassword = nova;
+  sessionStorage.setItem('admin_pwd', nova);
+  document.getElementById('cfg-nova-senha').value='';
+  document.getElementById('cfg-conf-senha').value='';
+  showToast('Senha alterada com sucesso!','success');
+}
+
+// ─── TOASTS ───────────────────────────────────────────────────────
+function showToast(msg, type='info') {
+  const icons = {
+    success:`<svg class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`,
+    error:`<svg class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>`,
+    info:`<svg class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`,
+    warn:`<svg class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`
+  };
+  const t = document.createElement('div');
+  t.className = `toast toast-${type}`;
+  t.innerHTML = `${icons[type]||icons.info}<span>${msg}</span>`;
+  document.getElementById('toasts').appendChild(t);
+  setTimeout(()=>{
+    t.classList.add('removing');
+    setTimeout(()=>t.remove(), 300);
+  }, 3500);
+}
+
+// ─── BOOT ─────────────────────────────────────────────────────────
+checkAuth();
+</script>
+</body>
+</html>
