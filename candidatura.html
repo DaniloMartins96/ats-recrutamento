@@ -1,0 +1,1165 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="description" content="TechRecruit AI — Formulário de candidatura. Candidate-se em minutos."/>
+  <title>TechRecruit AI — Candidatura</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+  <style>
+    /* =========================================================  RESET & VARIÁVEIS  ========================================================= */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:          #0a0a0f;
+      --bg-card:     #13131a;
+      --bg-input:    #1a1a24;
+      --border:      #2a2a3a;
+      --border-focus:#6c63ff;
+      --accent:      #6c63ff;
+      --accent-glow: rgba(108,99,255,.35);
+      --accent-light:#8b85ff;
+      --success:     #22c55e;
+      --error:       #ef4444;
+      --text:        #f0f0f8;
+      --text-muted:  #8888aa;
+      --text-sub:    #5a5a7a;
+      --radius:      14px;
+      --radius-sm:   8px;
+      --shadow:      0 8px 32px rgba(0,0,0,.55);
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* =========================================================  ANIMAÇÕES  ========================================================= */
+    @keyframes fadeInUp  { from{opacity:0;transform:translateY(24px);}  to{opacity:1;transform:translateY(0);} }
+    @keyframes fadeIn    { from{opacity:0;} to{opacity:1;} }
+    @keyframes pulse-ring{ 0%,100%{transform:scale(.9);opacity:.8;} 50%{transform:scale(1.05);opacity:1;} }
+    @keyframes badge-glow{ 0%,100%{box-shadow:0 0 8px 0 var(--accent-glow);} 50%{box-shadow:0 0 18px 4px var(--accent-glow);} }
+    @keyframes spin      { to{transform:rotate(360deg);} }
+    @keyframes check-draw{ 0%{stroke-dashoffset:60;} 100%{stroke-dashoffset:0;} }
+    @keyframes circle-scale{ 0%{transform:scale(0);opacity:0;} 60%{transform:scale(1.12);opacity:1;} 100%{transform:scale(1);opacity:1;} }
+
+    /* =========================================================  LAYOUT  ========================================================= */
+    .container { width:100%; max-width:680px; margin:0 auto; padding:0 20px; }
+
+    /* =========================================================  NAV  ========================================================= */
+    .nav {
+      position:sticky; top:0; z-index:100;
+      background:rgba(10,10,15,.88); backdrop-filter:blur(16px);
+      border-bottom:1px solid var(--border); padding:14px 0;
+    }
+    .nav__inner {
+      max-width:1120px; margin:0 auto; padding:0 24px;
+      display:flex; align-items:center; justify-content:space-between; gap:16px;
+    }
+    .logo { display:flex; align-items:center; gap:10px; text-decoration:none; }
+    .logo__icon { width:36px; height:36px; flex-shrink:0; }
+    .logo__text { font-size:1.1rem; font-weight:700; color:var(--text); letter-spacing:-.3px; }
+    .logo__text span { color:var(--accent); }
+    .badge-ai {
+      display:inline-flex; align-items:center; gap:6px;
+      background:rgba(108,99,255,.15); border:1px solid rgba(108,99,255,.4);
+      color:var(--accent-light); font-size:.72rem; font-weight:600;
+      letter-spacing:.06em; text-transform:uppercase;
+      padding:5px 12px; border-radius:100px;
+      animation:badge-glow 2.4s ease-in-out infinite; white-space:nowrap;
+    }
+    .badge-ai::before {
+      content:''; width:7px; height:7px; background:var(--accent);
+      border-radius:50%; display:block; animation:pulse-ring 1.8s ease-in-out infinite;
+    }
+
+    /* =========================================================  CARD RESUMO DA VAGA  ========================================================= */
+    .job-summary {
+      background:var(--bg-card); border:1px solid var(--border);
+      border-radius:var(--radius); padding:20px 22px;
+      display:flex; align-items:center; gap:16px;
+      margin-bottom:20px; flex-wrap:wrap;
+      animation:fadeInUp .6s ease both;
+    }
+    .job-summary__icon {
+      width:44px; height:44px; flex-shrink:0;
+      background:rgba(108,99,255,.12); border:1px solid rgba(108,99,255,.25);
+      border-radius:10px; display:flex; align-items:center; justify-content:center;
+      font-size:1.3rem;
+    }
+    .job-summary__info { flex:1; min-width:0; }
+    .job-summary__title {
+      font-size:1rem; font-weight:700; color:var(--text);
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+      margin-bottom:4px;
+    }
+    .job-summary__meta {
+      display:flex; flex-wrap:wrap; gap:6px 14px;
+      font-size:.78rem; color:var(--text-muted);
+    }
+    .job-summary__meta-item { display:inline-flex; align-items:center; gap:4px; }
+    .back-btn {
+      display:inline-flex; align-items:center; gap:6px;
+      font-family:inherit; font-size:.8rem; font-weight:600;
+      color:var(--text-muted); background:transparent;
+      border:1.5px solid var(--border); border-radius:var(--radius-sm);
+      padding:8px 14px; text-decoration:none; cursor:pointer;
+      transition:all .22s ease; white-space:nowrap; flex-shrink:0;
+    }
+    .back-btn:hover { background:var(--bg-input); color:var(--text); border-color:rgba(108,99,255,.4); }
+
+    /* =========================================================  CARD FORMULÁRIO  ========================================================= */
+    .form-card {
+      background:var(--bg-card); border:1px solid var(--border);
+      border-radius:20px; box-shadow:var(--shadow); overflow:hidden;
+      animation:fadeInUp .7s .1s ease both; margin-bottom:32px;
+    }
+
+    /* Progress bar */
+    .progress-header { padding:22px 26px 18px; border-bottom:1px solid var(--border); }
+    .progress-steps { display:flex; align-items:center; justify-content:center; gap:0; margin-bottom:14px; }
+    .progress-step  { display:flex; align-items:center; gap:10px; }
+    .progress-step__circle {
+      width:32px; height:32px; border-radius:50%;
+      display:flex; align-items:center; justify-content:center;
+      font-size:.78rem; font-weight:700;
+      border:2px solid var(--border); background:var(--bg); color:var(--text-muted);
+      transition:all .35s ease; flex-shrink:0;
+    }
+    .progress-step__circle.active { background:var(--accent); border-color:var(--accent); color:#fff; box-shadow:0 0 14px var(--accent-glow); }
+    .progress-step__circle.done   { background:rgba(34,197,94,.15); border-color:var(--success); color:var(--success); }
+    .progress-step__label { font-size:.8rem; font-weight:500; color:var(--text-muted); transition:color .35s; }
+    .progress-step__label.active { color:var(--text); }
+    .progress-connector { flex:1; height:2px; background:var(--border); margin:0 14px; max-width:80px; transition:background .4s; }
+    .progress-connector.done { background:var(--success); }
+    .progress-bar-track { height:4px; background:var(--border); border-radius:99px; overflow:hidden; }
+    .progress-bar-fill  { height:100%; background:linear-gradient(90deg,var(--accent),#a78bfa); border-radius:99px; transition:width .5s cubic-bezier(.4,0,.2,1); }
+
+    /* Form body */
+    .form-body { padding:26px 26px 22px; }
+    .form-step { display:none; }
+    .form-step.active { display:block; animation:fadeIn .3s ease; }
+    .form-step__title { font-size:1.05rem; font-weight:700; color:var(--text); margin-bottom:3px; }
+    .form-step__desc  { font-size:.84rem; color:var(--text-muted); margin-bottom:22px; }
+
+    /* =========================================================  CAMPOS  ========================================================= */
+    .field { margin-bottom:16px; }
+    .field label {
+      display:block; font-size:.82rem; font-weight:600;
+      color:var(--text-muted); margin-bottom:7px; letter-spacing:.02em;
+    }
+    .field label .required { color:var(--accent-light); margin-left:2px; }
+    .field label .optional  { color:var(--text-sub); font-weight:400; font-size:.75rem; margin-left:6px; }
+
+    .field input,
+    .field select,
+    .field textarea {
+      width:100%; background:var(--bg-input);
+      border:1.5px solid var(--border); border-radius:var(--radius-sm);
+      color:var(--text); font-family:inherit; font-size:.92rem;
+      padding:11px 14px; outline:none;
+      transition:border-color .25s, box-shadow .25s;
+      appearance:none; -webkit-appearance:none;
+    }
+    .field select {
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' viewBox='0 0 24 24'%3E%3Cpath stroke='%238888aa' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat:no-repeat; background-position:right 12px center;
+      padding-right:38px; cursor:pointer;
+    }
+    .field textarea { resize:vertical; min-height:110px; }
+    .field input::placeholder,
+    .field textarea::placeholder { color:var(--text-sub); }
+    .field input:focus,
+    .field select:focus,
+    .field textarea:focus {
+      border-color:var(--border-focus); box-shadow:0 0 0 3px rgba(108,99,255,.18);
+    }
+
+    /* Erros */
+    .field .field-error { display:none; font-size:.75rem; color:var(--error); margin-top:5px; }
+    .field.has-error input,
+    .field.has-error select,
+    .field.has-error textarea { border-color:var(--error); }
+    .field.has-error .field-error { display:block; }
+
+    /* Contador */
+    .char-counter { text-align:right; font-size:.74rem; color:var(--text-sub); margin-top:5px; transition:color .25s; }
+    .char-counter.ok   { color:var(--success); }
+    .char-counter.warn { color:#f59e0b; }
+
+    .char-hint {
+      margin-top:8px; background:rgba(108,99,255,.08);
+      border:1px solid rgba(108,99,255,.2); border-radius:var(--radius-sm);
+      padding:9px 12px; font-size:.78rem; color:var(--text-muted);
+    }
+
+    /* =========================================================  RADIO CARDS MODALIDADE  ========================================================= */
+    .radio-group { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+    .radio-card { position:relative; }
+    .radio-card input[type="radio"] { position:absolute; opacity:0; width:0; height:0; }
+    .radio-card label {
+      display:flex; flex-direction:column; align-items:center; gap:6px;
+      padding:14px 10px; background:var(--bg-input);
+      border:1.5px solid var(--border); border-radius:var(--radius-sm);
+      cursor:pointer; font-size:.82rem; font-weight:500;
+      color:var(--text-muted); text-align:center;
+      transition:all .22s ease; margin-bottom:0; letter-spacing:0;
+    }
+    .radio-card label:hover { border-color:rgba(108,99,255,.5); color:var(--text); }
+    .radio-card__icon { font-size:1.3rem; }
+    .radio-card input[type="radio"]:checked + label {
+      background:rgba(108,99,255,.12); border-color:var(--accent);
+      color:var(--accent-light); box-shadow:0 0 0 3px rgba(108,99,255,.15);
+    }
+
+    /* =========================================================  BADGES  ========================================================= */
+    .badge-rec {
+      display:inline-flex; align-items:center;
+      background:rgba(34,197,94,.12); border:1px solid rgba(34,197,94,.3);
+      color:var(--success); font-size:.68rem; font-weight:700;
+      letter-spacing:.05em; text-transform:uppercase;
+      padding:2px 8px; border-radius:100px; margin-left:8px; vertical-align:middle;
+    }
+    .badge-opt {
+      display:inline-flex; align-items:center;
+      background:rgba(136,136,170,.1); border:1px solid rgba(136,136,170,.25);
+      color:var(--text-muted); font-size:.68rem; font-weight:700;
+      letter-spacing:.05em; text-transform:uppercase;
+      padding:2px 8px; border-radius:100px; margin-left:8px; vertical-align:middle;
+    }
+
+    /* =========================================================  UPLOAD  ========================================================= */
+    .upload-zone {
+      border:2px dashed var(--border); border-radius:var(--radius-sm);
+      background:var(--bg-input); padding:26px 20px; text-align:center;
+      cursor:pointer; transition:border-color .25s, background .25s, box-shadow .25s;
+      position:relative;
+    }
+    .upload-zone:hover, .upload-zone.dragover {
+      border-color:var(--accent); background:rgba(108,99,255,.06);
+      box-shadow:0 0 0 3px rgba(108,99,255,.12);
+    }
+    .upload-zone.has-file { border-color:var(--success); border-style:solid; background:rgba(34,197,94,.04); }
+    .upload-zone input[type="file"] { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%; }
+    .upload-icon { font-size:1.9rem; margin-bottom:9px; display:block; transition:transform .3s; }
+    .upload-zone:hover .upload-icon, .upload-zone.dragover .upload-icon { transform:translateY(-4px); }
+    .upload-text { font-size:.84rem; color:var(--text-muted); line-height:1.5; }
+    .upload-text strong { color:var(--accent-light); }
+    .upload-text small { display:block; font-size:.73rem; color:var(--text-sub); margin-top:4px; }
+    .upload-preview {
+      display:none; align-items:center; gap:10px;
+      margin-top:10px; background:rgba(34,197,94,.08);
+      border:1px solid rgba(34,197,94,.25); border-radius:var(--radius-sm);
+      padding:10px 14px; font-size:.83rem; color:var(--success);
+    }
+    .upload-preview.visible { display:flex; }
+    .upload-preview__name { flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--text); font-size:.82rem; }
+    .upload-remove { background:none; border:none; color:var(--text-sub); cursor:pointer; font-size:1rem; padding:0 2px; transition:color .2s; }
+    .upload-remove:hover { color:var(--error); }
+    .field.has-error .upload-zone { border-color:var(--error); }
+
+    /* =========================================================  PERGUNTAS COMPORTAMENTAIS  ========================================================= */
+    .behavioral-section {
+      margin:30px 0 22px; padding-top:26px; border-top:1px solid var(--border);
+    }
+    .behavioral-section__title { font-size:1rem; font-weight:700; color:var(--text); margin-bottom:4px; }
+    .behavioral-section__sub   { font-size:.82rem; color:var(--text-muted); margin-bottom:22px; transition:opacity .3s; }
+
+    .behavioral-q {
+      margin-bottom:20px;
+      transition:opacity .25s ease, transform .25s ease;
+    }
+    .behavioral-q label {
+      display:block; font-size:.82rem; font-weight:600;
+      color:var(--text-muted); margin-bottom:7px; letter-spacing:.02em; line-height:1.5;
+    }
+    .behavioral-q textarea {
+      width:100%; background:var(--bg-input);
+      border:1.5px solid var(--border); border-radius:var(--radius-sm);
+      color:var(--text); font-family:inherit; font-size:.92rem;
+      padding:11px 14px; outline:none; resize:vertical; min-height:96px;
+      transition:border-color .25s, box-shadow .25s;
+    }
+    .behavioral-q textarea::placeholder { color:var(--text-sub); }
+    .behavioral-q textarea:focus { border-color:var(--border-focus); box-shadow:0 0 0 3px rgba(108,99,255,.18); }
+    .behavioral-q.has-error textarea { border-color:var(--error); }
+    .behavioral-q .field-error { display:none; font-size:.75rem; color:var(--error); margin-top:5px; }
+    .behavioral-q.has-error .field-error { display:block; }
+
+    .q-number {
+      display:inline-flex; align-items:center; justify-content:center;
+      width:20px; height:20px; background:rgba(108,99,255,.15);
+      border:1px solid rgba(108,99,255,.3); border-radius:50%;
+      font-size:.68rem; font-weight:700; color:var(--accent-light);
+      margin-right:6px; flex-shrink:0; vertical-align:middle;
+    }
+
+    /* =========================================================  BOTÕES  ========================================================= */
+    .btn {
+      display:inline-flex; align-items:center; justify-content:center; gap:8px;
+      font-family:inherit; font-size:.92rem; font-weight:600; border:none;
+      border-radius:var(--radius-sm); cursor:pointer; transition:all .22s ease;
+      padding:12px 24px; letter-spacing:.01em; white-space:nowrap;
+    }
+    .btn--primary { background:var(--accent); color:#fff; width:100%; }
+    .btn--primary:hover:not(:disabled) { background:var(--accent-light); transform:translateY(-1px); box-shadow:0 6px 20px var(--accent-glow); }
+    .btn--primary:active:not(:disabled){ transform:translateY(0); }
+    .btn--primary:disabled { opacity:.6; cursor:not-allowed; }
+    .btn--ghost { background:transparent; color:var(--text-muted); border:1.5px solid var(--border); }
+    .btn--ghost:hover { background:var(--bg-input); color:var(--text); border-color:rgba(108,99,255,.4); }
+    .form-actions { display:flex; gap:10px; margin-top:26px; }
+    .form-actions .btn--ghost   { flex:0 0 auto; min-width:96px; }
+    .form-actions .btn--primary { flex:1; }
+
+    /* =========================================================  SPINNER  ========================================================= */
+    .spinner {
+      width:20px; height:20px;
+      border:2.5px solid rgba(255,255,255,.3); border-top-color:#fff;
+      border-radius:50%; animation:spin .75s linear infinite; flex-shrink:0;
+    }
+
+    /* =========================================================  TELA SUCESSO  ========================================================= */
+    #screen-success { display:none; text-align:center; padding:52px 26px; animation:fadeIn .5s ease; }
+    .success-circle {
+      width:80px; height:80px; background:rgba(34,197,94,.12);
+      border:2px solid var(--success); border-radius:50%;
+      display:flex; align-items:center; justify-content:center;
+      margin:0 auto 22px; animation:circle-scale .5s cubic-bezier(.4,0,.2,1) both;
+    }
+    .success-check { stroke-dasharray:60; stroke-dashoffset:60; animation:check-draw .5s .3s ease forwards; }
+    #screen-success h2 { font-size:1.45rem; font-weight:800; margin-bottom:12px; }
+    #screen-success p  { font-size:.92rem; color:var(--text-muted); max-width:360px; margin:0 auto 20px; }
+
+    /* =========================================================  TELA ERRO  ========================================================= */
+    #screen-error { display:none; text-align:center; padding:38px 26px; animation:fadeIn .4s ease; }
+    .error-icon { font-size:3rem; margin-bottom:14px; }
+    #screen-error h2 { font-size:1.2rem; font-weight:700; color:var(--error); margin-bottom:10px; }
+    #screen-error p  { font-size:.87rem; color:var(--text-muted); margin-bottom:20px; }
+
+    /* =========================================================  HERO CANDIDATURA  ========================================================= */
+    .candidatura-hero { padding:40px 0 24px; animation:fadeInUp .6s ease both; }
+    .candidatura-hero__title { font-size:clamp(1.5rem,4vw,2.2rem); font-weight:900; letter-spacing:-1px; margin-bottom:8px; }
+    .candidatura-hero__title .highlight {
+      background:linear-gradient(135deg,var(--accent) 0%,#a78bfa 100%);
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+    }
+    .candidatura-hero__sub { font-size:.9rem; color:var(--text-muted); }
+
+    /* =========================================================  RESPONSIVE  ========================================================= */
+    @media (max-width:520px) {
+      .nav__inner { padding:0 16px; }
+      .form-body { padding:20px 16px 18px; }
+      .progress-header { padding:16px 16px 14px; }
+      .progress-step__label { display:none; }
+      .form-actions { flex-direction:column-reverse; }
+      .form-actions .btn--ghost { min-width:unset; }
+      .job-summary { flex-direction:column; align-items:flex-start; }
+      .candidatura-hero { padding:28px 0 16px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- =========================================================  NAV  ========================================================= -->
+  <nav class="nav" aria-label="Barra de navegação">
+    <div class="nav__inner">
+      <a href="index.html" class="logo" aria-label="TechRecruit AI — voltar para vagas">
+        <svg class="logo__icon" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <rect width="36" height="36" rx="10" fill="#6c63ff" fill-opacity=".15"/>
+          <circle cx="18" cy="18" r="7.5" stroke="#6c63ff" stroke-width="1.8" fill="none"/>
+          <circle cx="18" cy="18" r="3" fill="#6c63ff"/>
+          <line x1="18" y1="10.5" x2="18" y2="7"  stroke="#a78bfa" stroke-width="1.6" stroke-linecap="round"/>
+          <line x1="18" y1="25.5" x2="18" y2="29" stroke="#a78bfa" stroke-width="1.6" stroke-linecap="round"/>
+          <line x1="10.5" y1="18" x2="7"  y2="18" stroke="#a78bfa" stroke-width="1.6" stroke-linecap="round"/>
+          <line x1="25.5" y1="18" x2="29" y2="18" stroke="#a78bfa" stroke-width="1.6" stroke-linecap="round"/>
+          <line x1="12.7" y1="12.7" x2="10" y2="10" stroke="#6c63ff" stroke-width="1.2" stroke-linecap="round" opacity=".6"/>
+          <line x1="23.3" y1="23.3" x2="26" y2="26" stroke="#6c63ff" stroke-width="1.2" stroke-linecap="round" opacity=".6"/>
+          <line x1="23.3" y1="12.7" x2="26" y2="10" stroke="#6c63ff" stroke-width="1.2" stroke-linecap="round" opacity=".6"/>
+          <line x1="12.7" y1="23.3" x2="10" y2="26" stroke="#6c63ff" stroke-width="1.2" stroke-linecap="round" opacity=".6"/>
+        </svg>
+        <span class="logo__text">TechRecruit<span> AI</span></span>
+      </a>
+      <span class="badge-ai" aria-label="Powered by AI">Powered by AI</span>
+    </div>
+  </nav>
+
+  <!-- =========================================================  CONTEÚDO PRINCIPAL  ========================================================= -->
+  <div class="container" style="padding-top:8px;">
+
+    <!-- Título da candidatura -->
+    <div class="candidatura-hero">
+      <h1 class="candidatura-hero__title">
+        <span class="highlight">Candidatura</span>
+      </h1>
+      <p class="candidatura-hero__sub">Preencha o formulário abaixo. Nossa IA analisa seu perfil em segundos.</p>
+    </div>
+
+    <!-- Card: resumo da vaga -->
+    <div class="job-summary" id="job-summary" aria-label="Vaga selecionada">
+      <div class="job-summary__icon" aria-hidden="true">💼</div>
+      <div class="job-summary__info">
+        <h2 class="job-summary__title" id="job-titulo">Carregando...</h2>
+        <div class="job-summary__meta">
+          <span class="job-summary__meta-item" id="job-dept"></span>
+          <span class="job-summary__meta-item" id="job-nivel"></span>
+          <span class="job-summary__meta-item" id="job-modal"></span>
+        </div>
+      </div>
+      <a href="index.html" class="back-btn" aria-label="Voltar para lista de vagas">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
+        Ver vagas
+      </a>
+    </div>
+
+    <!-- =====================================================  CARD FORMULÁRIO  ===================================================== -->
+    <div class="form-card" aria-label="Formulário de candidatura">
+
+      <!-- Barra de progresso -->
+      <div class="progress-header" id="progress-header" aria-label="Progresso do formulário">
+        <div class="progress-steps" role="list">
+          <div class="progress-step" role="listitem">
+            <div class="progress-step__circle active" id="step-circle-1" aria-current="step">1</div>
+            <span class="progress-step__label active" id="step-label-1">Dados Pessoais</span>
+          </div>
+          <div class="progress-connector" id="connector-1" aria-hidden="true"></div>
+          <div class="progress-step" role="listitem">
+            <div class="progress-step__circle" id="step-circle-2">2</div>
+            <span class="progress-step__label" id="step-label-2">Perfil</span>
+          </div>
+        </div>
+        <div class="progress-bar-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50" aria-label="Progresso">
+          <div class="progress-bar-fill" id="progress-fill" style="width:50%"></div>
+        </div>
+      </div>
+
+      <div class="form-body">
+
+        <!-- ============================================================  ETAPA 1  ============================================================ -->
+        <div class="form-step active" id="step-1" aria-labelledby="step1-title">
+          <h2 class="form-step__title" id="step1-title">Dados Pessoais</h2>
+          <p class="form-step__desc">Seus dados de contato para o processo seletivo.</p>
+
+          <div class="field" id="field-nome">
+            <label for="nome">Nome completo <span class="required" aria-hidden="true">*</span></label>
+            <input type="text" id="nome" name="nome" placeholder="Seu nome completo" autocomplete="name" maxlength="120" aria-required="true"/>
+            <span class="field-error" id="err-nome" role="alert">Informe seu nome completo.</span>
+          </div>
+
+          <div class="field" id="field-email">
+            <label for="email">E-mail profissional <span class="required" aria-hidden="true">*</span></label>
+            <input type="email" id="email" name="email" placeholder="voce@empresa.com" autocomplete="email" maxlength="160" inputmode="email" aria-required="true"/>
+            <span class="field-error" id="err-email" role="alert">Informe um e-mail válido.</span>
+          </div>
+
+          <div class="field" id="field-telefone">
+            <label for="telefone">WhatsApp <span class="required" aria-hidden="true">*</span></label>
+            <input type="tel" id="telefone" name="telefone" placeholder="(11) 99999-9999" autocomplete="tel" maxlength="15" inputmode="numeric" aria-required="true"/>
+            <span class="field-error" id="err-telefone" role="alert">Informe um WhatsApp válido com DDD.</span>
+          </div>
+
+          <div class="field" id="field-linkedin">
+            <label for="linkedin">LinkedIn <span class="optional">(opcional)</span></label>
+            <input type="text" id="linkedin" name="linkedin" placeholder="linkedin.com/in/seuperfil" maxlength="200"/>
+            <span class="field-error" id="err-linkedin" role="alert">URL do LinkedIn inválida.</span>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn btn--primary" id="btn-next" onclick="goToStep2()">
+              Próximo
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- ============================================================  ETAPA 2  ============================================================ -->
+        <div class="form-step" id="step-2" aria-labelledby="step2-title">
+          <h2 class="form-step__title" id="step2-title">Perfil Profissional</h2>
+          <p class="form-step__desc">Nos conte sobre sua experiência para uma análise personalizada.</p>
+
+          <!-- Nível de experiência -->
+          <div class="field" id="field-nivel">
+            <label for="nivel_experiencia">Nível de experiência <span class="required" aria-hidden="true">*</span></label>
+            <select id="nivel_experiencia" name="nivel_experiencia" aria-required="true" onchange="atualizarDinamico()">
+              <option value="" disabled selected>Selecione seu nível</option>
+              <option value="Primeiro emprego">Primeiro emprego (sem experiência profissional)</option>
+              <option value="Estágio">Estágio (estudante)</option>
+              <option value="Júnior">Júnior (até 2 anos)</option>
+              <option value="Pleno">Pleno (2 a 5 anos)</option>
+              <option value="Sênior">Sênior (5 a 10 anos)</option>
+              <option value="Especialista/Lead">Especialista/Lead (10+ anos)</option>
+            </select>
+            <span class="field-error" id="err-nivel" role="alert">Selecione seu nível de experiência.</span>
+          </div>
+
+          <!-- Anos de experiência -->
+          <div class="field" id="field-experiencia">
+            <label for="experiencia_anos">Anos de experiência <span class="required" aria-hidden="true">*</span></label>
+            <select id="experiencia_anos" name="experiencia_anos" aria-required="true">
+              <option value="" disabled selected>Selecione</option>
+              <option value="Nenhuma experiência ainda">Nenhuma experiência ainda</option>
+              <option value="Menos de 1 ano">Menos de 1 ano</option>
+              <option value="1 a 3 anos">1 a 3 anos</option>
+              <option value="3 a 5 anos">3 a 5 anos</option>
+              <option value="5 a 10 anos">5 a 10 anos</option>
+              <option value="Mais de 10 anos">Mais de 10 anos</option>
+            </select>
+            <span class="field-error" id="err-experiencia" role="alert">Selecione seus anos de experiência.</span>
+          </div>
+
+          <!-- Modalidade -->
+          <div class="field" id="field-modalidade">
+            <label id="modalidade-label">Modalidade preferida <span class="required" aria-hidden="true">*</span></label>
+            <div class="radio-group" role="radiogroup" aria-labelledby="modalidade-label">
+              <div class="radio-card"><input type="radio" name="modalidade" id="mod-remoto" value="Remoto"/><label for="mod-remoto"><span class="radio-card__icon" aria-hidden="true">🏠</span>Remoto</label></div>
+              <div class="radio-card"><input type="radio" name="modalidade" id="mod-hibrido" value="Híbrido"/><label for="mod-hibrido"><span class="radio-card__icon" aria-hidden="true">🔄</span>Híbrido</label></div>
+              <div class="radio-card"><input type="radio" name="modalidade" id="mod-presencial" value="Presencial"/><label for="mod-presencial"><span class="radio-card__icon" aria-hidden="true">🏢</span>Presencial</label></div>
+            </div>
+            <span class="field-error" id="err-modalidade" role="alert">Selecione a modalidade de trabalho.</span>
+          </div>
+
+          <!-- Pretensão salarial -->
+          <div class="field" id="field-salario">
+            <label for="pretensao_salarial">Pretensão salarial mensal <span class="optional">(opcional)</span></label>
+            <select id="pretensao_salarial" name="pretensao_salarial">
+              <option value="Prefiro não informar">Prefiro não informar</option>
+              <option value="Primeiro emprego / A combinar">Primeiro emprego / A combinar</option>
+              <option value="Até R$3.000">Até R$ 3.000</option>
+              <option value="R$3.000-5.000">R$ 3.000 – 5.000</option>
+              <option value="R$5.000-8.000">R$ 5.000 – 8.000</option>
+              <option value="R$8.000-12.000">R$ 8.000 – 12.000</option>
+              <option value="R$12.000-18.000">R$ 12.000 – 18.000</option>
+              <option value="Acima de R$18.000">Acima de R$ 18.000</option>
+            </select>
+          </div>
+
+          <!-- Nível de inglês -->
+          <div class="field" id="field-ingles">
+            <label for="nivel_ingles">Nível de inglês <span class="required" aria-hidden="true">*</span></label>
+            <select id="nivel_ingles" name="nivel_ingles" aria-required="true">
+              <option value="" disabled selected>Selecione</option>
+              <option value="Nenhum">Nenhum</option>
+              <option value="Básico">Básico</option>
+              <option value="Intermediário">Intermediário</option>
+              <option value="Avançado">Avançado</option>
+              <option value="Fluente">Fluente</option>
+            </select>
+            <span class="field-error" id="err-ingles" role="alert">Selecione seu nível de inglês.</span>
+          </div>
+
+          <!-- Área de atuação -->
+          <div class="field" id="field-area">
+            <label for="area_atuacao">Área de atuação <span class="required" aria-hidden="true">*</span></label>
+            <select id="area_atuacao" name="area_atuacao" aria-required="true" onchange="atualizarPerguntas()">
+              <option value="" disabled selected>Selecione sua área</option>
+              <option value="Tecnologia">Tecnologia</option>
+              <option value="Design">Design</option>
+              <option value="Marketing">Marketing</option>
+              <option value="Comercial/Vendas">Comercial / Vendas</option>
+              <option value="RH">RH</option>
+              <option value="Financeiro">Financeiro</option>
+              <option value="Operações">Operações</option>
+              <option value="Outro">Outro</option>
+            </select>
+            <span class="field-error" id="err-area" role="alert">Selecione sua área de atuação.</span>
+          </div>
+
+          <!-- Resumo profissional -->
+          <div class="field" id="field-resumo">
+            <label for="resumo_texto">
+              <span id="resumo-label-text">Conte sua história profissional</span>
+              <span class="required" aria-hidden="true"> *</span>
+            </label>
+            <textarea
+              id="resumo_texto" name="resumo_texto"
+              rows="5" maxlength="3000"
+              aria-required="true" aria-describedby="char-counter resumo-hint"
+              placeholder="Descreva suas principais experiências, projetos e conquistas. Quanto mais detalhado, melhor nossa IA avalia seu perfil..."
+              oninput="updateCharCounter()"
+            ></textarea>
+            <div class="char-counter" id="char-counter" aria-live="polite">0 / 3000 caracteres · mínimo 80</div>
+            <div class="char-hint" id="resumo-hint">💡 <strong>Dica:</strong> Mencione tecnologias, projetos e resultados concretos para uma análise mais precisa.</div>
+            <span class="field-error" id="err-resumo" role="alert">Descreva seu perfil (mínimo necessário não atingido).</span>
+          </div>
+
+          <!-- Upload de currículo -->
+          <div class="field" id="field-curriculo">
+            <label>
+              Currículo (PDF)
+              <span id="upload-badge" class="badge-rec">Recomendado</span>
+            </label>
+            <div class="upload-zone" id="upload-zone" role="button" tabindex="0" aria-label="Área de upload do currículo PDF"
+                 ondragover="handleDragOver(event)" ondragleave="handleDragLeave()" ondrop="handleDrop(event)">
+              <input type="file" id="curriculo_file" accept=".pdf" onchange="handleFileSelect(event)" aria-label="Selecionar PDF do currículo"/>
+              <span class="upload-icon" aria-hidden="true">📄</span>
+              <div class="upload-text">
+                <strong>Arraste seu PDF aqui</strong> ou clique para selecionar
+                <small>Apenas PDF · Máximo 5 MB</small>
+              </div>
+            </div>
+            <div class="upload-preview" id="upload-preview" role="status" aria-live="polite">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              <span class="upload-preview__name" id="upload-filename"></span>
+              <button type="button" class="upload-remove" onclick="removeFile()" aria-label="Remover arquivo">✕</button>
+            </div>
+            <span class="field-error" id="err-curriculo" role="alert">Arquivo inválido ou maior que 5 MB.</span>
+          </div>
+
+          <!-- Perguntas Comportamentais -->
+          <div class="behavioral-section" id="behavioral-section">
+            <h3 class="behavioral-section__title">Conte-nos mais sobre você</h3>
+            <p class="behavioral-section__sub" id="behavioral-sub">Respostas honestas e específicas nos ajudam a fazer uma análise mais precisa do seu perfil.</p>
+
+            <!-- Q1 -->
+            <div class="behavioral-q" id="bq-1">
+              <label for="comportamental_1">
+                <span class="q-number" aria-hidden="true">1</span>
+                <span id="bq1-text">Selecione a área de atuação para ver as perguntas personalizadas.</span>
+                <span id="bq1-req" class="required" aria-hidden="true"> *</span>
+              </label>
+              <textarea id="comportamental_1" name="comportamental_1" rows="4" maxlength="2000" aria-required="true" aria-describedby="bq1-counter"
+                placeholder="Selecione a área de atuação acima para ver a pergunta personalizada..."
+                oninput="updateBehavCounter(1)"></textarea>
+              <div class="char-counter" id="bq1-counter" aria-live="polite">0 / 2000 · mínimo 80</div>
+              <span class="field-error" id="err-bq1" role="alert">Responda a pergunta (mínimo não atingido).</span>
+            </div>
+
+            <!-- Q2 -->
+            <div class="behavioral-q" id="bq-2">
+              <label for="comportamental_2">
+                <span class="q-number" aria-hidden="true">2</span>
+                <span id="bq2-text">Selecione a área de atuação para ver as perguntas personalizadas.</span>
+                <span id="bq2-req" class="required" aria-hidden="true"> *</span>
+              </label>
+              <textarea id="comportamental_2" name="comportamental_2" rows="4" maxlength="2000" aria-required="true" aria-describedby="bq2-counter"
+                placeholder="Selecione a área de atuação acima para ver a pergunta personalizada..."
+                oninput="updateBehavCounter(2)"></textarea>
+              <div class="char-counter" id="bq2-counter" aria-live="polite">0 / 2000 · mínimo 80</div>
+              <span class="field-error" id="err-bq2" role="alert">Responda a pergunta (mínimo não atingido).</span>
+            </div>
+
+            <!-- Q3 -->
+            <div class="behavioral-q" id="bq-3">
+              <label for="comportamental_3">
+                <span class="q-number" aria-hidden="true">3</span>
+                <span id="bq3-text">Selecione a área de atuação para ver as perguntas personalizadas.</span>
+                <span id="bq3-req" class="required" aria-hidden="true"> *</span>
+              </label>
+              <textarea id="comportamental_3" name="comportamental_3" rows="4" maxlength="2000" aria-required="true" aria-describedby="bq3-counter"
+                placeholder="Selecione a área de atuação acima para ver a pergunta personalizada..."
+                oninput="updateBehavCounter(3)"></textarea>
+              <div class="char-counter" id="bq3-counter" aria-live="polite">0 / 2000 · mínimo 80</div>
+              <span class="field-error" id="err-bq3" role="alert">Responda a pergunta (mínimo não atingido).</span>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn btn--ghost" onclick="goToStep1()" aria-label="Voltar para etapa 1">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
+              Voltar
+            </button>
+            <button type="button" class="btn btn--primary" id="btn-submit" onclick="submitForm()">
+              Enviar candidatura
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 2 11 13"/><path d="m22 2-7 20-4-9-9-4 20-7z"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- ============================================================  SUCESSO  ============================================================ -->
+        <div id="screen-success" role="status" aria-live="polite">
+          <div class="success-circle" aria-hidden="true">
+            <svg width="38" height="38" viewBox="0 0 38 38" fill="none">
+              <polyline class="success-check" points="8,20 16,28 30,12" stroke="#22c55e" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+            </svg>
+          </div>
+          <h2>Candidatura enviada! 🎉</h2>
+          <p>Nossa IA já está analisando seu perfil. Você receberá um retorno via <strong>WhatsApp</strong> em até <strong>24 horas</strong>.</p>
+          <a href="index.html" class="btn btn--ghost" style="margin:0 auto; display:inline-flex;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
+            Ver outras vagas
+          </a>
+        </div>
+
+        <!-- ============================================================  ERRO  ============================================================ -->
+        <div id="screen-error" role="alert" aria-live="assertive">
+          <div class="error-icon" aria-hidden="true">⚠️</div>
+          <h2>Ops! Algo deu errado</h2>
+          <p id="error-msg">Não conseguimos enviar sua candidatura. Por favor, tente novamente em instantes.</p>
+          <button type="button" class="btn btn--ghost" onclick="retrySubmit()" style="margin:0 auto;">Tentar novamente</button>
+        </div>
+
+      </div><!-- /form-body -->
+    </div><!-- /form-card -->
+  </div><!-- /container -->
+
+  <!-- Footer -->
+  <footer style="border-top:1px solid var(--border); padding:22px 0; text-align:center; margin-top:16px;">
+    <p style="font-size:.82rem; color:var(--text-sub);">© 2025 TechRecruit AI — Processo seletivo inteligente</p>
+  </footer>
+
+  <!-- =========================================================  JAVASCRIPT  ========================================================= -->
+  <script>
+    /* ----------------------------------------------------------
+       Parâmetros da vaga lidos da URL
+    ---------------------------------------------------------- */
+    (function preencherResumoVaga() {
+      const p = new URLSearchParams(window.location.search);
+      const titulo   = p.get('titulo')       || 'Vaga não especificada';
+      const dept     = p.get('departamento') || '';
+      const nivel    = p.get('senioridade')  || '';
+      const modal    = p.get('modalidade')   || '';
+
+      document.getElementById('job-titulo').textContent = titulo;
+      document.getElementById('job-dept').textContent   = dept;
+      document.getElementById('job-nivel').textContent  = nivel;
+      document.getElementById('job-modal').textContent  = modal;
+
+      document.title = 'TechRecruit AI — ' + titulo;
+    })();
+
+    /* ----------------------------------------------------------
+       Banco de perguntas comportamentais por área
+    ---------------------------------------------------------- */
+    const PERGUNTAS = {
+      '': [
+        { l:'Descreva uma situação profissional desafiadora que você enfrentou e como a resolveu.',
+          p:'Descreva a situação, o desafio, as ações que você tomou e qual foi o resultado...' },
+        { l:'Como você lida com feedbacks negativos ou críticas ao seu trabalho? Dê um exemplo real.',
+          p:'Conte sobre uma situação específica em que recebeu feedback difícil e o que aprendeu...' },
+        { l:'Descreva seu maior projeto ou conquista profissional até hoje.',
+          p:'Qual foi seu papel, quais obstáculos enfrentou e qual foi o impacto final...' }
+      ],
+      'Tecnologia': [
+        { l:'Descreva um projeto técnico (pessoal, acadêmico ou profissional) que você desenvolveu e como funcionou.',
+          p:'Explique o projeto, tecnologias utilizadas, desafios técnicos e o que você aprendeu...' },
+        { l:'Como você aprende novas tecnologias? Dê um exemplo recente de algo que aprendeu por conta própria.',
+          p:'Mencione a tecnologia, por que quis aprender, como estudou e como aplicou...' },
+        { l:'Você já enfrentou um bug ou problema técnico difícil? Como foi o processo de resolução?',
+          p:'Descreva o problema, sua abordagem de investigação e a solução encontrada...' }
+      ],
+      'Design': [
+        { l:'Descreva um projeto de design que você criou ou participou. Qual foi seu processo criativo?',
+          p:'Conte sobre o briefing, as decisões de design, ferramentas usadas e como o projeto evoluiu...' },
+        { l:'Como você lida com feedback sobre seu trabalho criativo? Dê um exemplo.',
+          p:'Descreva uma situação em que seu trabalho foi questionado e como você respondeu ou adaptou...' },
+        { l:'Como você equilibra estética e funcionalidade em um projeto?',
+          p:'Dê um exemplo concreto de decisões de design que balancearam beleza e usabilidade...' }
+      ],
+      'Marketing': [
+        { l:'Descreva uma campanha ou ação de marketing que você criou ou participou. Qual foi o resultado?',
+          p:'Explique o objetivo, a estratégia, as métricas acompanhadas e o resultado final...' },
+        { l:'Como você analisa o desempenho de uma campanha e o que faz quando os resultados não são os esperados?',
+          p:'Conte sobre uma campanha que não performou como esperado e quais ajustes você fez...' },
+        { l:'Como você se mantém atualizado sobre tendências de marketing e comportamento do consumidor?',
+          p:'Mencione fontes que acompanha, experimentos que fez e como aplica o conhecimento...' }
+      ],
+      'Comercial/Vendas': [
+        { l:'Descreva uma situação em que você precisou convencer alguém de algo. Como foi?',
+          p:'Conte o contexto, qual era o objetivo, sua abordagem e qual foi o resultado...' },
+        { l:'Como você lida com uma negativa ou rejeição? Dê um exemplo real.',
+          p:'Descreva a situação de rejeição, como você reagiu e o que aprendeu...' },
+        { l:'Qual foi seu maior resultado em vendas ou negociação até hoje?',
+          p:'Mencione o contexto, sua estratégia e o resultado alcançado com métricas se possível...' }
+      ],
+      'RH': [
+        { l:'Descreva uma situação em que você precisou lidar com um conflito entre pessoas. Como resolveu?',
+          p:'Conte o contexto do conflito, como você identificou o problema, sua abordagem e o desfecho...' },
+        { l:'Como você identifica o potencial de uma pessoa além do currículo?',
+          p:'Descreva sua abordagem para avaliar candidatos e comportamentos que você observa...' },
+        { l:'Qual experiência você tem com recrutamento, treinamento ou gestão de pessoas?',
+          p:'Descreva seu histórico na área, processos que participou e resultados...' }
+      ],
+      'Financeiro': [
+        { l:'Descreva uma análise financeira ou de dados que você realizou. Qual foi o impacto?',
+          p:'Explique o contexto, qual análise você fez, as ferramentas utilizadas e o impacto do resultado...' },
+        { l:'Como você lida com prazos apertados e múltiplas demandas simultâneas?',
+          p:'Dê um exemplo real de quando você gerenciou múltiplas prioridades com deadline próximo...' },
+        { l:'Descreva uma situação em que identificou um risco ou oportunidade financeira.',
+          p:'Conte o contexto, o que você identificou, como comunicou e qual foi o impacto...' }
+      ],
+      'Operações': [
+        { l:'Descreva uma situação em que você precisou melhorar ou otimizar um processo. Como fez?',
+          p:'Conte qual era o processo, quais problemas existiam, o que você propôs e qual foi o resultado...' },
+        { l:'Como você prioriza tarefas quando tem múltiplas demandas ao mesmo tempo?',
+          p:'Descreva seu método de priorização, ferramentas que usa e um exemplo concreto...' },
+        { l:'Conte sobre um momento em que seu trabalho impactou diretamente o resultado de uma equipe ou projeto.',
+          p:'Explique o contexto, sua contribuição específica e como ela influenciou o resultado final...' }
+      ],
+      'Outro': [
+        { l:'Descreva uma situação em que você precisou melhorar ou otimizar um processo. Como fez?',
+          p:'Conte qual era o processo, quais problemas existiam, o que você propôs e qual foi o resultado...' },
+        { l:'Como você prioriza tarefas quando tem múltiplas demandas ao mesmo tempo?',
+          p:'Descreva seu método de priorização, ferramentas que usa e um exemplo concreto...' },
+        { l:'Conte sobre um momento em que seu trabalho impactou diretamente o resultado de uma equipe ou projeto.',
+          p:'Explique o contexto, sua contribuição específica e como ela influenciou o resultado final...' }
+      ]
+    };
+
+    /* ----------------------------------------------------------
+       Estado global
+    ---------------------------------------------------------- */
+    const INICIANTE = ['Primeiro emprego', 'Estágio'];
+    let uploadedFileBase64 = '';
+    let uploadedFileName   = '';
+    let resumoMinimo       = 80;
+    let behavMinimo        = 80;
+    let bq3Opcional        = false;
+
+    /* ----------------------------------------------------------
+       Máscara WhatsApp
+    ---------------------------------------------------------- */
+    document.getElementById('telefone').addEventListener('input', function(e) {
+      let v = e.target.value.replace(/\D/g,'').slice(0,11);
+      if (v.length > 6)      v = '(' + v.slice(0,2) + ') ' + v.slice(2,7) + '-' + v.slice(7);
+      else if (v.length > 2) v = '(' + v.slice(0,2) + ') ' + v.slice(2);
+      else if (v.length > 0) v = '(' + v;
+      e.target.value = v;
+    });
+
+    /* ----------------------------------------------------------
+       Atualiza conteúdo dinâmico quando nível muda
+    ---------------------------------------------------------- */
+    function atualizarDinamico() {
+      const nivel = document.getElementById('nivel_experiencia').value;
+      const isIniciante = INICIANTE.includes(nivel);
+
+      resumoMinimo = isIniciante ? 80 : 100;
+      behavMinimo  = isIniciante ? 50 : 80;
+      bq3Opcional  = isIniciante;
+
+      /* Placeholder do resumo */
+      const ta = document.getElementById('resumo_texto');
+      ta.placeholder = isIniciante
+        ? 'Fale sobre seus estudos, projetos pessoais, cursos, voluntariado ou qualquer experiência que demonstre seu potencial. Não precisa ter experiência formal!'
+        : 'Descreva suas principais experiências, projetos, tecnologias que domina e conquistas relevantes. Quanto mais detalhado, melhor nossa IA consegue avaliar seu perfil...';
+
+      /* Mínimo do contador de resumo */
+      updateCharCounter();
+
+      /* Badge do upload */
+      const badge = document.getElementById('upload-badge');
+      badge.textContent = isIniciante ? 'Opcional' : 'Recomendado';
+      badge.className   = isIniciante ? 'badge-opt' : 'badge-rec';
+
+      /* Subtítulo das comportamentais */
+      document.getElementById('behavioral-sub').textContent = isIniciante
+        ? 'Não se preocupe com experiência formal. Queremos conhecer seu potencial, curiosidade e forma de pensar.'
+        : 'Respostas honestas e específicas nos ajudam a fazer uma análise mais precisa do seu perfil.';
+
+      /* Atualiza Q3 (opcional para iniciantes) */
+      atualizarQ3Opcional();
+      /* Regera contadores */
+      [1,2,3].forEach(n => updateBehavCounter(n));
+    }
+
+    /* ----------------------------------------------------------
+       Atualiza as perguntas conforme área selecionada
+    ---------------------------------------------------------- */
+    function atualizarPerguntas() {
+      const area = document.getElementById('area_atuacao').value;
+      const perguntas = PERGUNTAS[area] || PERGUNTAS[''];
+
+      [1,2,3].forEach((n, i) => {
+        const p    = perguntas[i];
+        const el   = document.getElementById('bq-' + n);
+        const txt  = document.getElementById('bq' + n + '-text');
+        const ta   = document.getElementById('comportamental_' + n);
+
+        /* Animação de saída */
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(6px)';
+
+        setTimeout(() => {
+          txt.textContent  = p.l;
+          ta.placeholder   = p.p;
+          el.style.opacity = '1';
+          el.style.transform = 'translateY(0)';
+        }, 80 * i);
+      });
+
+      atualizarQ3Opcional();
+    }
+
+    function atualizarQ3Opcional() {
+      const req3 = document.getElementById('bq3-req');
+      req3.textContent = bq3Opcional ? ' (opcional)' : ' *';
+      req3.className   = bq3Opcional ? 'optional' : 'required';
+    }
+
+    /* ----------------------------------------------------------
+       Contador resumo profissional
+    ---------------------------------------------------------- */
+    function updateCharCounter() {
+      const ta  = document.getElementById('resumo_texto');
+      const el  = document.getElementById('char-counter');
+      const len = ta.value.length;
+      el.textContent = len + ' / 3000' + (len < resumoMinimo ? ' · mínimo ' + resumoMinimo : '');
+      el.className = 'char-counter';
+      if (len >= resumoMinimo) el.classList.add('ok');
+      if (len > 2700)          el.classList.add('warn');
+    }
+
+    /* ----------------------------------------------------------
+       Contador comportamentais
+    ---------------------------------------------------------- */
+    function updateBehavCounter(n) {
+      const ta  = document.getElementById('comportamental_' + n);
+      const el  = document.getElementById('bq' + n + '-counter');
+      const len = ta.value.length;
+      const min = (n === 3 && bq3Opcional) ? 0 : behavMinimo;
+      el.textContent = len + ' / 2000' + (min > 0 && len < min ? ' · mínimo ' + min : '');
+      el.className = 'char-counter';
+      if (min === 0 || len >= min) el.classList.add('ok');
+      if (len > 1800)              el.classList.add('warn');
+    }
+
+    /* ----------------------------------------------------------
+       Upload de currículo
+    ---------------------------------------------------------- */
+    function handleDragOver(e) { e.preventDefault(); document.getElementById('upload-zone').classList.add('dragover'); }
+    function handleDragLeave()  { document.getElementById('upload-zone').classList.remove('dragover'); }
+    function handleDrop(e)      { e.preventDefault(); handleDragLeave(); const f = e.dataTransfer.files[0]; if(f) processFile(f); }
+    function handleFileSelect(e){ const f = e.target.files[0]; if(f) processFile(f); }
+
+    function processFile(file) {
+      const errEl = document.getElementById('err-curriculo');
+      setError('field-curriculo','err-curriculo',false);
+      if (file.type !== 'application/pdf') {
+        errEl.textContent = 'Apenas arquivos PDF são aceitos.';
+        setError('field-curriculo','err-curriculo',true); return;
+      }
+      if (file.size > 5*1024*1024) {
+        errEl.textContent = 'Arquivo maior que 5 MB. Selecione um arquivo menor.';
+        setError('field-curriculo','err-curriculo',true); return;
+      }
+      const reader = new FileReader();
+      reader.onload = ev => {
+        uploadedFileBase64 = ev.target.result.split(',')[1];
+        uploadedFileName   = file.name;
+        document.getElementById('upload-filename').textContent = file.name;
+        document.getElementById('upload-preview').classList.add('visible');
+        document.getElementById('upload-zone').classList.add('has-file');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function removeFile() {
+      uploadedFileBase64 = ''; uploadedFileName = '';
+      document.getElementById('curriculo_file').value = '';
+      document.getElementById('upload-preview').classList.remove('visible');
+      document.getElementById('upload-zone').classList.remove('has-file');
+    }
+
+    /* ----------------------------------------------------------
+       Helpers de validação
+    ---------------------------------------------------------- */
+    function setError(fieldId, errId, hasError) {
+      document.getElementById(fieldId).classList.toggle('has-error', hasError);
+      document.getElementById(errId).style.display = hasError ? 'block' : 'none';
+      return !hasError;
+    }
+
+    function setBehavError(n, hasError) {
+      document.getElementById('bq-'+n).classList.toggle('has-error', hasError);
+      document.getElementById('err-bq'+n).style.display = hasError ? 'block' : 'none';
+      return !hasError;
+    }
+
+    function isEmail(v) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
+    function isPhone(v) { return v.replace(/\D/g,'').length >= 10; }
+    function isLinkedin(v) { if (!v.trim()) return true; return v.toLowerCase().includes('linkedin') || v.startsWith('http'); }
+
+    /* ----------------------------------------------------------
+       Validação etapa 1
+    ---------------------------------------------------------- */
+    function validateStep1() {
+      return [
+        setError('field-nome',     'err-nome',     document.getElementById('nome').value.trim().length < 2),
+        setError('field-email',    'err-email',    !isEmail(document.getElementById('email').value.trim())),
+        setError('field-telefone', 'err-telefone', !isPhone(document.getElementById('telefone').value)),
+        setError('field-linkedin', 'err-linkedin', !isLinkedin(document.getElementById('linkedin').value)),
+      ].every(Boolean);
+    }
+
+    /* ----------------------------------------------------------
+       Validação etapa 2
+    ---------------------------------------------------------- */
+    function validateStep2() {
+      const nivel  = document.getElementById('nivel_experiencia').value;
+      const exp    = document.getElementById('experiencia_anos').value;
+      const modal  = document.querySelector('input[name="modalidade"]:checked');
+      const ingles = document.getElementById('nivel_ingles').value;
+      const area   = document.getElementById('area_atuacao').value;
+      const resumo = document.getElementById('resumo_texto').value.trim();
+      const bq1    = document.getElementById('comportamental_1').value.trim();
+      const bq2    = document.getElementById('comportamental_2').value.trim();
+      const bq3    = document.getElementById('comportamental_3').value.trim();
+
+      const ok = [
+        setError('field-nivel',       'err-nivel',       !nivel),
+        setError('field-experiencia', 'err-experiencia', !exp),
+        setError('field-modalidade',  'err-modalidade',  !modal),
+        setError('field-ingles',      'err-ingles',      !ingles),
+        setError('field-area',        'err-area',        !area),
+        setError('field-resumo',      'err-resumo',      resumo.length < resumoMinimo),
+        setBehavError(1, bq1.length < behavMinimo),
+        setBehavError(2, bq2.length < behavMinimo),
+        setBehavError(3, !bq3Opcional && bq3.length < behavMinimo),
+      ];
+      return ok.every(Boolean);
+    }
+
+    /* ----------------------------------------------------------
+       Navegação entre etapas
+    ---------------------------------------------------------- */
+    function goToStep2() {
+      if (!validateStep1()) return;
+      document.getElementById('step-1').classList.remove('active');
+      document.getElementById('step-2').classList.add('active');
+
+      const c1 = document.getElementById('step-circle-1');
+      c1.classList.remove('active'); c1.classList.add('done'); c1.textContent = '✓';
+      c1.removeAttribute('aria-current');
+      document.getElementById('step-circle-2').classList.add('active');
+      document.getElementById('step-circle-2').setAttribute('aria-current','step');
+      document.getElementById('step-label-1').classList.remove('active');
+      document.getElementById('step-label-2').classList.add('active');
+      document.getElementById('connector-1').classList.add('done');
+
+      const fill = document.getElementById('progress-fill');
+      fill.style.width = '100%';
+      fill.closest('[role="progressbar"]').setAttribute('aria-valuenow','100');
+
+      document.querySelector('.form-card').scrollIntoView({ behavior:'smooth', block:'start' });
+    }
+
+    function goToStep1() {
+      document.getElementById('step-2').classList.remove('active');
+      document.getElementById('step-1').classList.add('active');
+
+      const c1 = document.getElementById('step-circle-1');
+      c1.classList.add('active'); c1.classList.remove('done'); c1.textContent = '1';
+      c1.setAttribute('aria-current','step');
+      document.getElementById('step-circle-2').classList.remove('active');
+      document.getElementById('step-circle-2').removeAttribute('aria-current');
+      document.getElementById('step-label-1').classList.add('active');
+      document.getElementById('step-label-2').classList.remove('active');
+      document.getElementById('connector-1').classList.remove('done');
+
+      const fill = document.getElementById('progress-fill');
+      fill.style.width = '50%';
+      fill.closest('[role="progressbar"]').setAttribute('aria-valuenow','50');
+
+      document.querySelector('.form-card').scrollIntoView({ behavior:'smooth', block:'start' });
+    }
+
+    /* ----------------------------------------------------------
+       Monta payload JSON
+    ---------------------------------------------------------- */
+    function buildPayload() {
+      const p = new URLSearchParams(window.location.search);
+      return {
+        vaga_id:           p.get('vaga_id') || '',
+        nome:              document.getElementById('nome').value.trim(),
+        email:             document.getElementById('email').value.trim().toLowerCase(),
+        telefone:          document.getElementById('telefone').value.replace(/\D/g,''),
+        linkedin:          document.getElementById('linkedin').value.trim(),
+        nivel_experiencia: document.getElementById('nivel_experiencia').value,
+        area_atuacao:      document.getElementById('area_atuacao').value,
+        experiencia_anos:  document.getElementById('experiencia_anos').value,
+        modalidade:        (document.querySelector('input[name="modalidade"]:checked') || {}).value || '',
+        pretensao_salarial:document.getElementById('pretensao_salarial').value || 'Prefiro não informar',
+        nivel_ingles:      document.getElementById('nivel_ingles').value,
+        resumo_texto:      document.getElementById('resumo_texto').value.trim(),
+        comportamental_1:  document.getElementById('comportamental_1').value.trim(),
+        comportamental_2:  document.getElementById('comportamental_2').value.trim(),
+        comportamental_3:  document.getElementById('comportamental_3').value.trim(),
+        curriculo_base64:  uploadedFileBase64,
+        curriculo_nome:    uploadedFileName,
+        origem:            'landing_page'
+      };
+    }
+
+    /* ----------------------------------------------------------
+       Submissão
+    ---------------------------------------------------------- */
+    async function submitForm() {
+      if (!validateStep2()) return;
+      const btn = document.getElementById('btn-submit');
+      btn.disabled = true;
+      btn.innerHTML = '<div class="spinner" aria-hidden="true"></div> Nossa IA está analisando seu perfil...';
+
+      await new Promise(r => setTimeout(r, 2000));
+
+      try {
+        const res = await fetch('https://webhook.danns.com.br/webhook/ats-candidato', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(buildPayload())
+        });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        showSuccess();
+      } catch(err) {
+        btn.disabled = false;
+        btn.innerHTML = 'Enviar candidatura <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 2 11 13"/><path d="m22 2-7 20-4-9-9-4 20-7z"/></svg>';
+        showError(err);
+      }
+    }
+
+    function showSuccess() {
+      document.getElementById('step-2').style.display          = 'none';
+      document.getElementById('screen-success').style.display  = 'block';
+      document.getElementById('progress-header').style.display = 'none';
+      document.querySelector('.form-card').scrollIntoView({ behavior:'smooth', block:'start' });
+    }
+
+    function showError(err) {
+      document.getElementById('step-2').style.display       = 'none';
+      document.getElementById('screen-error').style.display = 'block';
+      if (err && err.message) document.getElementById('error-msg').textContent =
+        'Erro: ' + err.message + '. Tente novamente.';
+    }
+
+    function retrySubmit() {
+      document.getElementById('screen-error').style.display = 'none';
+      document.getElementById('step-2').style.display       = '';
+      document.getElementById('step-2').classList.add('active');
+    }
+
+    /* ----------------------------------------------------------
+       Limpa erros ao corrigir campos
+    ---------------------------------------------------------- */
+    (function bindClearErrors() {
+      const campos = [
+        ['nome','field-nome','err-nome'],
+        ['email','field-email','err-email'],
+        ['telefone','field-telefone','err-telefone'],
+        ['linkedin','field-linkedin','err-linkedin'],
+        ['nivel_experiencia','field-nivel','err-nivel'],
+        ['experiencia_anos','field-experiencia','err-experiencia'],
+        ['nivel_ingles','field-ingles','err-ingles'],
+        ['area_atuacao','field-area','err-area'],
+        ['resumo_texto','field-resumo','err-resumo'],
+      ];
+      campos.forEach(([id,fId,eId]) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.addEventListener(el.tagName==='SELECT'?'change':'input', () => setError(fId,eId,false));
+      });
+      document.querySelectorAll('input[name="modalidade"]').forEach(r =>
+        r.addEventListener('change', () => setError('field-modalidade','err-modalidade',false))
+      );
+      [1,2,3].forEach(n => {
+        const ta = document.getElementById('comportamental_'+n);
+        if (ta) ta.addEventListener('input', () => setBehavError(n, false));
+      });
+    })();
+
+  </script>
+
+</body>
+</html>

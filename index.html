@@ -1,37 +1,25 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="TechRecruit AI — Candidate-se em menos de 3 minutos. Nossa IA analisa seu perfil e te dá retorno em até 24h." />
-  <title>TechRecruit AI — Cadastro de Candidatos</title>
-
-  <!-- Google Fonts: Inter -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
-
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="description" content="TechRecruit AI — Encontre sua próxima oportunidade. Vagas para todos os níveis de carreira."/>
+  <title>TechRecruit AI — Vagas Abertas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
   <style>
-    /* =========================================================
-       RESET & VARIÁVEIS GLOBAIS
-    ========================================================= */
-    *, *::before, *::after {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
+    /* =========================================================  RESET & VARIÁVEIS  ========================================================= */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
       --bg:          #0a0a0f;
       --bg-card:     #13131a;
       --bg-input:    #1a1a24;
       --border:      #2a2a3a;
-      --border-focus:#6c63ff;
       --accent:      #6c63ff;
-      --accent-glow: rgba(108, 99, 255, 0.35);
+      --accent-glow: rgba(108,99,255,.35);
       --accent-light:#8b85ff;
       --success:     #22c55e;
-      --error:       #ef4444;
       --text:        #f0f0f8;
       --text-muted:  #8888aa;
       --text-sub:    #5a5a7a;
@@ -39,9 +27,7 @@
       --radius-sm:   8px;
       --shadow:      0 8px 32px rgba(0,0,0,.55);
     }
-
     html { scroll-behavior: smooth; }
-
     body {
       font-family: 'Inter', system-ui, sans-serif;
       background: var(--bg);
@@ -51,1046 +37,296 @@
       -webkit-font-smoothing: antialiased;
     }
 
-    /* =========================================================
-       UTILITÁRIOS
-    ========================================================= */
-    .container {
-      width: 100%;
-      max-width: 680px;
-      margin: 0 auto;
-      padding: 0 20px;
-    }
+    /* =========================================================  ANIMAÇÕES  ========================================================= */
+    @keyframes fadeInUp  { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:translateY(0); } }
+    @keyframes fadeIn    { from { opacity:0; } to { opacity:1; } }
+    @keyframes pulse-ring { 0%,100%{ transform:scale(.9); opacity:.8; } 50%{ transform:scale(1.05); opacity:1; } }
+    @keyframes badge-glow { 0%,100%{ box-shadow:0 0 8px 0 var(--accent-glow); } 50%{ box-shadow:0 0 18px 4px var(--accent-glow); } }
+    @keyframes float     { 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-7px); } }
+    @keyframes shimmer   { 0%{ background-position:-600px 0; } 100%{ background-position:600px 0; } }
 
-    .container--wide {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 0 24px;
-    }
+    /* =========================================================  LAYOUT  ========================================================= */
+    .container { width:100%; max-width:700px; margin:0 auto; padding:0 20px; }
+    .container--wide { max-width:1120px; margin:0 auto; padding:0 24px; }
 
-    /* =========================================================
-       ANIMAÇÕES KEYFRAMES
-    ========================================================= */
-    @keyframes fadeInUp {
-      from { opacity: 0; transform: translateY(28px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to   { opacity: 1; }
-    }
-
-    @keyframes pulse-ring {
-      0%   { transform: scale(.9); opacity: .8; }
-      50%  { transform: scale(1.05); opacity: 1; }
-      100% { transform: scale(.9); opacity: .8; }
-    }
-
-    @keyframes badge-glow {
-      0%, 100% { box-shadow: 0 0 8px 0 var(--accent-glow); }
-      50%       { box-shadow: 0 0 18px 4px var(--accent-glow); }
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    @keyframes check-draw {
-      0%   { stroke-dashoffset: 60; }
-      100% { stroke-dashoffset: 0; }
-    }
-
-    @keyframes circle-scale {
-      0%   { transform: scale(0); opacity: 0; }
-      60%  { transform: scale(1.12); opacity: 1; }
-      100% { transform: scale(1); opacity: 1; }
-    }
-
-    @keyframes float {
-      0%, 100% { transform: translateY(0); }
-      50%       { transform: translateY(-8px); }
-    }
-
-    /* =========================================================
-       NAV / HEADER
-    ========================================================= */
+    /* =========================================================  NAV  ========================================================= */
     .nav {
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      background: rgba(10, 10, 15, .88);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border-bottom: 1px solid var(--border);
-      padding: 14px 0;
+      position:sticky; top:0; z-index:100;
+      background:rgba(10,10,15,.88); backdrop-filter:blur(16px);
+      border-bottom:1px solid var(--border); padding:14px 0;
     }
-
     .nav__inner {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 0 24px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
+      max-width:1120px; margin:0 auto; padding:0 24px;
+      display:flex; align-items:center; justify-content:space-between; gap:16px;
     }
-
-    /* Logo */
-    .logo {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      text-decoration: none;
-    }
-
-    .logo__icon {
-      width: 36px;
-      height: 36px;
-      flex-shrink: 0;
-    }
-
-    .logo__text {
-      font-size: 1.1rem;
-      font-weight: 700;
-      color: var(--text);
-      letter-spacing: -.3px;
-    }
-
-    .logo__text span {
-      color: var(--accent);
-    }
-
-    /* Badge "Powered by AI" */
+    .logo { display:flex; align-items:center; gap:10px; text-decoration:none; }
+    .logo__icon { width:36px; height:36px; flex-shrink:0; }
+    .logo__text { font-size:1.1rem; font-weight:700; color:var(--text); letter-spacing:-.3px; }
+    .logo__text span { color:var(--accent); }
     .badge-ai {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: rgba(108, 99, 255, .15);
-      border: 1px solid rgba(108, 99, 255, .4);
-      color: var(--accent-light);
-      font-size: .72rem;
-      font-weight: 600;
-      letter-spacing: .06em;
-      text-transform: uppercase;
-      padding: 5px 12px;
-      border-radius: 100px;
-      animation: badge-glow 2.4s ease-in-out infinite;
-      white-space: nowrap;
+      display:inline-flex; align-items:center; gap:6px;
+      background:rgba(108,99,255,.15); border:1px solid rgba(108,99,255,.4);
+      color:var(--accent-light); font-size:.72rem; font-weight:600;
+      letter-spacing:.06em; text-transform:uppercase;
+      padding:5px 12px; border-radius:100px;
+      animation:badge-glow 2.4s ease-in-out infinite; white-space:nowrap;
     }
-
     .badge-ai::before {
-      content: '';
-      width: 7px;
-      height: 7px;
-      background: var(--accent);
-      border-radius: 50%;
-      display: block;
-      animation: pulse-ring 1.8s ease-in-out infinite;
+      content:''; width:7px; height:7px; background:var(--accent);
+      border-radius:50%; display:block; animation:pulse-ring 1.8s ease-in-out infinite;
     }
 
-    /* =========================================================
-       HERO SECTION
-    ========================================================= */
+    /* =========================================================  HERO  ========================================================= */
     .hero {
-      padding: 80px 0 56px;
-      text-align: center;
-      animation: fadeInUp .7s ease both;
+      padding:80px 0 64px; text-align:center;
+      animation:fadeInUp .7s ease both;
     }
-
     .hero__eyebrow {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      font-size: .8rem;
-      font-weight: 600;
-      color: var(--text-muted);
-      letter-spacing: .08em;
-      text-transform: uppercase;
-      margin-bottom: 22px;
+      display:inline-flex; align-items:center; gap:8px;
+      font-size:.8rem; font-weight:600; color:var(--text-muted);
+      letter-spacing:.08em; text-transform:uppercase; margin-bottom:22px;
     }
-
     .hero__eyebrow-dot {
-      width: 6px;
-      height: 6px;
-      background: var(--success);
-      border-radius: 50%;
-      display: inline-block;
+      width:6px; height:6px; background:var(--success);
+      border-radius:50%; display:inline-block;
     }
-
     .hero__title {
-      font-size: clamp(2rem, 6vw, 3.4rem);
-      font-weight: 900;
-      letter-spacing: -1.5px;
-      line-height: 1.12;
-      margin-bottom: 20px;
-      color: var(--text);
+      font-size:clamp(2rem,6vw,3.4rem); font-weight:900;
+      letter-spacing:-1.5px; line-height:1.12; margin-bottom:20px;
     }
-
     .hero__title .highlight {
-      background: linear-gradient(135deg, var(--accent) 0%, #a78bfa 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
+      background:linear-gradient(135deg,var(--accent) 0%,#a78bfa 100%);
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
     }
-
     .hero__sub {
-      font-size: 1.1rem;
-      color: var(--text-muted);
-      max-width: 480px;
-      margin: 0 auto 36px;
-      font-weight: 400;
-    }
-
-    /* Pill stats abaixo do subtítulo */
-    .hero__stats {
-      display: flex;
-      justify-content: center;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin-bottom: 48px;
-    }
-
-    .hero__stat {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 100px;
-      padding: 7px 18px;
-      font-size: .82rem;
-      font-weight: 500;
-      color: var(--text-muted);
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-    }
-
-    .hero__stat-icon {
-      font-size: .95rem;
-    }
-
-    /* =========================================================
-       CARD FORMULÁRIO
-    ========================================================= */
-    .form-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      box-shadow: var(--shadow);
-      overflow: hidden;
-      animation: fadeInUp .8s .1s ease both;
-      margin-bottom: 32px;
-    }
-
-    /* --- Progress bar --- */
-    .progress-header {
-      padding: 24px 28px 20px;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .progress-steps {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0;
-      margin-bottom: 16px;
-    }
-
-    .progress-step {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .progress-step__circle {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: .78rem;
-      font-weight: 700;
-      border: 2px solid var(--border);
-      background: var(--bg);
-      color: var(--text-muted);
-      transition: all .35s ease;
-      flex-shrink: 0;
-    }
-
-    .progress-step__circle.active {
-      background: var(--accent);
-      border-color: var(--accent);
-      color: #fff;
-      box-shadow: 0 0 14px var(--accent-glow);
-    }
-
-    .progress-step__circle.done {
-      background: rgba(34,197,94,.15);
-      border-color: var(--success);
-      color: var(--success);
-    }
-
-    .progress-step__label {
-      font-size: .8rem;
-      font-weight: 500;
-      color: var(--text-muted);
-      transition: color .35s ease;
-    }
-
-    .progress-step__label.active {
-      color: var(--text);
-    }
-
-    .progress-connector {
-      flex: 1;
-      height: 2px;
-      background: var(--border);
-      margin: 0 14px;
-      max-width: 80px;
-      transition: background .4s ease;
-    }
-
-    .progress-connector.done {
-      background: var(--success);
-    }
-
-    .progress-bar-track {
-      height: 4px;
-      background: var(--border);
-      border-radius: 99px;
-      overflow: hidden;
-    }
-
-    .progress-bar-fill {
-      height: 100%;
-      background: linear-gradient(90deg, var(--accent), #a78bfa);
-      border-radius: 99px;
-      transition: width .5s cubic-bezier(.4,0,.2,1);
-    }
-
-    /* --- Form body --- */
-    .form-body {
-      padding: 28px 28px 24px;
-    }
-
-    .form-step {
-      display: none;
-    }
-
-    .form-step.active {
-      display: block;
-      animation: fadeIn .35s ease;
-    }
-
-    .form-step__title {
-      font-size: 1.1rem;
-      font-weight: 700;
-      color: var(--text);
-      margin-bottom: 4px;
-    }
-
-    .form-step__desc {
-      font-size: .85rem;
-      color: var(--text-muted);
-      margin-bottom: 24px;
-    }
-
-    /* --- Campos --- */
-    .field {
-      margin-bottom: 18px;
-    }
-
-    .field label {
-      display: block;
-      font-size: .82rem;
-      font-weight: 600;
-      color: var(--text-muted);
-      margin-bottom: 7px;
-      letter-spacing: .02em;
-    }
-
-    .field label .required {
-      color: var(--accent-light);
-      margin-left: 2px;
-    }
-
-    .field label .optional {
-      color: var(--text-sub);
-      font-weight: 400;
-      font-size: .75rem;
-      margin-left: 6px;
-    }
-
-    .field input,
-    .field select,
-    .field textarea {
-      width: 100%;
-      background: var(--bg-input);
-      border: 1.5px solid var(--border);
-      border-radius: var(--radius-sm);
-      color: var(--text);
-      font-family: inherit;
-      font-size: .92rem;
-      padding: 11px 14px;
-      outline: none;
-      transition: border-color .25s, box-shadow .25s;
-      appearance: none;
-      -webkit-appearance: none;
-    }
-
-    .field select {
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' viewBox='0 0 24 24'%3E%3Cpath stroke='%238888aa' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 12px center;
-      padding-right: 38px;
-      cursor: pointer;
-    }
-
-    .field textarea {
-      resize: vertical;
-      min-height: 120px;
-    }
-
-    .field input::placeholder,
-    .field textarea::placeholder {
-      color: var(--text-sub);
-    }
-
-    .field input:focus,
-    .field select:focus,
-    .field textarea:focus {
-      border-color: var(--border-focus);
-      box-shadow: 0 0 0 3px rgba(108,99,255,.18);
-    }
-
-    /* Erro de validação */
-    .field .field-error {
-      display: none;
-      font-size: .75rem;
-      color: var(--error);
-      margin-top: 5px;
-    }
-
-    .field.has-error input,
-    .field.has-error select,
-    .field.has-error textarea {
-      border-color: var(--error);
-    }
-
-    .field.has-error .field-error {
-      display: block;
-    }
-
-    /* Contador de caracteres (textarea) */
-    .char-counter {
-      text-align: right;
-      font-size: .74rem;
-      color: var(--text-sub);
-      margin-top: 5px;
-      transition: color .25s;
-    }
-
-    .char-counter.ok   { color: var(--success); }
-    .char-counter.warn { color: #f59e0b; }
-
-    .char-hint {
-      margin-top: 8px;
-      background: rgba(108,99,255,.08);
-      border: 1px solid rgba(108,99,255,.2);
-      border-radius: var(--radius-sm);
-      padding: 9px 12px;
-      font-size: .78rem;
-      color: var(--text-muted);
-    }
-
-    /* =========================================================
-       RADIO CARDS (modalidade)
-    ========================================================= */
-    .radio-group {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-    }
-
-    .radio-card {
-      position: relative;
-    }
-
-    .radio-card input[type="radio"] {
-      position: absolute;
-      opacity: 0;
-      width: 0;
-      height: 0;
-    }
-
-    .radio-card label {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 6px;
-      padding: 16px 10px;
-      background: var(--bg-input);
-      border: 1.5px solid var(--border);
-      border-radius: var(--radius-sm);
-      cursor: pointer;
-      font-size: .82rem;
-      font-weight: 500;
-      color: var(--text-muted);
-      text-align: center;
-      transition: all .22s ease;
-      /* Sobrescreve o label genérico do .field */
-      display: flex;
-      margin-bottom: 0;
-      letter-spacing: 0;
-    }
-
-    .radio-card label:hover {
-      border-color: rgba(108,99,255,.5);
-      color: var(--text);
-    }
-
-    .radio-card__icon {
-      font-size: 1.4rem;
-    }
-
-    .radio-card input[type="radio"]:checked + label {
-      background: rgba(108,99,255,.12);
-      border-color: var(--accent);
-      color: var(--accent-light);
-      box-shadow: 0 0 0 3px rgba(108,99,255,.15);
-    }
-
-    /* =========================================================
-       BOTÕES
-    ========================================================= */
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      font-family: inherit;
-      font-size: .92rem;
-      font-weight: 600;
-      border: none;
-      border-radius: var(--radius-sm);
-      cursor: pointer;
-      transition: all .22s ease;
-      padding: 12px 24px;
-      letter-spacing: .01em;
-      white-space: nowrap;
-    }
-
-    .btn--primary {
-      background: var(--accent);
-      color: #fff;
-      width: 100%;
-    }
-
-    .btn--primary:hover:not(:disabled) {
-      background: var(--accent-light);
-      transform: translateY(-1px);
-      box-shadow: 0 6px 20px var(--accent-glow);
-    }
-
-    .btn--primary:active:not(:disabled) {
-      transform: translateY(0);
-    }
-
-    .btn--primary:disabled {
-      opacity: .6;
-      cursor: not-allowed;
-    }
-
-    .btn--ghost {
-      background: transparent;
-      color: var(--text-muted);
-      border: 1.5px solid var(--border);
-    }
-
-    .btn--ghost:hover {
-      background: var(--bg-input);
-      color: var(--text);
-      border-color: rgba(108,99,255,.4);
-    }
-
-    .form-actions {
-      display: flex;
-      gap: 10px;
-      margin-top: 28px;
-    }
-
-    .form-actions .btn--ghost {
-      flex: 0 0 auto;
-      min-width: 100px;
-    }
-
-    .form-actions .btn--primary {
-      flex: 1;
-    }
-
-    /* =========================================================
-       SPINNER
-    ========================================================= */
-    .spinner {
-      width: 20px;
-      height: 20px;
-      border: 2.5px solid rgba(255,255,255,.3);
-      border-top-color: #fff;
-      border-radius: 50%;
-      animation: spin .75s linear infinite;
-      flex-shrink: 0;
-    }
-
-    /* =========================================================
-       TELA DE SUCESSO
-    ========================================================= */
-    #screen-success {
-      display: none;
-      text-align: center;
-      padding: 56px 28px;
-      animation: fadeIn .5s ease;
-    }
-
-    .success-circle {
-      width: 80px;
-      height: 80px;
-      background: rgba(34,197,94,.12);
-      border: 2px solid var(--success);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 24px;
-      animation: circle-scale .5s cubic-bezier(.4,0,.2,1) both;
-    }
-
-    .success-check {
-      stroke-dasharray: 60;
-      stroke-dashoffset: 60;
-      animation: check-draw .5s .3s ease forwards;
-    }
-
-    #screen-success h2 {
-      font-size: 1.5rem;
-      font-weight: 800;
-      color: var(--text);
-      margin-bottom: 12px;
-    }
-
-    #screen-success p {
-      font-size: .95rem;
-      color: var(--text-muted);
-      max-width: 360px;
-      margin: 0 auto;
-    }
-
-    /* =========================================================
-       TELA DE ERRO
-    ========================================================= */
-    #screen-error {
-      display: none;
-      text-align: center;
-      padding: 40px 28px;
-      animation: fadeIn .4s ease;
-    }
-
-    .error-icon {
-      font-size: 3rem;
-      margin-bottom: 16px;
-    }
-
-    #screen-error h2 {
-      font-size: 1.2rem;
-      font-weight: 700;
-      color: var(--error);
-      margin-bottom: 10px;
-    }
-
-    #screen-error p {
-      font-size: .88rem;
-      color: var(--text-muted);
-      margin-bottom: 20px;
-    }
-
-    /* =========================================================
-       SEÇÃO "COMO FUNCIONA"
-    ========================================================= */
-    .section {
-      padding: 72px 0;
-    }
-
-    .section__title {
-      text-align: center;
-      font-size: 1.6rem;
-      font-weight: 800;
-      letter-spacing: -.5px;
-      margin-bottom: 8px;
-    }
-
-    .section__sub {
-      text-align: center;
-      color: var(--text-muted);
-      font-size: .9rem;
-      margin-bottom: 44px;
-    }
-
-    .how-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 20px;
-    }
-
-    .how-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 28px 24px;
-      text-align: center;
-      transition: transform .25s, border-color .25s, box-shadow .25s;
-    }
-
-    .how-card:hover {
-      transform: translateY(-4px);
-      border-color: rgba(108,99,255,.45);
-      box-shadow: 0 12px 30px rgba(0,0,0,.4);
-    }
-
-    .how-card__num {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 52px;
-      height: 52px;
-      background: rgba(108,99,255,.12);
-      border: 1px solid rgba(108,99,255,.3);
-      border-radius: 50%;
-      font-size: 1.5rem;
-      margin-bottom: 16px;
-      animation: float 3s ease-in-out infinite;
-    }
-
-    .how-card:nth-child(2) .how-card__num { animation-delay: .5s; }
-    .how-card:nth-child(3) .how-card__num { animation-delay: 1s; }
-
-    .how-card h3 {
-      font-size: 1rem;
-      font-weight: 700;
-      margin-bottom: 8px;
-    }
-
-    .how-card p {
-      font-size: .85rem;
-      color: var(--text-muted);
-    }
-
-    /* =========================================================
-       SEÇÃO DIFERENCIAIS
-    ========================================================= */
+      font-size:1.05rem; color:var(--text-muted); max-width:540px;
+      margin:0 auto 36px; font-weight:400;
+    }
+    .hero__badges {
+      display:flex; justify-content:center; flex-wrap:wrap; gap:12px;
+    }
+    .hero__badge {
+      background:var(--bg-card); border:1px solid var(--border);
+      border-radius:100px; padding:8px 18px;
+      font-size:.82rem; font-weight:500; color:var(--text-muted);
+      display:inline-flex; align-items:center; gap:8px;
+    }
+
+    /* =========================================================  FILTROS  ========================================================= */
+    .filters-section {
+      background:var(--bg-card); border-top:1px solid var(--border);
+      border-bottom:1px solid var(--border); padding:20px 0;
+      animation:fadeInUp .6s .1s ease both;
+    }
+    .filters-inner {
+      max-width:1120px; margin:0 auto; padding:0 24px;
+      display:flex; flex-direction:column; gap:12px;
+    }
+    .filter-row { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+    .filter-label {
+      font-size:.75rem; font-weight:600; color:var(--text-sub);
+      letter-spacing:.06em; text-transform:uppercase;
+      flex-shrink:0; min-width:56px;
+    }
+    .filter-pills {
+      display:flex; gap:7px; flex-wrap:nowrap; overflow-x:auto;
+      scrollbar-width:none; -webkit-overflow-scrolling:touch;
+    }
+    .filter-pills::-webkit-scrollbar { display:none; }
+    .filter-pill {
+      padding:6px 14px; border-radius:100px;
+      border:1.5px solid var(--border); background:transparent;
+      color:var(--text-muted); font-family:inherit; font-size:.79rem;
+      font-weight:500; cursor:pointer; white-space:nowrap;
+      transition:all .2s ease;
+    }
+    .filter-pill:hover { border-color:rgba(108,99,255,.5); color:var(--text); }
+    .filter-pill.active {
+      background:var(--accent); border-color:var(--accent);
+      color:#fff; box-shadow:0 2px 10px var(--accent-glow);
+    }
+
+    /* =========================================================  SEÇÃO VAGAS  ========================================================= */
+    .section-vagas { padding:56px 0; animation:fadeIn .5s .2s ease both; }
+    .section-vagas__header {
+      display:flex; align-items:center; justify-content:space-between;
+      margin-bottom:28px; flex-wrap:wrap; gap:10px;
+    }
+    .vagas-count {
+      font-size:.85rem; color:var(--text-muted); font-weight:500;
+    }
+    .vagas-count strong { color:var(--text); }
+    .vagas-grid {
+      display:grid;
+      grid-template-columns:repeat(auto-fill, minmax(300px,1fr));
+      gap:20px;
+    }
+
+    /* =========================================================  CARD DE VAGA  ========================================================= */
+    .vaga-card {
+      background:var(--bg-card); border:1px solid var(--border);
+      border-radius:var(--radius); padding:22px;
+      display:flex; flex-direction:column; gap:14px;
+      transition:transform .25s, border-color .25s, box-shadow .25s;
+    }
+    .vaga-card:hover {
+      transform:translateY(-3px);
+      border-color:rgba(108,99,255,.4);
+      box-shadow:0 10px 28px rgba(0,0,0,.45);
+    }
+    .vaga-card__top-badges {
+      display:flex; align-items:center; gap:7px; flex-wrap:wrap;
+    }
+    .badge-nivel {
+      font-size:.69rem; font-weight:700; letter-spacing:.05em;
+      text-transform:uppercase; padding:3px 10px; border-radius:100px; border:1px solid;
+    }
+    .badge-nivel[data-nivel="Primeiro emprego"] { background:rgba(20,184,166,.12); border-color:rgba(20,184,166,.35); color:#2dd4bf; }
+    .badge-nivel[data-nivel="Estágio"]          { background:rgba(59,130,246,.12);  border-color:rgba(59,130,246,.35);  color:#60a5fa; }
+    .badge-nivel[data-nivel="Júnior"]           { background:rgba(34,197,94,.12);   border-color:rgba(34,197,94,.35);   color:#4ade80; }
+    .badge-nivel[data-nivel="Pleno"]            { background:rgba(234,179,8,.12);   border-color:rgba(234,179,8,.35);   color:#facc15; }
+    .badge-nivel[data-nivel="Sênior"]           { background:rgba(249,115,22,.12);  border-color:rgba(249,115,22,.35);  color:#fb923c; }
+    .badge-nivel[data-nivel="Especialista"]     { background:rgba(168,85,247,.12);  border-color:rgba(168,85,247,.35);  color:#c084fc; }
+    .badge-nivel[data-nivel="Especialista/Lead"]{ background:rgba(168,85,247,.12);  border-color:rgba(168,85,247,.35);  color:#c084fc; }
+    .badge-nova {
+      background:rgba(239,68,68,.12); border:1px solid rgba(239,68,68,.3);
+      color:#f87171; font-size:.68rem; font-weight:700;
+      letter-spacing:.05em; text-transform:uppercase; padding:3px 9px; border-radius:100px;
+    }
+    .vaga-card__title {
+      font-size:1.05rem; font-weight:700; color:var(--text);
+      line-height:1.3; margin-bottom:2px;
+    }
+    .vaga-card__dept { font-size:.82rem; color:var(--text-muted); }
+    .vaga-card__meta { display:flex; flex-wrap:wrap; gap:10px; }
+    .vaga-card__meta-item {
+      display:inline-flex; align-items:center; gap:5px;
+      font-size:.8rem; color:var(--text-muted);
+    }
+    .vaga-card__meta-item svg { flex-shrink:0; }
+    .vaga-card__stack { display:flex; flex-wrap:wrap; gap:6px; }
+    .stack-tag {
+      background:rgba(108,99,255,.1); border:1px solid rgba(108,99,255,.2);
+      color:var(--text-muted); font-size:.72rem; font-weight:500;
+      padding:3px 9px; border-radius:100px;
+    }
+    .stack-tag--more {
+      background:var(--bg-input); border-color:var(--border); color:var(--text-sub);
+    }
+    .vaga-card__salary {
+      font-size:.88rem; font-weight:600; color:var(--success);
+      display:inline-flex; align-items:center; gap:6px;
+    }
+    .vaga-card__cta {
+      display:flex; align-items:center; justify-content:center; gap:8px;
+      margin-top:auto; background:var(--accent); color:#fff;
+      text-decoration:none; font-family:inherit; font-size:.88rem; font-weight:600;
+      border:none; border-radius:var(--radius-sm); padding:11px 20px;
+      cursor:pointer; transition:all .22s ease; letter-spacing:.01em;
+    }
+    .vaga-card__cta:hover {
+      background:var(--accent-light); transform:translateY(-1px);
+      box-shadow:0 6px 20px var(--accent-glow);
+    }
+
+    /* =========================================================  SKELETON  ========================================================= */
+    .skeleton-card {
+      background:var(--bg-card); border:1px solid var(--border);
+      border-radius:var(--radius); padding:22px;
+      display:flex; flex-direction:column; gap:14px;
+    }
+    .skel {
+      border-radius:6px;
+      background:linear-gradient(90deg,var(--bg-input) 25%,#1e1e2e 50%,var(--bg-input) 75%);
+      background-size:600px 100%;
+      animation:shimmer 1.6s infinite;
+    }
+    .skel--badge  { height:22px; width:72px; border-radius:100px; }
+    .skel--title  { height:20px; width:75%; }
+    .skel--dept   { height:14px; width:40%; }
+    .skel--meta   { height:14px; width:60%; }
+    .skel--tags   { height:14px; width:85%; }
+    .skel--btn    { height:40px; width:100%; border-radius:var(--radius-sm); margin-top:6px; }
+
+    /* =========================================================  SEM RESULTADOS  ========================================================= */
+    .no-results {
+      grid-column:1/-1; text-align:center;
+      padding:60px 20px; color:var(--text-muted);
+    }
+    .no-results__icon { font-size:2.5rem; margin-bottom:16px; }
+    .no-results h3 { font-size:1.1rem; font-weight:700; color:var(--text); margin-bottom:8px; }
+    .no-results p { font-size:.88rem; }
+
+    /* =========================================================  SEÇÃO CARREIRA  ========================================================= */
+    .section { padding:72px 0; }
+    .section__title { text-align:center; font-size:1.6rem; font-weight:800; letter-spacing:-.5px; margin-bottom:8px; }
+    .section__sub { text-align:center; color:var(--text-muted); font-size:.9rem; margin-bottom:44px; }
+    .career-grid {
+      display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:16px;
+    }
+    .career-card {
+      background:var(--bg-card); border:1px solid var(--border);
+      border-radius:var(--radius); padding:26px 22px; text-align:center;
+      transition:transform .25s, border-color .25s, box-shadow .25s;
+    }
+    .career-card:hover {
+      transform:translateY(-4px);
+      border-color:rgba(108,99,255,.45);
+      box-shadow:0 10px 28px rgba(0,0,0,.4);
+    }
+    .career-card__icon {
+      font-size:2rem; margin-bottom:14px; display:block;
+      animation:float 3s ease-in-out infinite;
+    }
+    .career-card:nth-child(2) .career-card__icon { animation-delay:.5s; }
+    .career-card:nth-child(3) .career-card__icon { animation-delay:1s; }
+    .career-card:nth-child(4) .career-card__icon { animation-delay:1.5s; }
+    .career-card h3 { font-size:.95rem; font-weight:700; margin-bottom:7px; }
+    .career-card p  { font-size:.82rem; color:var(--text-muted); line-height:1.5; }
+
+    /* =========================================================  DIFERENCIAIS  ========================================================= */
     .diferenciais {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 36px 28px;
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 24px 48px;
-      margin-bottom: 72px;
+      background:var(--bg-card); border:1px solid var(--border);
+      border-radius:var(--radius); padding:32px 28px;
+      display:flex; flex-wrap:wrap; justify-content:center;
+      gap:22px 48px; margin-bottom:72px;
     }
+    .diferencial { display:flex; align-items:center; gap:10px; font-size:.93rem; font-weight:500; }
+    .diferencial .check { color:var(--success); font-size:1.1rem; flex-shrink:0; }
 
-    .diferencial {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: .95rem;
-      font-weight: 500;
-    }
+    /* =========================================================  FOOTER  ========================================================= */
+    .footer { border-top:1px solid var(--border); padding:24px 0; text-align:center; }
+    .footer p { font-size:.82rem; color:var(--text-sub); }
 
-    .diferencial .check {
-      color: var(--success);
-      font-size: 1.1rem;
-      flex-shrink: 0;
-    }
+    /* =========================================================  SCROLL REVEAL  ========================================================= */
+    .reveal { opacity:0; transform:translateY(22px); transition:opacity .6s ease, transform .6s ease; }
+    .reveal.visible { opacity:1; transform:translateY(0); }
 
-    /* =========================================================
-       FOOTER
-    ========================================================= */
-    .footer {
-      border-top: 1px solid var(--border);
-      padding: 24px 0;
-      text-align: center;
-    }
-
-    .footer p {
-      font-size: .82rem;
-      color: var(--text-sub);
-    }
-
-    /* =========================================================
-       BADGE "RECOMENDADO"
-    ========================================================= */
-    .badge-rec {
-      display: inline-flex;
-      align-items: center;
-      background: rgba(34,197,94,.12);
-      border: 1px solid rgba(34,197,94,.3);
-      color: var(--success);
-      font-size: .68rem;
-      font-weight: 700;
-      letter-spacing: .05em;
-      text-transform: uppercase;
-      padding: 2px 8px;
-      border-radius: 100px;
-      margin-left: 8px;
-      vertical-align: middle;
-    }
-
-    /* =========================================================
-       UPLOAD ZONE
-    ========================================================= */
-    .upload-zone {
-      border: 2px dashed var(--border);
-      border-radius: var(--radius-sm);
-      background: var(--bg-input);
-      padding: 28px 20px;
-      text-align: center;
-      cursor: pointer;
-      transition: border-color .25s, background .25s, box-shadow .25s;
-      position: relative;
-    }
-
-    .upload-zone:hover,
-    .upload-zone.dragover {
-      border-color: var(--accent);
-      background: rgba(108,99,255,.06);
-      box-shadow: 0 0 0 3px rgba(108,99,255,.12);
-    }
-
-    .upload-zone.has-file {
-      border-color: var(--success);
-      border-style: solid;
-      background: rgba(34,197,94,.04);
-    }
-
-    .upload-zone input[type="file"] {
-      position: absolute;
-      inset: 0;
-      opacity: 0;
-      cursor: pointer;
-      width: 100%;
-      height: 100%;
-    }
-
-    .upload-icon {
-      font-size: 2rem;
-      margin-bottom: 10px;
-      display: block;
-      transition: transform .3s ease;
-    }
-
-    .upload-zone:hover .upload-icon,
-    .upload-zone.dragover .upload-icon {
-      transform: translateY(-4px);
-    }
-
-    .upload-text {
-      font-size: .85rem;
-      color: var(--text-muted);
-      line-height: 1.5;
-    }
-
-    .upload-text strong { color: var(--accent-light); }
-
-    .upload-text small {
-      display: block;
-      font-size: .74rem;
-      color: var(--text-sub);
-      margin-top: 4px;
-    }
-
-    .upload-preview {
-      display: none;
-      align-items: center;
-      gap: 10px;
-      margin-top: 10px;
-      background: rgba(34,197,94,.08);
-      border: 1px solid rgba(34,197,94,.25);
-      border-radius: var(--radius-sm);
-      padding: 10px 14px;
-      font-size: .83rem;
-      color: var(--success);
-      font-weight: 500;
-    }
-
-    .upload-preview.visible { display: flex; }
-
-    .upload-preview__name {
-      flex: 1;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      color: var(--text);
-      font-size: .83rem;
-    }
-
-    .upload-remove {
-      background: none;
-      border: none;
-      color: var(--text-sub);
-      cursor: pointer;
-      font-size: 1rem;
-      line-height: 1;
-      padding: 0 2px;
-      flex-shrink: 0;
-      transition: color .2s;
-    }
-
-    .upload-remove:hover { color: var(--error); }
-
-    .field.has-error .upload-zone { border-color: var(--error); }
-
-    /* =========================================================
-       SEÇÃO PERGUNTAS COMPORTAMENTAIS
-    ========================================================= */
-    .behavioral-section {
-      margin: 32px 0 24px;
-      padding-top: 28px;
-      border-top: 1px solid var(--border);
-    }
-
-    .behavioral-section__title {
-      font-size: 1rem;
-      font-weight: 700;
-      color: var(--text);
-      margin-bottom: 4px;
-    }
-
-    .behavioral-section__sub {
-      font-size: .82rem;
-      color: var(--text-muted);
-      margin-bottom: 24px;
-    }
-
-    .behavioral-q {
-      margin-bottom: 22px;
-    }
-
-    .behavioral-q label {
-      display: block;
-      font-size: .82rem;
-      font-weight: 600;
-      color: var(--text-muted);
-      margin-bottom: 7px;
-      letter-spacing: .02em;
-      line-height: 1.5;
-    }
-
-    .behavioral-q textarea {
-      width: 100%;
-      background: var(--bg-input);
-      border: 1.5px solid var(--border);
-      border-radius: var(--radius-sm);
-      color: var(--text);
-      font-family: inherit;
-      font-size: .92rem;
-      padding: 11px 14px;
-      outline: none;
-      resize: vertical;
-      min-height: 100px;
-      transition: border-color .25s, box-shadow .25s;
-    }
-
-    .behavioral-q textarea::placeholder { color: var(--text-sub); }
-
-    .behavioral-q textarea:focus {
-      border-color: var(--border-focus);
-      box-shadow: 0 0 0 3px rgba(108,99,255,.18);
-    }
-
-    .behavioral-q.has-error textarea { border-color: var(--error); }
-
-    .behavioral-q .field-error {
-      display: none;
-      font-size: .75rem;
-      color: var(--error);
-      margin-top: 5px;
-    }
-
-    .behavioral-q.has-error .field-error { display: block; }
-
-    .q-number {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 20px;
-      height: 20px;
-      background: rgba(108,99,255,.15);
-      border: 1px solid rgba(108,99,255,.3);
-      border-radius: 50%;
-      font-size: .68rem;
-      font-weight: 700;
-      color: var(--accent-light);
-      margin-right: 6px;
-      flex-shrink: 0;
-      vertical-align: middle;
-    }
-
-    /* =========================================================
-       SCROLL REVEAL
-    ========================================================= */
-    .reveal {
-      opacity: 0;
-      transform: translateY(24px);
-      transition: opacity .6s ease, transform .6s ease;
-    }
-
-    .reveal.visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    /* =========================================================
-       RESPONSIVE
-    ========================================================= */
-    @media (max-width: 520px) {
-      .nav__inner { padding: 0 16px; }
-      .hero { padding: 56px 0 40px; }
-      .form-body { padding: 22px 18px 20px; }
-      .progress-header { padding: 18px 18px 16px; }
-      .section__title { font-size: 1.3rem; }
-      .hero__stats { gap: 8px; }
-      .hero__stat { font-size: .76rem; padding: 6px 14px; }
-      .diferenciais { padding: 24px 18px; gap: 18px 24px; }
-      .form-actions { flex-direction: column-reverse; }
-      .form-actions .btn--ghost { min-width: unset; }
-      /* Oculta labels de step no mobile para poupar espaço */
-      .progress-step__label { display: none; }
-    }
-
-    @media (max-width: 360px) {
-      .radio-card label { padding: 12px 6px; font-size: .75rem; }
-      .radio-card__icon { font-size: 1.15rem; }
+    /* =========================================================  RESPONSIVE  ========================================================= */
+    @media (max-width:640px) {
+      .hero { padding:56px 0 44px; }
+      .nav__inner, .container--wide { padding:0 16px; }
+      .filter-row { gap:8px; }
+      .filter-label { display:none; }
+      .section__title { font-size:1.3rem; }
+      .diferenciais { padding:22px 16px; gap:16px 24px; }
     }
   </style>
 </head>
 <body>
 
-  <!-- =========================================================
-       NAV
-  ========================================================= -->
+  <!-- =========================================================  NAV  ========================================================= -->
   <nav class="nav" aria-label="Barra de navegação">
     <div class="nav__inner">
-      <!-- Logo com SVG inline — ícone de nó de IA / recrutamento -->
-      <a href="#" class="logo" aria-label="TechRecruit AI — página inicial">
+      <a href="index.html" class="logo" aria-label="TechRecruit AI — página inicial">
         <svg class="logo__icon" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <rect width="36" height="36" rx="10" fill="#6c63ff" fill-opacity=".15"/>
           <circle cx="18" cy="18" r="7.5" stroke="#6c63ff" stroke-width="1.8" fill="none"/>
           <circle cx="18" cy="18" r="3" fill="#6c63ff"/>
-          <!-- raios de conexão ortogonais -->
           <line x1="18" y1="10.5" x2="18" y2="7"  stroke="#a78bfa" stroke-width="1.6" stroke-linecap="round"/>
           <line x1="18" y1="25.5" x2="18" y2="29" stroke="#a78bfa" stroke-width="1.6" stroke-linecap="round"/>
           <line x1="10.5" y1="18" x2="7"  y2="18" stroke="#a78bfa" stroke-width="1.6" stroke-linecap="round"/>
           <line x1="25.5" y1="18" x2="29" y2="18" stroke="#a78bfa" stroke-width="1.6" stroke-linecap="round"/>
-          <!-- raios diagonais -->
           <line x1="12.7" y1="12.7" x2="10" y2="10" stroke="#6c63ff" stroke-width="1.2" stroke-linecap="round" opacity=".6"/>
           <line x1="23.3" y1="23.3" x2="26" y2="26" stroke="#6c63ff" stroke-width="1.2" stroke-linecap="round" opacity=".6"/>
           <line x1="23.3" y1="12.7" x2="26" y2="10" stroke="#6c63ff" stroke-width="1.2" stroke-linecap="round" opacity=".6"/>
@@ -1098,799 +334,379 @@
         </svg>
         <span class="logo__text">TechRecruit<span> AI</span></span>
       </a>
-
-      <!-- Badge animado "Powered by AI" -->
-      <span class="badge-ai" aria-label="Tecnologia powered by AI">Powered by AI</span>
+      <span class="badge-ai" aria-label="Powered by AI">Powered by AI</span>
     </div>
   </nav>
 
-  <!-- =========================================================
-       HERO SECTION
-  ========================================================= -->
+  <!-- =========================================================  HERO  ========================================================= -->
   <section class="hero" aria-labelledby="hero-title">
     <div class="container">
-
       <div class="hero__eyebrow" aria-hidden="true">
         <span class="hero__eyebrow-dot"></span>
-        Vagas abertas &nbsp;·&nbsp; Processo 100% digital
+        Vagas abertas · Retorno em até 24h
       </div>
-
       <h1 class="hero__title" id="hero-title">
-        Seu próximo passo<br>
-        <span class="highlight">começa aqui</span>
+        Encontre sua<br><span class="highlight">próxima oportunidade</span>
       </h1>
-
       <p class="hero__sub">
-        Candidate-se em menos de 3 minutos. Nossa IA analisa seu perfil
-        e te dá retorno em até&nbsp;24h.
+        Do primeiro emprego ao próximo grande passo na carreira.
+        Candidate-se em minutos e receba retorno em até 24h.
       </p>
-
-      <div class="hero__stats" role="list" aria-label="Destaques do processo">
-        <span class="hero__stat" role="listitem"><span class="hero__stat-icon" aria-hidden="true">⚡</span>Menos de 3 min</span>
-        <span class="hero__stat" role="listitem"><span class="hero__stat-icon" aria-hidden="true">🤖</span>Análise por IA</span>
-        <span class="hero__stat" role="listitem"><span class="hero__stat-icon" aria-hidden="true">📱</span>Retorno em 24h</span>
+      <div class="hero__badges" role="list" aria-label="Destaques">
+        <span class="hero__badge" role="listitem">🎯 Vagas para todos os níveis</span>
+        <span class="hero__badge" role="listitem">🤖 Análise por IA</span>
+        <span class="hero__badge" role="listitem">✅ Retorno garantido</span>
       </div>
-
     </div>
   </section>
 
-  <!-- =========================================================
-       FORMULÁRIO PRINCIPAL
-  ========================================================= -->
-  <main class="container" id="main-content">
-    <div class="form-card" aria-label="Formulário de candidatura">
-
-      <!-- Progress bar de etapas -->
-      <div class="progress-header" id="progress-header" aria-label="Progresso do formulário">
-        <div class="progress-steps" role="list" aria-label="Etapas do formulário">
-          <!-- Etapa 1 -->
-          <div class="progress-step" role="listitem">
-            <div class="progress-step__circle active" id="step-circle-1" aria-current="step" aria-label="Etapa 1 de 2: Dados Pessoais">1</div>
-            <span class="progress-step__label active" id="step-label-1">Dados Pessoais</span>
-          </div>
-
-          <div class="progress-connector" id="connector-1" aria-hidden="true"></div>
-
-          <!-- Etapa 2 -->
-          <div class="progress-step" role="listitem">
-            <div class="progress-step__circle" id="step-circle-2" aria-label="Etapa 2 de 2: Perfil Profissional">2</div>
-            <span class="progress-step__label" id="step-label-2">Perfil Profissional</span>
-          </div>
-        </div>
-
-        <div class="progress-bar-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50" aria-label="Progresso do preenchimento">
-          <div class="progress-bar-fill" id="progress-fill" style="width:50%"></div>
+  <!-- =========================================================  FILTROS  ========================================================= -->
+  <div class="filters-section" aria-label="Filtros de vagas">
+    <div class="filters-inner">
+      <!-- Filtro de nível -->
+      <div class="filter-row">
+        <span class="filter-label" aria-hidden="true">Nível</span>
+        <div class="filter-pills" role="group" aria-label="Filtrar por nível" id="filter-nivel">
+          <button class="filter-pill active" data-group="nivel" data-value="Todos">Todos</button>
+          <button class="filter-pill" data-group="nivel" data-value="Primeiro emprego">Primeiro emprego</button>
+          <button class="filter-pill" data-group="nivel" data-value="Estágio">Estágio</button>
+          <button class="filter-pill" data-group="nivel" data-value="Júnior">Júnior</button>
+          <button class="filter-pill" data-group="nivel" data-value="Pleno">Pleno</button>
+          <button class="filter-pill" data-group="nivel" data-value="Sênior">Sênior</button>
+          <button class="filter-pill" data-group="nivel" data-value="Especialista">Especialista</button>
         </div>
       </div>
+      <!-- Filtro de modalidade -->
+      <div class="filter-row">
+        <span class="filter-label" aria-hidden="true">Modo</span>
+        <div class="filter-pills" role="group" aria-label="Filtrar por modalidade" id="filter-modalidade">
+          <button class="filter-pill active" data-group="modalidade" data-value="Todos">Todos</button>
+          <button class="filter-pill" data-group="modalidade" data-value="Remoto">🏠 Remoto</button>
+          <button class="filter-pill" data-group="modalidade" data-value="Híbrido">🔄 Híbrido</button>
+          <button class="filter-pill" data-group="modalidade" data-value="Presencial">🏢 Presencial</button>
+        </div>
+      </div>
+      <!-- Filtro de área -->
+      <div class="filter-row">
+        <span class="filter-label" aria-hidden="true">Área</span>
+        <div class="filter-pills" role="group" aria-label="Filtrar por área" id="filter-area">
+          <button class="filter-pill active" data-group="area" data-value="Todos">Todos</button>
+          <button class="filter-pill" data-group="area" data-value="Tecnologia">Tecnologia</button>
+          <button class="filter-pill" data-group="area" data-value="Design">Design</button>
+          <button class="filter-pill" data-group="area" data-value="Marketing">Marketing</button>
+          <button class="filter-pill" data-group="area" data-value="Comercial/Vendas">Comercial</button>
+          <button class="filter-pill" data-group="area" data-value="RH">RH</button>
+          <button class="filter-pill" data-group="area" data-value="Financeiro">Financeiro</button>
+          <button class="filter-pill" data-group="area" data-value="Operações">Operações</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
-      <!-- Corpo do formulário -->
-      <div class="form-body">
-
-        <!-- ============================================================
-             ETAPA 1 — Dados Pessoais
-        ============================================================ -->
-        <div class="form-step active" id="step-1" aria-labelledby="step1-title">
-          <h2 class="form-step__title" id="step1-title">Dados Pessoais</h2>
-          <p class="form-step__desc">Preencha seus dados de contato para começarmos.</p>
-
-          <!-- Nome completo -->
-          <div class="field" id="field-nome">
-            <label for="nome">Nome completo <span class="required" aria-hidden="true">*</span></label>
-            <input
-              type="text" id="nome" name="nome"
-              placeholder="Seu nome completo"
-              autocomplete="name" maxlength="120"
-              aria-required="true"
-            />
-            <span class="field-error" id="err-nome" role="alert">Por favor, informe seu nome completo.</span>
-          </div>
-
-          <!-- E-mail -->
-          <div class="field" id="field-email">
-            <label for="email">E-mail profissional <span class="required" aria-hidden="true">*</span></label>
-            <input
-              type="email" id="email" name="email"
-              placeholder="voce@empresa.com"
-              autocomplete="email" maxlength="160"
-              aria-required="true" inputmode="email"
-            />
-            <span class="field-error" id="err-email" role="alert">Informe um e-mail válido.</span>
-          </div>
-
-          <!-- WhatsApp com máscara -->
-          <div class="field" id="field-telefone">
-            <label for="telefone">WhatsApp <span class="required" aria-hidden="true">*</span></label>
-            <input
-              type="tel" id="telefone" name="telefone"
-              placeholder="(11) 99999-9999"
-              autocomplete="tel" maxlength="15"
-              aria-required="true" inputmode="numeric"
-            />
-            <span class="field-error" id="err-telefone" role="alert">Informe um WhatsApp válido com DDD.</span>
-          </div>
-
-          <!-- LinkedIn (opcional) -->
-          <div class="field" id="field-linkedin">
-            <label for="linkedin">LinkedIn <span class="optional">(opcional)</span></label>
-            <input
-              type="text" id="linkedin" name="linkedin"
-              placeholder="linkedin.com/in/seuperfil"
-              autocomplete="url" maxlength="200"
-            />
-            <span class="field-error" id="err-linkedin" role="alert">URL do LinkedIn inválida.</span>
-          </div>
-
-          <div class="form-actions">
-            <button type="button" class="btn btn--primary" id="btn-next" onclick="goToStep2()">
-              Próximo
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
-            </button>
+  <!-- =========================================================  SEÇÃO DE VAGAS  ========================================================= -->
+  <main id="vagas-section">
+    <div class="section-vagas">
+      <div class="container--wide">
+        <div class="section-vagas__header">
+          <div>
+            <h2 style="font-size:1.3rem;font-weight:800;letter-spacing:-.4px;">Vagas Abertas</h2>
+            <p class="vagas-count" id="vagas-count" aria-live="polite">Carregando...</p>
           </div>
         </div>
-
-        <!-- ============================================================
-             ETAPA 2 — Perfil Profissional
-        ============================================================ -->
-        <div class="form-step" id="step-2" aria-labelledby="step2-title">
-          <h2 class="form-step__title" id="step2-title">Perfil Profissional</h2>
-          <p class="form-step__desc">Conte-nos sobre sua trajetória para nossa IA avaliar melhor.</p>
-
-          <!-- Área de atuação -->
-          <div class="field" id="field-area">
-            <label for="area_atuacao">Área de atuação <span class="required" aria-hidden="true">*</span></label>
-            <select id="area_atuacao" name="area_atuacao" aria-required="true">
-              <option value="" disabled selected>Selecione sua área</option>
-              <option value="Tecnologia">Tecnologia</option>
-              <option value="Design">Design</option>
-              <option value="Marketing">Marketing</option>
-              <option value="Comercial/Vendas">Comercial / Vendas</option>
-              <option value="RH">RH</option>
-              <option value="Financeiro">Financeiro</option>
-              <option value="Operações">Operações</option>
-              <option value="Outro">Outro</option>
-            </select>
-            <span class="field-error" id="err-area" role="alert">Selecione sua área de atuação.</span>
-          </div>
-
-          <!-- Senioridade -->
-          <div class="field" id="field-senioridade">
-            <label for="senioridade">Nível de senioridade <span class="required" aria-hidden="true">*</span></label>
-            <select id="senioridade" name="senioridade" aria-required="true">
-              <option value="" disabled selected>Selecione seu nível</option>
-              <option value="Estágio">Estágio</option>
-              <option value="Júnior">Júnior</option>
-              <option value="Pleno">Pleno</option>
-              <option value="Sênior">Sênior</option>
-              <option value="Especialista/Lead">Especialista / Lead</option>
-            </select>
-            <span class="field-error" id="err-senioridade" role="alert">Selecione seu nível de senioridade.</span>
-          </div>
-
-          <!-- Anos de experiência -->
-          <div class="field" id="field-experiencia">
-            <label for="experiencia_anos">Anos de experiência <span class="required" aria-hidden="true">*</span></label>
-            <select id="experiencia_anos" name="experiencia_anos" aria-required="true">
-              <option value="" disabled selected>Selecione</option>
-              <option value="Menos de 1 ano">Menos de 1 ano</option>
-              <option value="1 a 3 anos">1 a 3 anos</option>
-              <option value="3 a 5 anos">3 a 5 anos</option>
-              <option value="5 a 10 anos">5 a 10 anos</option>
-              <option value="Mais de 10 anos">Mais de 10 anos</option>
-            </select>
-            <span class="field-error" id="err-experiencia" role="alert">Selecione seus anos de experiência.</span>
-          </div>
-
-          <!-- Modalidade preferida — radio cards visuais -->
-          <div class="field" id="field-modalidade">
-            <label id="modalidade-label">Modalidade preferida <span class="required" aria-hidden="true">*</span></label>
-            <div class="radio-group" role="radiogroup" aria-labelledby="modalidade-label" aria-required="true">
-              <div class="radio-card">
-                <input type="radio" name="modalidade" id="mod-remoto" value="Remoto" />
-                <label for="mod-remoto">
-                  <span class="radio-card__icon" aria-hidden="true">🏠</span>
-                  Remoto
-                </label>
-              </div>
-              <div class="radio-card">
-                <input type="radio" name="modalidade" id="mod-hibrido" value="Híbrido" />
-                <label for="mod-hibrido">
-                  <span class="radio-card__icon" aria-hidden="true">🔄</span>
-                  Híbrido
-                </label>
-              </div>
-              <div class="radio-card">
-                <input type="radio" name="modalidade" id="mod-presencial" value="Presencial" />
-                <label for="mod-presencial">
-                  <span class="radio-card__icon" aria-hidden="true">🏢</span>
-                  Presencial
-                </label>
-              </div>
-            </div>
-            <span class="field-error" id="err-modalidade" role="alert">Selecione a modalidade de trabalho.</span>
-          </div>
-
-          <!-- Pretensão salarial (opcional) -->
-          <div class="field" id="field-salario">
-            <label for="pretensao_salarial">Pretensão salarial mensal <span class="optional">(opcional)</span></label>
-            <select id="pretensao_salarial" name="pretensao_salarial">
-              <option value="Prefiro não informar">Prefiro não informar</option>
-              <option value="Até R$3.000">Até R$ 3.000</option>
-              <option value="R$3.000-5.000">R$ 3.000 – 5.000</option>
-              <option value="R$5.000-8.000">R$ 5.000 – 8.000</option>
-              <option value="R$8.000-12.000">R$ 8.000 – 12.000</option>
-              <option value="R$12.000-18.000">R$ 12.000 – 18.000</option>
-              <option value="Acima de R$18.000">Acima de R$ 18.000</option>
-            </select>
-          </div>
-
-          <!-- Resumo profissional -->
-          <div class="field" id="field-resumo">
-            <label for="resumo_texto">Resumo profissional <span class="required" aria-hidden="true">*</span></label>
-            <textarea
-              id="resumo_texto"
-              name="resumo_texto"
-              rows="6"
-              maxlength="3000"
-              aria-required="true"
-              aria-describedby="char-counter resumo-hint"
-              placeholder="Descreva suas principais experiências, projetos, tecnologias que domina e conquistas relevantes. Quanto mais detalhado, melhor nossa IA consegue avaliar seu perfil..."
-              oninput="updateCharCounter()"
-            ></textarea>
-            <div class="char-counter" id="char-counter" aria-live="polite">0 / 3000 caracteres · mínimo 100</div>
-            <div class="char-hint" id="resumo-hint">
-              💡 <strong>Dica:</strong> Mencione tecnologias, projetos e resultados concretos para uma análise mais precisa.
-            </div>
-            <span class="field-error" id="err-resumo" role="alert">Descreva seu perfil (mínimo 100 caracteres).</span>
-          </div>
-
-          <!-- Upload de currículo (PDF) -->
-          <div class="field" id="field-curriculo">
-            <label>
-              Currículo (PDF)
-              <span class="badge-rec">Recomendado</span>
-            </label>
-            <div class="upload-zone" id="upload-zone"
-                 role="button" tabindex="0" aria-label="Área de upload do currículo PDF"
-                 ondragover="handleDragOver(event)" ondragleave="handleDragLeave()" ondrop="handleDrop(event)">
-              <input type="file" id="curriculo_file" accept=".pdf"
-                     aria-label="Selecionar arquivo PDF do currículo"
-                     onchange="handleFileSelect(event)" />
-              <span class="upload-icon" aria-hidden="true">📄</span>
-              <div class="upload-text">
-                <strong>Arraste seu PDF aqui</strong> ou clique para selecionar
-                <small>Apenas PDF · Máximo 5 MB</small>
-              </div>
-            </div>
-            <div class="upload-preview" id="upload-preview" role="status" aria-live="polite">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-              <span class="upload-preview__name" id="upload-filename"></span>
-              <button type="button" class="upload-remove" onclick="removeFile()" aria-label="Remover arquivo">✕</button>
-            </div>
-            <span class="field-error" id="err-curriculo" role="alert">O arquivo excede o limite de 5 MB. Selecione um arquivo menor.</span>
-          </div>
-
-          <!-- Perguntas Comportamentais -->
-          <div class="behavioral-section">
-            <h3 class="behavioral-section__title">Conte-nos mais sobre você</h3>
-            <p class="behavioral-section__sub">Respostas honestas nos ajudam a fazer uma análise mais precisa do seu perfil.</p>
-
-            <!-- Pergunta 1 -->
-            <div class="behavioral-q" id="bq-1">
-              <label for="comportamental_1">
-                <span class="q-number" aria-hidden="true">1</span>
-                Descreva uma situação profissional desafiadora que você enfrentou e como a resolveu.
-                <span class="required" aria-hidden="true">*</span>
-              </label>
-              <textarea
-                id="comportamental_1" name="comportamental_1"
-                rows="4" maxlength="2000"
-                aria-required="true" aria-describedby="bq1-counter"
-                placeholder="Descreva a situação, o desafio, as ações que você tomou e qual foi o resultado. Seja específico e mencione números ou impactos quando possível..."
-                oninput="updateBehavCounter(1)"
-              ></textarea>
-              <div class="char-counter" id="bq1-counter" aria-live="polite">0 / 2000 · mínimo 80</div>
-              <span class="field-error" id="err-bq1" role="alert">Responda a pergunta (mínimo 80 caracteres).</span>
-            </div>
-
-            <!-- Pergunta 2 -->
-            <div class="behavioral-q" id="bq-2">
-              <label for="comportamental_2">
-                <span class="q-number" aria-hidden="true">2</span>
-                Como você lida com feedbacks negativos ou críticas ao seu trabalho? Dê um exemplo real.
-                <span class="required" aria-hidden="true">*</span>
-              </label>
-              <textarea
-                id="comportamental_2" name="comportamental_2"
-                rows="4" maxlength="2000"
-                aria-required="true" aria-describedby="bq2-counter"
-                placeholder="Conte sobre uma situação específica em que recebeu feedback difícil, como você reagiu e o que aprendeu com isso..."
-                oninput="updateBehavCounter(2)"
-              ></textarea>
-              <div class="char-counter" id="bq2-counter" aria-live="polite">0 / 2000 · mínimo 80</div>
-              <span class="field-error" id="err-bq2" role="alert">Responda a pergunta (mínimo 80 caracteres).</span>
-            </div>
-
-            <!-- Pergunta 3 -->
-            <div class="behavioral-q" id="bq-3">
-              <label for="comportamental_3">
-                <span class="q-number" aria-hidden="true">3</span>
-                Descreva seu maior projeto ou conquista profissional até hoje.
-                <span class="required" aria-hidden="true">*</span>
-              </label>
-              <textarea
-                id="comportamental_3" name="comportamental_3"
-                rows="4" maxlength="2000"
-                aria-required="true" aria-describedby="bq3-counter"
-                placeholder="Qual foi seu papel, quais recursos você tinha, quais obstáculos enfrentou e qual foi o impacto final do projeto..."
-                oninput="updateBehavCounter(3)"
-              ></textarea>
-              <div class="char-counter" id="bq3-counter" aria-live="polite">0 / 2000 · mínimo 80</div>
-              <span class="field-error" id="err-bq3" role="alert">Responda a pergunta (mínimo 80 caracteres).</span>
-            </div>
-          </div>
-
-          <div class="form-actions">
-            <button type="button" class="btn btn--ghost" onclick="goToStep1()" aria-label="Voltar para etapa 1">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
-              Voltar
-            </button>
-            <button type="button" class="btn btn--primary" id="btn-submit" onclick="submitForm()">
-              Enviar candidatura
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 2 11 13"/><path d="m22 2-7 20-4-9-9-4 20-7z"/></svg>
-            </button>
-          </div>
+        <div class="vagas-grid" id="vagas-grid" aria-label="Lista de vagas">
+          <!-- Skeletons iniciais -->
+          <div class="skeleton-card" aria-hidden="true"><div class="skel skel--badge"></div><div class="skel skel--title"></div><div class="skel skel--dept"></div><div class="skel skel--meta"></div><div class="skel skel--tags"></div><div class="skel skel--btn"></div></div>
+          <div class="skeleton-card" aria-hidden="true"><div class="skel skel--badge"></div><div class="skel skel--title"></div><div class="skel skel--dept"></div><div class="skel skel--meta"></div><div class="skel skel--tags"></div><div class="skel skel--btn"></div></div>
+          <div class="skeleton-card" aria-hidden="true"><div class="skel skel--badge"></div><div class="skel skel--title"></div><div class="skel skel--dept"></div><div class="skel skel--meta"></div><div class="skel skel--tags"></div><div class="skel skel--btn"></div></div>
         </div>
+      </div>
+    </div>
 
-        <!-- ============================================================
-             TELA DE SUCESSO
-        ============================================================ -->
-        <div id="screen-success" role="status" aria-live="polite" aria-label="Candidatura enviada com sucesso">
-          <div class="success-circle" aria-hidden="true">
-            <svg width="38" height="38" viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <polyline
-                class="success-check"
-                points="8,20 16,28 30,12"
-                stroke="#22c55e"
-                stroke-width="3.5"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                fill="none"
-              />
-            </svg>
+    <!-- =========================================================  SEÇÃO CARREIRA  ========================================================= -->
+    <section class="section reveal" aria-labelledby="career-title">
+      <div class="container--wide">
+        <h2 class="section__title" id="career-title">Para todos os momentos da carreira</h2>
+        <p class="section__sub">Independente do seu nível, há uma oportunidade esperando por você.</p>
+        <div class="career-grid">
+          <div class="career-card">
+            <span class="career-card__icon" aria-hidden="true">🎓</span>
+            <h3>Primeiro emprego</h3>
+            <p>Sem experiência prévia necessária. Valorizamos potencial e vontade de aprender.</p>
           </div>
-          <h2>Candidatura enviada com sucesso! 🎉</h2>
-          <p>
-            Nossa IA já está analisando seu perfil. Você receberá um retorno via
-            <strong>WhatsApp</strong> em até <strong>24 horas</strong>.
-          </p>
-        </div>
-
-        <!-- ============================================================
-             TELA DE ERRO
-        ============================================================ -->
-        <div id="screen-error" role="alert" aria-live="assertive">
-          <div class="error-icon" aria-hidden="true">⚠️</div>
-          <h2>Ops! Algo deu errado</h2>
-          <p id="error-msg">Não conseguimos enviar sua candidatura. Por favor, tente novamente em instantes.</p>
-          <button type="button" class="btn btn--ghost" onclick="retrySubmit()" style="margin:0 auto;">
-            Tentar novamente
-          </button>
-        </div>
-
-      </div><!-- /form-body -->
-    </div><!-- /form-card -->
-
-    <!-- =========================================================
-         SEÇÃO "COMO FUNCIONA"
-    ========================================================= -->
-    <section class="section reveal" aria-labelledby="como-funciona-title">
-      <h2 class="section__title" id="como-funciona-title">Como funciona</h2>
-      <p class="section__sub">Três passos simples para sua próxima oportunidade.</p>
-
-      <div class="how-grid">
-        <div class="how-card">
-          <div class="how-card__num" aria-hidden="true">🚀</div>
-          <h3>Candidate-se</h3>
-          <p>Preencha o formulário em menos de 3 minutos com seus dados e perfil profissional.</p>
-        </div>
-        <div class="how-card">
-          <div class="how-card__num" aria-hidden="true">🤖</div>
-          <h3>IA Analisa</h3>
-          <p>Nossa inteligência artificial avalia seu perfil em segundos com critérios objetivos e imparciais.</p>
-        </div>
-        <div class="how-card">
-          <div class="how-card__num" aria-hidden="true">📱</div>
-          <h3>Receba o retorno</h3>
-          <p>Resultado personalizado direto no seu WhatsApp em até 24 horas.</p>
+          <div class="career-card">
+            <span class="career-card__icon" aria-hidden="true">🚀</span>
+            <h3>Júnior</h3>
+            <p>Até 2 anos de experiência. Ambiente de aprendizado acelerado.</p>
+          </div>
+          <div class="career-card">
+            <span class="career-card__icon" aria-hidden="true">💼</span>
+            <h3>Pleno / Sênior</h3>
+            <p>Pronto para novos desafios e responsabilidades maiores.</p>
+          </div>
+          <div class="career-card">
+            <span class="career-card__icon" aria-hidden="true">🏆</span>
+            <h3>Especialista</h3>
+            <p>Liderança técnica e impacto estratégico.</p>
+          </div>
         </div>
       </div>
     </section>
 
-    <!-- =========================================================
-         SEÇÃO DIFERENCIAIS
-    ========================================================= -->
-    <div class="diferenciais reveal" role="list" aria-label="Nossos diferenciais">
-      <div class="diferencial" role="listitem">
-        <span class="check" aria-hidden="true">✅</span>
-        Processo 100% digital
-      </div>
-      <div class="diferencial" role="listitem">
-        <span class="check" aria-hidden="true">✅</span>
-        Resposta garantida em 24h
-      </div>
-      <div class="diferencial" role="listitem">
-        <span class="check" aria-hidden="true">✅</span>
-        Análise imparcial por IA
+    <!-- Diferenciais -->
+    <div class="container--wide">
+      <div class="diferenciais reveal" role="list" aria-label="Nossos diferenciais">
+        <div class="diferencial" role="listitem"><span class="check" aria-hidden="true">✅</span>Processo 100% digital</div>
+        <div class="diferencial" role="listitem"><span class="check" aria-hidden="true">✅</span>Resposta garantida em 24h</div>
+        <div class="diferencial" role="listitem"><span class="check" aria-hidden="true">✅</span>Análise imparcial por IA</div>
       </div>
     </div>
-
   </main>
 
-  <!-- =========================================================
-       FOOTER
-  ========================================================= -->
+  <!-- =========================================================  FOOTER  ========================================================= -->
   <footer class="footer">
     <p>© 2025 TechRecruit AI — Processo seletivo inteligente</p>
   </footer>
 
-  <!-- =========================================================
-       JAVASCRIPT
-  ========================================================= -->
+  <!-- =========================================================  JAVASCRIPT  ========================================================= -->
   <script>
     /* ----------------------------------------------------------
-       Máscara de telefone: (XX) XXXXX-XXXX
+       Dados estáticos de fallback — exibidos se a API falhar
     ---------------------------------------------------------- */
-    document.getElementById('telefone').addEventListener('input', function (e) {
-      let v = e.target.value.replace(/\D/g, '').slice(0, 11);
-      if (v.length > 6) {
-        v = '(' + v.slice(0,2) + ') ' + v.slice(2,7) + '-' + v.slice(7);
-      } else if (v.length > 2) {
-        v = '(' + v.slice(0,2) + ') ' + v.slice(2);
-      } else if (v.length > 0) {
-        v = '(' + v;
+    const VAGAS_ESTATICAS = [
+      {
+        id: 'vg001',
+        titulo: 'Desenvolvedor(a) Full-Stack',
+        departamento: 'Tecnologia',
+        senioridade: 'Pleno',
+        modalidade: 'Remoto',
+        cidade: 'Remoto',
+        tipo_contrato: 'CLT',
+        stack: ['React', 'Node.js', 'TypeScript', 'PostgreSQL', 'Docker'],
+        faixa_salarial: 'R$ 7.000 – R$ 11.000',
+        criado_em: new Date().toISOString()
+      },
+      {
+        id: 'vg002',
+        titulo: 'Analista de Marketing Digital',
+        departamento: 'Marketing',
+        senioridade: 'Júnior',
+        modalidade: 'Híbrido',
+        cidade: 'São Paulo, SP',
+        tipo_contrato: 'CLT',
+        stack: ['Google Ads', 'Meta Ads', 'Analytics', 'SEO'],
+        faixa_salarial: 'R$ 3.500 – R$ 5.000',
+        criado_em: new Date(Date.now() - 3 * 86400000).toISOString()
+      },
+      {
+        id: 'vg003',
+        titulo: 'Assistente Comercial',
+        departamento: 'Comercial/Vendas',
+        senioridade: 'Primeiro emprego',
+        modalidade: 'Presencial',
+        cidade: 'São Paulo, SP',
+        tipo_contrato: 'CLT',
+        stack: ['Excel', 'CRM', 'Atendimento'],
+        faixa_salarial: 'R$ 2.000 – R$ 3.000',
+        criado_em: new Date(Date.now() - 1 * 86400000).toISOString()
       }
-      e.target.value = v;
+    ];
+
+    /* ----------------------------------------------------------
+       Estado global
+    ---------------------------------------------------------- */
+    let todasVagas = [];
+    const filtros = { nivel: 'Todos', modalidade: 'Todos', area: 'Todos' };
+
+    /* ----------------------------------------------------------
+       Normaliza o objeto retornado pela API para formato interno
+    ---------------------------------------------------------- */
+    function normalizar(v) {
+      const rawStack = v.stack || v.tecnologias || v.skills || [];
+      let stack = Array.isArray(rawStack)
+        ? rawStack
+        : String(rawStack).split(',').map(s => s.trim()).filter(Boolean);
+
+      return {
+        id:            v.id || v._id || v.vaga_id || String(Math.random()),
+        titulo:        v.titulo || v.title || v.nome_vaga || 'Vaga',
+        departamento:  v.departamento || v.area || v.department || '',
+        senioridade:   v.senioridade || v.nivel || v.level || '',
+        modalidade:    v.modalidade || v.remote_type || '',
+        cidade:        v.cidade || v.city || v.location || 'Remoto',
+        tipo_contrato: v.tipo_contrato || v.contract_type || 'CLT',
+        stack,
+        faixa_salarial:v.faixa_salarial || v.salario || v.salary || '',
+        criado_em:     v.criado_em || v.created_at || v.data_criacao || null
+      };
+    }
+
+    /* ----------------------------------------------------------
+       Busca vagas da API; usa fallback estático se falhar
+    ---------------------------------------------------------- */
+    async function carregarVagas() {
+      try {
+        const res = await fetch('https://webhook.danns.com.br/webhook/ats-vagas-publicas');
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const data = await res.json();
+        const raw = Array.isArray(data) ? data : (data.vagas || data.data || []);
+        if (!raw.length) throw new Error('empty');
+        todasVagas = raw.map(normalizar);
+      } catch {
+        todasVagas = VAGAS_ESTATICAS.map(normalizar);
+      }
+      renderizarVagas();
+    }
+
+    /* ----------------------------------------------------------
+       Aplica filtros ativos sobre o array completo
+    ---------------------------------------------------------- */
+    function filtrarVagas() {
+      return todasVagas.filter(v => {
+        const matchNivel = filtros.nivel === 'Todos' ||
+          v.senioridade === filtros.nivel ||
+          /* "Especialista" filtra tanto "Especialista" quanto "Especialista/Lead" */
+          (filtros.nivel === 'Especialista' && v.senioridade.startsWith('Especialista'));
+
+        const matchModal = filtros.modalidade === 'Todos' || v.modalidade === filtros.modalidade;
+
+        const matchArea  = filtros.area === 'Todos' ||
+          v.departamento === filtros.area ||
+          /* "Comercial" pode corresponder a "Comercial/Vendas" */
+          (filtros.area === 'Comercial/Vendas' && (v.departamento.includes('Comercial') || v.departamento.includes('Vendas')));
+
+        return matchNivel && matchModal && matchArea;
+      });
+    }
+
+    /* ----------------------------------------------------------
+       Helper para escapar HTML e evitar XSS
+    ---------------------------------------------------------- */
+    function esc(str) {
+      const d = document.createElement('div');
+      d.textContent = String(str || '');
+      return d.innerHTML;
+    }
+
+    /* ----------------------------------------------------------
+       Cria o elemento HTML de um card de vaga
+    ---------------------------------------------------------- */
+    function criarCard(vaga) {
+      const isNova = vaga.criado_em &&
+        (Date.now() - new Date(vaga.criado_em).getTime()) < 7 * 86400000;
+
+      const stackVis = vaga.stack.slice(0, 5);
+      const stackExtra = vaga.stack.length > 5 ? vaga.stack.length - 5 : 0;
+
+      const params = new URLSearchParams({
+        vaga_id:      vaga.id,
+        titulo:       vaga.titulo,
+        departamento: vaga.departamento,
+        senioridade:  vaga.senioridade,
+        modalidade:   vaga.modalidade
+      });
+
+      const div = document.createElement('article');
+      div.className = 'vaga-card';
+      div.setAttribute('aria-label', 'Vaga: ' + vaga.titulo);
+
+      div.innerHTML = `
+        <div class="vaga-card__top-badges">
+          <span class="badge-nivel" data-nivel="${esc(vaga.senioridade)}">${esc(vaga.senioridade)}</span>
+          ${isNova ? '<span class="badge-nova">Nova</span>' : ''}
+        </div>
+        <div>
+          <h3 class="vaga-card__title">${esc(vaga.titulo)}</h3>
+          <p class="vaga-card__dept">${esc(vaga.departamento)}</p>
+        </div>
+        <div class="vaga-card__meta">
+          <span class="vaga-card__meta-item">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            ${esc(vaga.modalidade)}${vaga.cidade && vaga.cidade !== 'Remoto' ? ' · ' + esc(vaga.cidade) : ''}
+          </span>
+          <span class="vaga-card__meta-item">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+            ${esc(vaga.tipo_contrato)}
+          </span>
+        </div>
+        ${stackVis.length ? `
+        <div class="vaga-card__stack">
+          ${stackVis.map(t => `<span class="stack-tag">${esc(t)}</span>`).join('')}
+          ${stackExtra ? `<span class="stack-tag stack-tag--more">+${stackExtra}</span>` : ''}
+        </div>` : ''}
+        ${vaga.faixa_salarial ? `
+        <div class="vaga-card__salary">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          ${esc(vaga.faixa_salarial)}
+        </div>` : ''}
+        <a href="candidatura.html?${params}" class="vaga-card__cta">
+          Candidatar-se agora
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+        </a>
+      `;
+
+      return div;
+    }
+
+    /* ----------------------------------------------------------
+       Renderiza os cards filtrados na grid
+    ---------------------------------------------------------- */
+    function renderizarVagas() {
+      const grid    = document.getElementById('vagas-grid');
+      const countEl = document.getElementById('vagas-count');
+      const filtradas = filtrarVagas();
+
+      grid.innerHTML = '';
+
+      if (!filtradas.length) {
+        grid.innerHTML = `
+          <div class="no-results">
+            <div class="no-results__icon" aria-hidden="true">🔍</div>
+            <h3>Nenhuma vaga encontrada</h3>
+            <p>Tente ajustar os filtros para ver mais oportunidades.</p>
+          </div>`;
+        countEl.innerHTML = '0 vagas encontradas';
+        return;
+      }
+
+      filtradas.forEach(v => grid.appendChild(criarCard(v)));
+      const n = filtradas.length;
+      countEl.innerHTML = `<strong>${n}</strong> vaga${n !== 1 ? 's' : ''} encontrada${n !== 1 ? 's' : ''}`;
+    }
+
+    /* ----------------------------------------------------------
+       Lógica dos botões de filtro (single-select por grupo)
+    ---------------------------------------------------------- */
+    document.querySelectorAll('.filter-pill').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const group = btn.dataset.group;
+        const value = btn.dataset.value;
+
+        /* Remove .active de todos os pills do mesmo grupo */
+        document.querySelectorAll(`.filter-pill[data-group="${group}"]`).forEach(b => {
+          b.classList.remove('active');
+          b.setAttribute('aria-pressed', 'false');
+        });
+
+        btn.classList.add('active');
+        btn.setAttribute('aria-pressed', 'true');
+        filtros[group] = value;
+        renderizarVagas();
+      });
+      btn.setAttribute('aria-pressed', btn.classList.contains('active') ? 'true' : 'false');
     });
 
     /* ----------------------------------------------------------
-       Estado do upload de currículo
+       Scroll reveal para as seções abaixo
     ---------------------------------------------------------- */
-    let uploadedFileBase64 = '';
-    let uploadedFileName   = '';
-
-    function handleDragOver(e) {
-      e.preventDefault();
-      document.getElementById('upload-zone').classList.add('dragover');
-    }
-
-    function handleDragLeave() {
-      document.getElementById('upload-zone').classList.remove('dragover');
-    }
-
-    function handleDrop(e) {
-      e.preventDefault();
-      handleDragLeave();
-      const file = e.dataTransfer.files[0];
-      if (file) processFile(file);
-    }
-
-    function handleFileSelect(e) {
-      const file = e.target.files[0];
-      if (file) processFile(file);
-    }
-
-    function processFile(file) {
-      const errEl = document.getElementById('err-curriculo');
-      setError('field-curriculo', 'err-curriculo', false);
-
-      if (file.type !== 'application/pdf') {
-        errEl.textContent = 'Apenas arquivos PDF são aceitos.';
-        setError('field-curriculo', 'err-curriculo', true);
-        return;
-      }
-
-      if (file.size > 5 * 1024 * 1024) {
-        errEl.textContent = 'O arquivo excede o limite de 5 MB. Selecione um arquivo menor.';
-        setError('field-curriculo', 'err-curriculo', true);
-        return;
-      }
-
-      const reader = new FileReader();
-      reader.onload = function (ev) {
-        uploadedFileBase64 = ev.target.result.split(',')[1];
-        uploadedFileName   = file.name;
-        document.getElementById('upload-filename').textContent = file.name;
-        document.getElementById('upload-preview').classList.add('visible');
-        document.getElementById('upload-zone').classList.add('has-file');
-      };
-      reader.readAsDataURL(file);
-    }
-
-    function removeFile() {
-      uploadedFileBase64 = '';
-      uploadedFileName   = '';
-      document.getElementById('curriculo_file').value = '';
-      document.getElementById('upload-preview').classList.remove('visible');
-      document.getElementById('upload-zone').classList.remove('has-file');
-    }
-
-    /* ----------------------------------------------------------
-       Contador de caracteres das perguntas comportamentais
-    ---------------------------------------------------------- */
-    function updateBehavCounter(n) {
-      const ta      = document.getElementById('comportamental_' + n);
-      const counter = document.getElementById('bq' + n + '-counter');
-      const len     = ta.value.length;
-      counter.textContent = len + ' / 2000' + (len < 80 ? ' · mínimo 80' : '');
-      counter.className = 'char-counter';
-      if (len >= 80)   counter.classList.add('ok');
-      if (len > 1800)  counter.classList.add('warn');
-    }
-
-    /* ----------------------------------------------------------
-       Helper de erro para perguntas comportamentais
-    ---------------------------------------------------------- */
-    function setBehavError(n, hasError) {
-      const q = document.getElementById('bq-' + n);
-      const e = document.getElementById('err-bq' + n);
-      q.classList.toggle('has-error', hasError);
-      e.style.display = hasError ? 'block' : 'none';
-      return !hasError;
-    }
-
-    /* ----------------------------------------------------------
-       Contador de caracteres do resumo profissional
-    ---------------------------------------------------------- */
-    function updateCharCounter() {
-      const ta      = document.getElementById('resumo_texto');
-      const counter = document.getElementById('char-counter');
-      const len     = ta.value.length;
-
-      counter.textContent = len + ' / 3000 caracteres' + (len < 100 ? ' · mínimo 100' : '');
-      counter.className = 'char-counter';
-      if (len >= 100) counter.classList.add('ok');
-      if (len > 2700) counter.classList.add('warn');
-    }
-
-    /* ----------------------------------------------------------
-       Helpers de validação
-       Retorna true quando o campo é válido.
-    ---------------------------------------------------------- */
-    function setError(fieldId, errId, hasError) {
-      document.getElementById(fieldId).classList.toggle('has-error', hasError);
-      document.getElementById(errId).style.display = hasError ? 'block' : 'none';
-      return !hasError;
-    }
-
-    function isValidEmail(v) {
-      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim());
-    }
-
-    function isValidPhone(v) {
-      return v.replace(/\D/g, '').length >= 10;
-    }
-
-    function isValidLinkedin(v) {
-      if (!v.trim()) return true; // campo opcional
-      return v.toLowerCase().includes('linkedin') || v.startsWith('http');
-    }
-
-    /* ----------------------------------------------------------
-       Validação da Etapa 1
-    ---------------------------------------------------------- */
-    function validateStep1() {
-      const nome  = document.getElementById('nome').value.trim();
-      const email = document.getElementById('email').value.trim();
-      const tel   = document.getElementById('telefone').value.trim();
-      const li    = document.getElementById('linkedin').value.trim();
-
-      const ok = [
-        setError('field-nome',     'err-nome',     nome.length < 2),
-        setError('field-email',    'err-email',    !isValidEmail(email)),
-        setError('field-telefone', 'err-telefone', !isValidPhone(tel)),
-        setError('field-linkedin', 'err-linkedin', !isValidLinkedin(li)),
-      ];
-      return ok.every(Boolean);
-    }
-
-    /* ----------------------------------------------------------
-       Validação da Etapa 2
-    ---------------------------------------------------------- */
-    function validateStep2() {
-      const area   = document.getElementById('area_atuacao').value;
-      const senior = document.getElementById('senioridade').value;
-      const exp    = document.getElementById('experiencia_anos').value;
-      const modal  = document.querySelector('input[name="modalidade"]:checked');
-      const resumo = document.getElementById('resumo_texto').value.trim();
-      const bq1    = document.getElementById('comportamental_1').value.trim();
-      const bq2    = document.getElementById('comportamental_2').value.trim();
-      const bq3    = document.getElementById('comportamental_3').value.trim();
-
-      const ok = [
-        setError('field-area',        'err-area',        !area),
-        setError('field-senioridade', 'err-senioridade',  !senior),
-        setError('field-experiencia', 'err-experiencia',  !exp),
-        setError('field-modalidade',  'err-modalidade',   !modal),
-        setError('field-resumo',      'err-resumo',       resumo.length < 100),
-        setBehavError(1, bq1.length < 80),
-        setBehavError(2, bq2.length < 80),
-        setBehavError(3, bq3.length < 80),
-      ];
-      return ok.every(Boolean);
-    }
-
-    /* ----------------------------------------------------------
-       Navegação entre etapas
-    ---------------------------------------------------------- */
-    function goToStep2() {
-      if (!validateStep1()) return;
-
-      document.getElementById('step-1').classList.remove('active');
-      document.getElementById('step-2').classList.add('active');
-
-      /* Atualiza indicadores visuais de progresso */
-      const c1 = document.getElementById('step-circle-1');
-      c1.classList.remove('active');
-      c1.classList.add('done');
-      c1.textContent = '✓';
-
-      document.getElementById('step-circle-2').classList.add('active');
-      document.getElementById('step-circle-2').setAttribute('aria-current', 'step');
-      document.getElementById('step-circle-1').removeAttribute('aria-current');
-      document.getElementById('step-label-1').classList.remove('active');
-      document.getElementById('step-label-2').classList.add('active');
-      document.getElementById('connector-1').classList.add('done');
-
-      /* Barra de progresso a 100% */
-      const fill = document.getElementById('progress-fill');
-      fill.style.width = '100%';
-      fill.closest('[role="progressbar"]').setAttribute('aria-valuenow', '100');
-
-      document.querySelector('.form-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-
-    function goToStep1() {
-      document.getElementById('step-2').classList.remove('active');
-      document.getElementById('step-1').classList.add('active');
-
-      const c1 = document.getElementById('step-circle-1');
-      c1.classList.add('active');
-      c1.classList.remove('done');
-      c1.textContent = '1';
-      c1.setAttribute('aria-current', 'step');
-      document.getElementById('step-circle-2').classList.remove('active');
-      document.getElementById('step-circle-2').removeAttribute('aria-current');
-      document.getElementById('step-label-1').classList.add('active');
-      document.getElementById('step-label-2').classList.remove('active');
-      document.getElementById('connector-1').classList.remove('done');
-
-      const fill = document.getElementById('progress-fill');
-      fill.style.width = '50%';
-      fill.closest('[role="progressbar"]').setAttribute('aria-valuenow', '50');
-
-      document.querySelector('.form-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-
-    /* ----------------------------------------------------------
-       Monta o payload JSON para envio
-    ---------------------------------------------------------- */
-    function buildPayload() {
-      return {
-        nome:               document.getElementById('nome').value.trim(),
-        email:              document.getElementById('email').value.trim().toLowerCase(),
-        telefone:           document.getElementById('telefone').value.replace(/\D/g, ''),
-        linkedin:           document.getElementById('linkedin').value.trim(),
-        area_atuacao:       document.getElementById('area_atuacao').value,
-        senioridade:        document.getElementById('senioridade').value,
-        experiencia_anos:   document.getElementById('experiencia_anos').value,
-        modalidade:         (document.querySelector('input[name="modalidade"]:checked') || {}).value || '',
-        pretensao_salarial: document.getElementById('pretensao_salarial').value || 'Prefiro não informar',
-        resumo_texto:       document.getElementById('resumo_texto').value.trim(),
-        comportamental_1:   document.getElementById('comportamental_1').value.trim(),
-        comportamental_2:   document.getElementById('comportamental_2').value.trim(),
-        comportamental_3:   document.getElementById('comportamental_3').value.trim(),
-        curriculo_base64:   uploadedFileBase64,
-        curriculo_nome:     uploadedFileName,
-        origem:             'landing_page'
-      };
-    }
-
-    /* ----------------------------------------------------------
-       Submissão: loading → POST → sucesso ou erro
-    ---------------------------------------------------------- */
-    async function submitForm() {
-      if (!validateStep2()) return;
-
-      const btn = document.getElementById('btn-submit');
-
-      /* Loading state com spinner */
-      btn.disabled = true;
-      btn.innerHTML = '<div class="spinner" aria-hidden="true"></div> Analisando seu perfil com IA...';
-
-      /* Delay de 2 s para efeito de "processamento IA" */
-      await new Promise(r => setTimeout(r, 2000));
-
-      try {
-        const res = await fetch('https://webhook.danns.com.br/webhook/ats-candidato', {
-          method:  'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body:    JSON.stringify(buildPayload())
-        });
-
-        if (!res.ok) throw new Error('HTTP ' + res.status);
-
-        showSuccess();
-      } catch (err) {
-        btn.disabled = false;
-        btn.innerHTML = 'Enviar candidatura <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 2 11 13"/><path d="m22 2-7 20-4-9-9-4 20-7z"/></svg>';
-        showError(err);
-      }
-    }
-
-    function showSuccess() {
-      document.getElementById('step-2').style.display          = 'none';
-      document.getElementById('screen-success').style.display  = 'block';
-      document.getElementById('progress-header').style.display = 'none';
-      document.querySelector('.form-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-
-    function showError(err) {
-      document.getElementById('step-2').style.display        = 'none';
-      document.getElementById('screen-error').style.display  = 'block';
-      if (err && err.message) {
-        document.getElementById('error-msg').textContent =
-          'Erro ao enviar: ' + err.message + '. Por favor, tente novamente.';
-      }
-    }
-
-    function retrySubmit() {
-      document.getElementById('screen-error').style.display = 'none';
-      document.getElementById('step-2').style.display       = '';
-      document.getElementById('step-2').classList.add('active');
-    }
-
-    /* ----------------------------------------------------------
-       Limpa erro de validação ao usuário corrigir o campo
-    ---------------------------------------------------------- */
-    (function bindClearErrors() {
-      const fields = [
-        ['nome',            'field-nome',        'err-nome'],
-        ['email',           'field-email',        'err-email'],
-        ['telefone',        'field-telefone',     'err-telefone'],
-        ['linkedin',        'field-linkedin',     'err-linkedin'],
-        ['area_atuacao',    'field-area',         'err-area'],
-        ['senioridade',     'field-senioridade',  'err-senioridade'],
-        ['experiencia_anos','field-experiencia',  'err-experiencia'],
-        ['resumo_texto',    'field-resumo',       'err-resumo'],
-      ];
-
-      fields.forEach(([id, fId, eId]) => {
-        const el = document.getElementById(id);
-        if (!el) return;
-        el.addEventListener(el.tagName === 'SELECT' ? 'change' : 'input', () => {
-          setError(fId, eId, false);
-        });
-      });
-
-      document.querySelectorAll('input[name="modalidade"]').forEach(r => {
-        r.addEventListener('change', () => setError('field-modalidade', 'err-modalidade', false));
-      });
-
-      [1, 2, 3].forEach(n => {
-        const ta = document.getElementById('comportamental_' + n);
-        if (ta) ta.addEventListener('input', () => setBehavError(n, false));
-      });
-    })();
-
-    /* ----------------------------------------------------------
-       Intersection Observer para scroll reveal das seções
-    ---------------------------------------------------------- */
-    document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', () => {
       const io = new IntersectionObserver(
         entries => entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); } }),
         { threshold: 0.1 }
       );
       document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+      /* Inicia o carregamento */
+      carregarVagas();
     });
   </script>
 
