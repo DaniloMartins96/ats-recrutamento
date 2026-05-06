@@ -766,7 +766,7 @@ function renderVagas() {
 
   const ativas    = vagas.filter(v => v.status === 'ativa').length;
   const pausadas  = vagas.filter(v => v.status === 'pausada').length;
-  const encerradas = vagas.filter(v => v.status === 'encerrada').length;
+  const encerradas = vagas.filter(v => v.status === 'encerrada' || v.status === 'rascunho').length;
 
   document.getElementById('vagas-stats').innerHTML = `
     <div class="stat-card"><div class="stat-value">${vagas.length}</div><div class="stat-label">Total de Vagas</div></div>
@@ -782,8 +782,19 @@ function renderVagas() {
     return;
   }
 
-  const statusBadge = s => s === 'ativa' ? 'badge-green' : s === 'pausada' ? 'badge-yellow' : s === 'rascunho' ? 'badge-blue' : 'badge-gray';
-  const statusLabel = s => s === 'ativa' ? 'Ativa' : s === 'pausada' ? 'Pausada' : s === 'rascunho' ? 'Rascunho' : 'Encerrada';
+  const statusBadge = s => {
+    if (s === 'ativa')     return 'badge-green';
+    if (s === 'pausada')   return 'badge-yellow';
+    if (s === 'encerrada') return 'badge-red';
+    return 'badge-gray'; // rascunho + qualquer outro
+  };
+  const statusLabel = s => {
+    if (s === 'ativa')     return 'Ativa';
+    if (s === 'pausada')   return 'Pausada';
+    if (s === 'rascunho')  return 'Rascunho';
+    if (s === 'encerrada') return 'Encerrada';
+    return s || '—'; // valor desconhecido: mostra o que veio da API
+  };
 
   tbody.innerHTML = `
     <table>
