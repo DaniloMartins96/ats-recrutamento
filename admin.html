@@ -679,129 +679,11 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
 const BASE_URL = 'https://webhook.danns.com.br/webhook';
 let adminPassword = sessionStorage.getItem('admin_pwd') || 'TechRecruit@2025';
 
-// ─── MOCK DATA ────────────────────────────────────────────────────
-const MOCK_VAGAS = [
-  {
-    id:'v1', titulo:'Engenheiro Full-Stack Sênior', departamento:'Tecnologia',
-    nivel:'Sênior', modalidade:'Híbrido', local:'São Paulo, SP', salario:'R$ 15.000 – 20.000',
-    descricao:'Desenvolver e manter microsserviços de alta disponibilidade. Contribuir com arquitetura técnica.',
-    stack:['Node.js','React','PostgreSQL','Docker','AWS'], competencias:['Comunicação','Autonomia','Resolução de problemas'],
-    status:'ativa', criado_em: new Date(Date.now()-3*864e5).toISOString(), candidatos:8
-  },
-  {
-    id:'v2', titulo:'Product Designer', departamento:'Design',
-    nivel:'Pleno', modalidade:'Remoto', local:'Remoto', salario:'R$ 8.000 – 11.000',
-    descricao:'Criar experiências digitais centradas no usuário desde a pesquisa até a entrega.',
-    stack:['Figma','Protopie','FigJam'], competencias:['Empatia','Criatividade','Colaboração'],
-    status:'ativa', criado_em: new Date(Date.now()-10*864e5).toISOString(), candidatos:5
-  },
-  {
-    id:'v3', titulo:'Analista de Marketing Digital', departamento:'Marketing',
-    nivel:'Júnior', modalidade:'Presencial', local:'Rio de Janeiro, RJ', salario:'R$ 4.000 – 6.000',
-    descricao:'Planejar e executar campanhas de mídia paga e orgânica com foco em performance.',
-    stack:['Google Ads','Meta Ads','GA4','SEMrush'], competencias:['Analítico','Proatividade'],
-    status:'pausada', criado_em: new Date(Date.now()-20*864e5).toISOString(), candidatos:12
-  }
-];
-
-const MOCK_CANDIDATOS = [
-  {
-    id:'c1', nome:'Ana Beatriz Costa', email:'ana.costa@email.com',
-    vaga:'Engenheiro Full-Stack Sênior', vaga_id:'v1',
-    nivel_experiencia:'Sênior (5+ anos)', nivel_ingles:'Avançado',
-    score:87, status:'Em análise',
-    dimensoes:[
-      {nome:'Técnico', pct:92},{nome:'Experiência', pct:85},{nome:'Comportamental', pct:80},{nome:'Fit Cultural', pct:88}
-    ],
-    curriculo_nome:'ana_costa_cv.pdf',
-    respostas:[
-      {
-        pergunta:'Descreva um desafio técnico complexo que você resolveu',
-        star:{
-          S:'Nossa plataforma de pagamentos apresentava timeout em 15% das transações no pico.',
-          T:'Identificar a causa raiz e resolver sem downtime em menos de uma semana.',
-          A:'Profiler de queries, otimização de índices no PostgreSQL e implementação de circuit breaker.',
-          R:'Timeouts caíram para 0,2%. Throughput aumentou 40%. Deploy sem interrupção.'
-        }
-      },
-      {
-        pergunta:'Fale sobre liderança técnica ou mentoria',
-        star:{
-          S:'Time júnior com dificuldade em code review — PRs demoravam 3 dias em média.',
-          T:'Criar cultura de feedback rápido e construtivo sem bloquear entregas.',
-          A:'Implantar template de PR, sessões de pair programming semanais e checklist de qualidade.',
-          R:'Tempo médio de review caiu para 4h. Dois devs júniors promovidos após 6 meses.'
-        }
-      },
-      {
-        pergunta:'Como você lida com prazos apertados e pressão?',
-        star:{
-          S:'Sprint final antes do lançamento — escopo aumentou 30% na última semana.',
-          T:'Entregar MVP sem comprometer qualidade crítica.',
-          A:'Priorizei features por impacto, negociei corte de nice-to-haves e dividi o time em squads focados.',
-          R:'Lançamento no prazo. NPS pós-lançamento: 72.'
-        }
-      }
-    ]
-  },
-  {
-    id:'c2', nome:'Rafael Mendes', email:'rafael.m@email.com',
-    vaga:'Product Designer', vaga_id:'v2',
-    nivel_experiencia:'Pleno (2-5 anos)', nivel_ingles:'Intermediário',
-    score:74, status:'Entrevista',
-    dimensoes:[
-      {nome:'Técnico', pct:78},{nome:'Experiência', pct:72},{nome:'Comportamental', pct:75},{nome:'Fit Cultural', pct:70}
-    ],
-    curriculo_nome:'rafael_mendes_portfolio.pdf',
-    respostas:[
-      {
-        pergunta:'Conte sobre um projeto de design do qual se orgulha',
-        star:{
-          S:'App de saúde com baixíssima adesão — apenas 12% dos usuários completavam o onboarding.',
-          T:'Redesenhar o onboarding para aumentar ativação sem aumentar tempo de desenvolvimento.',
-          A:'Pesquisa com 20 usuários, mapa de jornada, 3 rodadas de teste de usabilidade.',
-          R:'Taxa de conclusão subiu para 67%. Tempo médio de onboarding reduziu 40%.'
-        }
-      },
-      {
-        pergunta:'Como você equilibra estética e funcionalidade?',
-        star:{
-          S:'Dashboard financeiro com 60+ métricas — equipe de negócios queria gráficos elaborados.',
-          T:'Apresentar dados complexos de forma clara sem sacrificar a riqueza visual.',
-          A:'Card system com hierarquia visual clara, micro-interações sutis e paleta de dados acessível.',
-          R:'Aprovação do stakeholder em primeira revisão. Redução de 30% em tickets de suporte sobre o dashboard.'
-        }
-      }
-    ]
-  },
-  {
-    id:'c3', nome:'Julia Ferreira', email:'julia.f@email.com',
-    vaga:'Analista de Marketing Digital', vaga_id:'v3',
-    nivel_experiencia:'Júnior (0-2 anos)', nivel_ingles:'Básico',
-    score:61, status:'Em análise',
-    dimensoes:[
-      {nome:'Técnico', pct:55},{nome:'Experiência', pct:60},{nome:'Comportamental', pct:70},{nome:'Fit Cultural', pct:65}
-    ],
-    curriculo_nome:null,
-    respostas:[
-      {
-        pergunta:'Descreva uma campanha que você criou ou participou',
-        star:{
-          S:'Campanha de Black Friday para e-commerce de moda com orçamento limitado de R$ 5.000.',
-          T:'Maximizar ROAS dentro do orçamento disponível.',
-          A:'Segmentação por comportamento de compra, criativos dinâmicos e remarketing agressivo.',
-          R:'ROAS de 4,2x. Faturamento 18% acima da meta.'
-        }
-      }
-    ]
-  }
-];
-
 // ─── STATE ────────────────────────────────────────────────────────
 let vagas = [];
 let candidatos = [];
 let currentVagaId = null;
-let tagData = { stack:[], comp:[] };
+let tagData = { stack: [], comp: [] };
 let currentCandidatoId = null;
 
 // ─── LOGIN ────────────────────────────────────────────────────────
@@ -810,17 +692,17 @@ function checkAuth() {
 }
 
 document.getElementById('login-btn').onclick = doLogin;
-document.getElementById('login-pwd').onkeydown = e => { if(e.key==='Enter') doLogin(); };
+document.getElementById('login-pwd').onkeydown = e => { if (e.key === 'Enter') doLogin(); };
 
 function doLogin() {
   const val = document.getElementById('login-pwd').value;
   if (val === adminPassword) {
-    sessionStorage.setItem('admin_auth','1');
+    sessionStorage.setItem('admin_auth', '1');
     showApp();
   } else {
     document.getElementById('login-err').textContent = 'Senha incorreta. Tente novamente.';
     document.getElementById('login-box').classList.add('shake');
-    setTimeout(()=>document.getElementById('login-box').classList.remove('shake'), 400);
+    setTimeout(() => document.getElementById('login-box').classList.remove('shake'), 400);
     document.getElementById('login-pwd').value = '';
   }
 }
@@ -839,11 +721,11 @@ document.getElementById('logout-btn').onclick = () => {
 // ─── NAV ──────────────────────────────────────────────────────────
 document.querySelectorAll('.nav-item').forEach(el => {
   el.onclick = () => {
-    document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     el.classList.add('active');
     const nav = el.dataset.nav;
-    document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
-    document.getElementById('sec-'+nav).classList.add('active');
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.getElementById('sec-' + nav).classList.add('active');
   };
 });
 
@@ -854,16 +736,23 @@ async function init() {
   initTagInputs();
 }
 
+// ─── ESC fecha modal / slideover ──────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape') return;
+  if (document.getElementById('modal-vaga').classList.contains('open')) fecharModalVaga();
+  if (document.getElementById('slideover-cand').classList.contains('open')) fecharSlideover();
+});
+
 // ─── VAGAS ────────────────────────────────────────────────────────
 async function carregarVagas() {
   try {
-    const r = await fetch(BASE_URL+'/ats-vagas-publicas', {signal: AbortSignal.timeout(8000)});
-    if (!r.ok) throw new Error('HTTP '+r.status);
+    const r = await fetch(BASE_URL + '/ats-vagas-publicas', { signal: AbortSignal.timeout(8000) });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
     const data = await r.json();
     vagas = Array.isArray(data) ? data : (Array.isArray(data.vagas) ? data.vagas : []);
-  } catch(e) {
+  } catch {
     vagas = [];
-    showToast('Erro ao carregar vagas da API.','error');
+    showToast('Erro ao carregar vagas da API.', 'error');
   }
   renderVagas();
 }
@@ -871,48 +760,56 @@ async function carregarVagas() {
 function renderVagas() {
   const q = document.getElementById('vagas-search').value.toLowerCase();
   const filtered = vagas.filter(v =>
-    (v.titulo||'').toLowerCase().includes(q) ||
-    (v.departamento||'').toLowerCase().includes(q)
+    (v.titulo || '').toLowerCase().includes(q) ||
+    (v.departamento || '').toLowerCase().includes(q)
   );
 
-  // stats
-  const stats = document.getElementById('vagas-stats');
-  stats.innerHTML = `
-    <div class="stat-card"><div class="stat-value">${vagas.length}</div><div class="stat-label">Total de Vagas</div></div>
-    <div class="stat-card"><div class="stat-value">${vagas.filter(v=>v.status==='ativa').length}</div><div class="stat-label">Vagas Ativas</div></div>
-    <div class="stat-card"><div class="stat-value">${vagas.filter(v=>v.status==='pausada').length}</div><div class="stat-label">Vagas Pausadas</div></div>
-    <div class="stat-card"><div class="stat-value">${vagas.filter(v=>v.status==='encerrada').length}</div><div class="stat-label">Vagas Encerradas</div></div>
-  `;
-  document.getElementById('nav-badge-vagas').textContent = vagas.filter(v=>v.status==='ativa').length;
+  const ativas    = vagas.filter(v => v.status === 'ativa').length;
+  const pausadas  = vagas.filter(v => v.status === 'pausada').length;
+  const encerradas = vagas.filter(v => v.status === 'encerrada').length;
 
-  // table
+  document.getElementById('vagas-stats').innerHTML = `
+    <div class="stat-card"><div class="stat-value">${vagas.length}</div><div class="stat-label">Total de Vagas</div></div>
+    <div class="stat-card"><div class="stat-value">${ativas}</div><div class="stat-label">Vagas Ativas</div></div>
+    <div class="stat-card"><div class="stat-value">${pausadas}</div><div class="stat-label">Vagas Pausadas</div></div>
+    <div class="stat-card"><div class="stat-value">${encerradas}</div><div class="stat-label">Vagas Encerradas</div></div>
+  `;
+  document.getElementById('nav-badge-vagas').textContent = ativas;
+
   const tbody = document.getElementById('vagas-table-body');
   if (!filtered.length) {
     tbody.innerHTML = `<div class="empty-state"><p>Nenhuma vaga encontrada.</p></div>`;
     return;
   }
-  const statusBadge = s => s==='ativa' ? 'badge-green' : s==='pausada' ? 'badge-yellow' : 'badge-gray';
-  const statusLabel = s => s==='ativa' ? 'Ativa' : s==='pausada' ? 'Pausada' : 'Encerrada';
+
+  const statusBadge = s => s === 'ativa' ? 'badge-green' : s === 'pausada' ? 'badge-yellow' : s === 'rascunho' ? 'badge-blue' : 'badge-gray';
+  const statusLabel = s => s === 'ativa' ? 'Ativa' : s === 'pausada' ? 'Pausada' : s === 'rascunho' ? 'Rascunho' : 'Encerrada';
 
   tbody.innerHTML = `
     <table>
       <thead><tr>
-        <th>Vaga</th><th>Departamento</th><th>Nível</th><th>Modalidade</th>
-        <th>Status</th><th></th>
+        <th>Vaga</th><th>Departamento</th><th>Nível</th><th>Modalidade</th><th>Status</th><th></th>
       </tr></thead>
       <tbody>
-        ${filtered.map(v=>`
+        ${filtered.map(v => {
+          const tid = (v.titulo || '').replace(/'/g, "\\'");
+          let btns = `<button class="btn btn-ghost btn-sm" onclick="editarVaga('${v.id}')">Editar</button>`;
+          if (v.status === 'ativa')
+            btns += ` <button class="btn btn-ghost btn-sm" onclick="atualizarStatusVaga('${v.id}','pausada')">Pausar</button>`;
+          else if (v.status === 'pausada')
+            btns += ` <button class="btn btn-ghost btn-sm" onclick="atualizarStatusVaga('${v.id}','ativa')">Ativar</button>`;
+          if (v.status === 'encerrada')
+            btns += ` <button class="btn btn-danger btn-sm" onclick="deletarVaga('${v.id}','${tid}')">Apagar</button>`;
+          return `
           <tr onclick="editarVaga('${v.id}')">
-            <td><div style="font-weight:600">${v.titulo}</div><div style="font-size:11px;color:var(--muted)">${v.cidade||'—'}</div></td>
-            <td><span class="badge badge-purple">${v.departamento||'—'}</span></td>
-            <td><span style="font-size:12px">${v.senioridade||'—'}</span></td>
-            <td><span class="badge badge-blue">${v.modalidade||'—'}</span></td>
+            <td><div style="font-weight:600">${v.titulo || '—'}</div><div style="font-size:11px;color:var(--muted)">${v.cidade || '—'}</div></td>
+            <td><span class="badge badge-purple">${v.departamento || '—'}</span></td>
+            <td><span style="font-size:12px">${v.senioridade || '—'}</span></td>
+            <td><span class="badge badge-blue">${v.modalidade || '—'}</span></td>
             <td><span class="badge ${statusBadge(v.status)}">${statusLabel(v.status)}</span></td>
-            <td onclick="event.stopPropagation()">
-              <button class="btn btn-ghost btn-sm" onclick="editarVaga('${v.id}')">Editar</button>
-            </td>
-          </tr>
-        `).join('')}
+            <td onclick="event.stopPropagation()" style="white-space:nowrap">${btns}</td>
+          </tr>`;
+        }).join('')}
       </tbody>
     </table>
   `;
@@ -920,39 +817,73 @@ function renderVagas() {
 
 document.getElementById('vagas-search').oninput = renderVagas;
 
-// ─── NOVA/EDITAR VAGA ─────────────────────────────────────────────
+// ─── PAUSAR / ATIVAR VAGA ─────────────────────────────────────────
+async function atualizarStatusVaga(id, novoStatus) {
+  try {
+    const r = await fetch(BASE_URL + '/ats-admin-atualizar-status-vaga', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ vaga_id: id, status: novoStatus }),
+      signal: AbortSignal.timeout(5000)
+    });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    showToast(novoStatus === 'ativa' ? 'Vaga ativada!' : 'Vaga pausada!', 'success');
+    await carregarVagas();
+  } catch {
+    showToast('Erro ao atualizar status da vaga.', 'error');
+  }
+}
+
+// ─── APAGAR VAGA ──────────────────────────────────────────────────
+async function deletarVaga(id, titulo) {
+  if (!confirm(`Tem certeza que deseja apagar a vaga "${titulo}"? Esta ação não pode ser desfeita.`)) return;
+  try {
+    const r = await fetch(BASE_URL + '/ats-admin-deletar-vaga', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ vaga_id: id }),
+      signal: AbortSignal.timeout(5000)
+    });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    showToast('Vaga apagada com sucesso.', 'success');
+    await carregarVagas();
+  } catch {
+    showToast('Erro ao apagar vaga.', 'error');
+  }
+}
+
+// ─── MODAL NOVA / EDITAR VAGA ─────────────────────────────────────
 document.getElementById('btn-nova-vaga').onclick = () => abrirModalVaga(null);
 document.getElementById('modal-vaga-close').onclick = fecharModalVaga;
 document.getElementById('mv-cancel').onclick = fecharModalVaga;
-document.getElementById('modal-vaga').onclick = e => { if(e.target===e.currentTarget) fecharModalVaga(); };
 
 function abrirModalVaga(id) {
   currentVagaId = id;
-  tagData = { stack:[], comp:[] };
+  tagData = { stack: [], comp: [] };
 
   if (id) {
-    const v = vagas.find(x=>x.id===id);
+    const v = vagas.find(x => x.id === id);
     if (!v) return;
     document.getElementById('modal-vaga-title').textContent = 'Editar Vaga';
     document.getElementById('mv-save').textContent = 'Salvar Alterações';
-    document.getElementById('mv-titulo').value = v.titulo||'';
-    document.getElementById('mv-departamento').value = v.departamento||'';
-    document.getElementById('mv-nivel').value = v.senioridade||v.nivel||'';
-    document.getElementById('mv-modalidade').value = v.modalidade||'';
-    document.getElementById('mv-local').value = v.cidade||v.local||'';
-    const salarioFmt = v.salario_min||v.salario_max
+    document.getElementById('mv-titulo').value = v.titulo || '';
+    document.getElementById('mv-departamento').value = v.departamento || '';
+    document.getElementById('mv-nivel').value = v.senioridade || v.nivel || '';
+    document.getElementById('mv-modalidade').value = v.modalidade || '';
+    document.getElementById('mv-local').value = v.cidade || v.local || '';
+    const salarioFmt = v.salario_min || v.salario_max
       ? [v.salario_min, v.salario_max].filter(Boolean).join(' – ')
-      : (v.salario||'');
+      : (v.salario || '');
     document.getElementById('mv-salario').value = salarioFmt;
-    document.getElementById('mv-descricao').value = v.descricao||'';
-    document.getElementById('mv-status').value = v.status||'ativa';
-    tagData.stack = [...(v.stack_tecnica||v.stack||[])];
-    tagData.comp = [...(v.competencias||[])];
+    document.getElementById('mv-descricao').value = v.descricao || '';
+    document.getElementById('mv-status').value = v.status || 'ativa';
+    tagData.stack = [...(v.stack_tecnica || v.stack || [])];
+    tagData.comp  = [...(v.competencias || [])];
   } else {
     document.getElementById('modal-vaga-title').textContent = 'Nova Vaga';
     document.getElementById('mv-save').textContent = 'Publicar Vaga';
-    ['mv-titulo','mv-local','mv-salario','mv-descricao'].forEach(id=>document.getElementById(id).value='');
-    ['mv-departamento','mv-nivel','mv-modalidade'].forEach(id=>document.getElementById(id).value='');
+    ['mv-titulo', 'mv-local', 'mv-salario', 'mv-descricao'].forEach(i => document.getElementById(i).value = '');
+    ['mv-departamento', 'mv-nivel', 'mv-modalidade'].forEach(i => document.getElementById(i).value = '');
     document.getElementById('mv-status').value = 'ativa';
   }
 
@@ -970,36 +901,43 @@ function editarVaga(id) { abrirModalVaga(id); }
 
 async function salvarVaga(statusOverride) {
   const titulo = document.getElementById('mv-titulo').value.trim();
-  const dept = document.getElementById('mv-departamento').value;
-  const nivel = document.getElementById('mv-nivel').value;
-  const modal = document.getElementById('mv-modalidade').value;
+  const dept   = document.getElementById('mv-departamento').value;
+  const nivel  = document.getElementById('mv-nivel').value;
+  const modal  = document.getElementById('mv-modalidade').value;
 
   if (!titulo || !dept || !nivel || !modal) {
-    showToast('Preencha todos os campos obrigatórios.','error'); return;
+    showToast('Preencha todos os campos obrigatórios.', 'error');
+    return;
   }
 
   const isNova = !currentVagaId;
+  const vagaExistente = currentVagaId ? (vagas.find(v => v.id === currentVagaId) || {}) : {};
+
   const payload = {
-    id: currentVagaId || ('v'+Date.now()),
-    titulo, departamento:dept, nivel, modalidade:modal,
-    local: document.getElementById('mv-local').value.trim(),
-    salario: document.getElementById('mv-salario').value.trim(),
-    descricao: document.getElementById('mv-descricao').value.trim(),
-    stack: tagData.stack,
+    id: currentVagaId || ('v' + Date.now()),
+    titulo,
+    departamento: dept,
+    nivel,
+    modalidade: modal,
+    local:      document.getElementById('mv-local').value.trim(),
+    salario:    document.getElementById('mv-salario').value.trim(),
+    descricao:  document.getElementById('mv-descricao').value.trim(),
+    stack:      tagData.stack,
     competencias: tagData.comp,
-    status: statusOverride,
-    criado_em: currentVagaId ? (vagas.find(v=>v.id===currentVagaId)||{}).criado_em : new Date().toISOString(),
-    candidatos: currentVagaId ? (vagas.find(v=>v.id===currentVagaId)||{candidatos:0}).candidatos : 0
+    status:     statusOverride,
+    criado_em:  vagaExistente.criado_em || new Date().toISOString()
   };
 
   try {
-    const r = await fetch(BASE_URL+'/ats-admin-criar-vaga', {
-      method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload),
+    const r = await fetch(BASE_URL + '/ats-admin-criar-vaga', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
       signal: AbortSignal.timeout(5000)
     });
-    if (!r.ok) throw new Error('HTTP '+r.status);
+    if (!r.ok) throw new Error('HTTP ' + r.status);
   } catch {
-    showToast('Erro ao salvar vaga. Verifique a conexão.','error');
+    showToast('Erro ao salvar vaga. Verifique a conexão.', 'error');
     return;
   }
 
@@ -1021,9 +959,9 @@ function initTagInputs() {
 }
 
 function setupTagInput(store) {
-  const inp = document.getElementById('tag-input-'+store);
+  const inp = document.getElementById('tag-input-' + store);
   inp.addEventListener('keydown', e => {
-    if (e.key==='Enter' || e.key===',') {
+    if (e.key === 'Enter' || e.key === ',') {
       e.preventDefault();
       addTag(store, inp.value);
       inp.value = '';
@@ -1042,15 +980,15 @@ function addTag(store, val) {
 }
 
 function removeTag(store, idx) {
-  tagData[store].splice(idx,1);
+  tagData[store].splice(idx, 1);
   renderTags(store);
 }
 
 function renderTags(store) {
-  const wrap = document.getElementById('tag-wrap-'+store);
-  const inp = document.getElementById('tag-input-'+store);
-  wrap.querySelectorAll('.tag-chip').forEach(el=>el.remove());
-  tagData[store].forEach((t,i) => {
+  const wrap = document.getElementById('tag-wrap-' + store);
+  const inp  = document.getElementById('tag-input-' + store);
+  wrap.querySelectorAll('.tag-chip').forEach(el => el.remove());
+  tagData[store].forEach((t, i) => {
     const chip = document.createElement('span');
     chip.className = 'tag-chip';
     chip.innerHTML = `${t}<button type="button" onclick="removeTag('${store}',${i})">&times;</button>`;
@@ -1061,37 +999,42 @@ function renderTags(store) {
 // ─── CANDIDATOS ───────────────────────────────────────────────────
 async function carregarCandidatos() {
   try {
-    const r = await fetch(BASE_URL+'/ats-admin-candidatos', {signal: AbortSignal.timeout(5000)});
-    if (!r.ok) throw new Error();
+    const r = await fetch(BASE_URL + '/ats-admin-candidatos', { signal: AbortSignal.timeout(8000) });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
     const data = await r.json();
     candidatos = Array.isArray(data) ? data : (Array.isArray(data.candidatos) ? data.candidatos : []);
-  } catch { candidatos = []; showToast('Erro ao carregar candidatos da API.','error'); }
+  } catch {
+    candidatos = [];
+    showToast('Erro ao carregar candidatos da API.', 'error');
+  }
   renderCandidatos();
 }
 
 function renderCandidatos() {
-  const q = document.getElementById('cand-search').value.toLowerCase();
+  const q  = document.getElementById('cand-search').value.toLowerCase();
   const fs = document.getElementById('cand-filter-status').value;
+
   const filtered = candidatos.filter(c => {
-    const matchQ = (c.nome||'').toLowerCase().includes(q)
-      || (c.vaga_titulo||'').toLowerCase().includes(q)
-      || (c.email||'').toLowerCase().includes(q);
-    const matchS = !fs || c.recomendacao===fs;
+    const matchQ = (c.nome || '').toLowerCase().includes(q)
+      || (c.vaga_titulo || '').toLowerCase().includes(q)
+      || (c.email || '').toLowerCase().includes(q);
+    const matchS = !fs || c.recomendacao === fs;
     return matchQ && matchS;
   });
 
-  // stats
-  const stats = document.getElementById('cand-stats');
+  const paraAvancar   = candidatos.filter(c => c.recomendacao === 'avancar').length;
+  const bancoTalentos = candidatos.filter(c => c.recomendacao === 'banco_talentos').length;
   const avgScore = candidatos.length
-    ? (candidatos.reduce((s,c)=>s+(c.score_total||0),0)/candidatos.length).toFixed(1)
+    ? (candidatos.reduce((s, c) => s + (parseFloat(c.score_total) || 0), 0) / candidatos.length).toFixed(1)
     : '0.0';
-  stats.innerHTML = `
+
+  document.getElementById('cand-stats').innerHTML = `
     <div class="stat-card"><div class="stat-value">${candidatos.length}</div><div class="stat-label">Total de Candidatos</div></div>
-    <div class="stat-card"><div class="stat-value">${candidatos.filter(c=>c.recomendacao==='avancar').length}</div><div class="stat-label">Para Avançar</div></div>
-    <div class="stat-card"><div class="stat-value">${candidatos.filter(c=>c.recomendacao==='banco_talentos').length}</div><div class="stat-label">Banco de Talentos</div></div>
+    <div class="stat-card"><div class="stat-value">${paraAvancar}</div><div class="stat-label">Para Avançar</div></div>
+    <div class="stat-card"><div class="stat-value">${bancoTalentos}</div><div class="stat-label">Banco de Talentos</div></div>
     <div class="stat-card"><div class="stat-value">${avgScore}/10</div><div class="stat-label">Score Médio IA</div></div>
   `;
-  document.getElementById('nav-badge-cand').textContent = candidatos.filter(c=>c.recomendacao==='avancar').length;
+  document.getElementById('nav-badge-cand').textContent = paraAvancar;
 
   const tbody = document.getElementById('cand-table-body');
   if (!filtered.length) {
@@ -1099,9 +1042,9 @@ function renderCandidatos() {
     return;
   }
 
-  const fitColor = f => f==='alto'?'badge-green':f==='medio'?'badge-yellow':'badge-red';
-  const fitLabel = f => f==='alto'?'Alto':f==='medio'?'Médio':'Baixo';
-  const scoreColor = n => n>=8?'var(--success)':n>=6?'var(--warn)':'var(--danger)';
+  const fitColor  = f => f === 'alto' ? 'badge-green' : f === 'medio' ? 'badge-yellow' : 'badge-red';
+  const fitLabel  = f => f === 'alto' ? 'Alto' : f === 'medio' ? 'Médio' : 'Baixo';
+  const scoreColor = n => n >= 8 ? 'var(--success)' : n >= 6 ? 'var(--warn)' : 'var(--danger)';
 
   tbody.innerHTML = `
     <table>
@@ -1109,24 +1052,26 @@ function renderCandidatos() {
         <th>Candidato</th><th>Vaga</th><th>Senioridade</th><th>Score IA</th><th>Fit</th><th></th>
       </tr></thead>
       <tbody>
-        ${filtered.map(c=>`
+        ${filtered.map(c => {
+          const score = parseFloat(c.score_total) || 0;
+          return `
           <tr onclick="abrirCandidato('${c.candidato_id}')">
             <td>
-              <div style="font-weight:600">${c.nome||'—'}</div>
-              <div style="font-size:11px;color:var(--muted)">${c.email||'—'}</div>
+              <div style="font-weight:600">${c.nome || '—'}</div>
+              <div style="font-size:11px;color:var(--muted)">${c.email || '—'}</div>
             </td>
-            <td style="font-size:12px">${c.vaga_titulo||'—'}</td>
-            <td style="font-size:12px;color:var(--muted)">${c.senioridade_declarada||'—'}</td>
+            <td style="font-size:12px">${c.vaga_titulo || '—'}</td>
+            <td style="font-size:12px;color:var(--muted)">${c.senioridade_declarada || '—'}</td>
             <td>
-              <span style="font-weight:700;color:${scoreColor(c.score_total||0)}">${(c.score_total||0).toFixed(1)}</span>
+              <span style="font-weight:700;color:${scoreColor(score)}">${score.toFixed(1)}</span>
               <span style="color:var(--muted);font-size:11px">/10</span>
             </td>
-            <td><span class="badge ${fitColor(c.nivel_fit)}">${fitLabel(c.nivel_fit||'')}</span></td>
+            <td><span class="badge ${fitColor(c.nivel_fit)}">${fitLabel(c.nivel_fit || '')}</span></td>
             <td onclick="event.stopPropagation()">
               <button class="btn btn-ghost btn-sm" onclick="abrirCandidato('${c.candidato_id}')">Ver</button>
             </td>
-          </tr>
-        `).join('')}
+          </tr>`;
+        }).join('')}
       </tbody>
     </table>
   `;
@@ -1136,79 +1081,142 @@ document.getElementById('cand-search').oninput = renderCandidatos;
 document.getElementById('cand-filter-status').onchange = renderCandidatos;
 
 // ─── SLIDE-OVER CANDIDATO ─────────────────────────────────────────
+function scoreColor(n) {
+  return n >= 80 ? 'var(--success)' : n >= 60 ? 'var(--warn)' : 'var(--danger)';
+}
+
 function abrirCandidato(id) {
-  const c = candidatos.find(x=>x.candidato_id===id);
+  const c = candidatos.find(x => x.candidato_id === id);
   if (!c) return;
   currentCandidatoId = id;
 
-  document.getElementById('so-nome').textContent = c.nome||'—';
-  document.getElementById('so-meta').textContent = `${c.vaga_titulo||'—'} · ${c.senioridade_declarada||'Não informado'}`;
+  document.getElementById('so-nome').textContent = c.nome || '—';
+  document.getElementById('so-meta').textContent = `${c.vaga_titulo || '—'} · ${c.senioridade_declarada || 'Não informado'}`;
 
-  // score circle (score_total é 0-10; ring usa porcentagem 0-100)
-  const scorePct = (c.score_total||0) * 10;
-  const circle = document.getElementById('so-score-circle');
-  circle.style.setProperty('--pct', `${scorePct}%`);
-  document.getElementById('so-score-num').textContent = (c.score_total||0).toFixed(1);
+  const score = parseFloat(c.score_total) || 0;
+  document.getElementById('so-score-circle').style.setProperty('--pct', `${score * 10}%`);
+  document.getElementById('so-score-num').textContent = score.toFixed(1);
 
-  // dimension bars — competencias_identificadas
-  const dims = document.getElementById('so-dims');
+  // ── dim-bars: resumo + competências + listas fortes/atenção ──
+  let dimsHtml = '';
+
+  if (c.resumo_executivo) {
+    dimsHtml += `
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-bottom:16px;font-size:12px;color:var(--muted);line-height:1.6">
+        <div style="font-size:11px;font-weight:700;color:var(--text);margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em">Resumo Executivo</div>
+        ${c.resumo_executivo}
+      </div>`;
+  }
+
   const comps = c.competencias_identificadas || [];
   if (comps.length) {
-    dims.innerHTML = comps.map(comp => {
+    dimsHtml += comps.map(comp => {
       if (typeof comp === 'object' && comp !== null) {
         const nome = comp.nome || comp.name || String(comp);
-        const pct = typeof comp.pct === 'number' ? comp.pct
-          : typeof comp.score === 'number' ? comp.score * 10 : 70;
+        const pct  = typeof comp.pct === 'number' ? comp.pct : typeof comp.score === 'number' ? comp.score * 10 : 70;
+        const col  = scoreColor(pct);
         return `
           <div class="dim-item">
             <div class="dim-head">
               <span class="dim-name">${nome}</span>
-              <span class="dim-pct" style="color:${scoreColor(pct)}">${pct}%</span>
+              <span class="dim-pct" style="color:${col}">${pct}%</span>
             </div>
-            <div class="dim-bar"><div class="dim-fill" style="width:${pct}%;background:${scoreColor(pct)}"></div></div>
+            <div class="dim-bar"><div class="dim-fill" style="width:${pct}%;background:${col}"></div></div>
           </div>`;
       }
       return `<div class="dim-item" style="margin-bottom:6px"><span class="badge badge-purple">${comp}</span></div>`;
     }).join('');
-  } else {
-    dims.innerHTML = '';
   }
 
-  // STAR accordions — analise_star tem q1/q2/q3
-  const accEl = document.getElementById('so-accordions');
+  const buildList = (label, items, color) => {
+    if (!Array.isArray(items) || !items.length) return '';
+    return `<div style="margin-bottom:12px">
+      <div style="font-size:11px;font-weight:700;color:${color};text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">${label}</div>
+      ${items.map(i => `<div style="font-size:12px;color:var(--muted);padding:3px 0 3px 8px;border-left:2px solid ${color};margin-bottom:4px">${i}</div>`).join('')}
+    </div>`;
+  };
+
+  dimsHtml += buildList('Pontos Fortes',      c.pontos_fortes,   'var(--success)');
+  dimsHtml += buildList('Pontos de Atenção',   c.pontos_atencao,  'var(--warn)');
+  dimsHtml += buildList('Green Flags',         c.green_flags,     'var(--success)');
+  dimsHtml += buildList('Red Flags',           c.red_flags,       'var(--danger)');
+
+  document.getElementById('so-dims').innerHTML = dimsHtml;
+
+  // ── accordions: STAR + perguntas + briefing ──
+  let accHtml = '';
+  let accIdx  = 0;
+
   const starObj = c.analise_star || {};
   const starEntries = Object.entries(starObj);
   if (starEntries.length) {
-    accEl.innerHTML = starEntries.map(([key, r], i) => {
-      const pergunta = (typeof r === 'object' && r.pergunta) ? r.pergunta : key;
-      let bodyHtml = '';
+    starEntries.forEach(([key, r]) => {
+      const pergunta = (typeof r === 'object' && r && r.pergunta) ? r.pergunta : key;
+      let body = '';
       if (typeof r === 'object' && r !== null) {
-        const starData = r.star || r;
-        const starKeys = Object.entries(starData).filter(([k]) => k !== 'pergunta');
-        bodyHtml = starKeys.map(([k, v]) => `
-          <div class="star-section">
-            <span class="star-letter">${k[0].toUpperCase()}</span>
-            <span style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">${starLabel(k)}</span>
-            <div class="star-text" style="margin-top:4px">${v}</div>
-          </div>`).join('');
+        const src = r.star || r;
+        body = Object.entries(src)
+          .filter(([k]) => k !== 'pergunta')
+          .map(([k, v]) => `
+            <div class="star-section">
+              <span class="star-letter">${k[0].toUpperCase()}</span>
+              <span style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">${starLabel(k)}</span>
+              <div class="star-text" style="margin-top:4px">${v}</div>
+            </div>`).join('');
       } else if (typeof r === 'string') {
-        bodyHtml = `<div class="star-text">${r}</div>`;
+        body = `<div class="star-text">${r}</div>`;
       }
-      return `
+      const i = accIdx++;
+      accHtml += `
         <div class="accordion-item" id="acc-${i}">
           <div class="accordion-head" onclick="toggleAccordion('acc-${i}')">
             <span>${pergunta}</span>
             <svg class="accordion-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14"><polyline points="6 9 12 15 18 9"/></svg>
           </div>
-          <div class="accordion-body">${bodyHtml||'<div class="star-text">—</div>'}</div>
+          <div class="accordion-body">${body || '<div class="star-text">—</div>'}</div>
         </div>`;
-    }).join('');
-  } else {
-    accEl.innerHTML = `<div class="empty-state" style="padding:20px 0"><p>Nenhuma análise STAR disponível.</p></div>`;
+    });
   }
 
-  // CV
-  document.getElementById('so-cv-info').textContent = 'Nenhum arquivo enviado';
+  const buildAcc = (label, arr) => {
+    if (!Array.isArray(arr) || !arr.length) return '';
+    const i = accIdx++;
+    const items = arr.map(p => `<div style="font-size:12px;color:var(--muted);padding:6px 0;border-bottom:1px solid var(--border)">${p}</div>`).join('');
+    return `
+      <div class="accordion-item" id="acc-${i}" style="margin-top:8px">
+        <div class="accordion-head" onclick="toggleAccordion('acc-${i}')">
+          <span>${label}</span>
+          <svg class="accordion-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="accordion-body">${items}</div>
+      </div>`;
+  };
+
+  if (c.perguntas_rh || c.perguntas_tecnicas || c.perguntas_comportamentais) {
+    accHtml += `<div style="font-size:13px;font-weight:700;margin:16px 0 8px">Perguntas para Entrevista</div>`;
+    accHtml += buildAcc('Perguntas RH',               c.perguntas_rh);
+    accHtml += buildAcc('Perguntas Técnicas',          c.perguntas_tecnicas);
+    accHtml += buildAcc('Perguntas Comportamentais',   c.perguntas_comportamentais);
+  }
+
+  if (c.briefing_entrevistador) {
+    const i = accIdx++;
+    accHtml += `
+      <div class="accordion-item" id="acc-${i}" style="margin-top:8px">
+        <div class="accordion-head" onclick="toggleAccordion('acc-${i}')">
+          <span>Briefing do Entrevistador</span>
+          <svg class="accordion-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="accordion-body"><div class="star-text">${c.briefing_entrevistador}</div></div>
+      </div>`;
+  }
+
+  document.getElementById('so-accordions').innerHTML = accHtml
+    || `<div class="empty-state" style="padding:20px 0"><p>Nenhuma análise disponível.</p></div>`;
+
+  let infoHtml = `Etapa: <strong>${c.etapa_atual || '—'}</strong> &nbsp;|&nbsp; Status: <strong>${c.status_candidatura || '—'}</strong>`;
+  if (c.telefone) infoHtml += `<br>Tel: ${c.telefone}`;
+  document.getElementById('so-cv-info').innerHTML = infoHtml;
 
   document.getElementById('slideover-cand').classList.add('open');
   document.getElementById('so-backdrop').classList.add('open');
@@ -1224,109 +1232,103 @@ document.getElementById('so-close').onclick = fecharSlideover;
 document.getElementById('so-backdrop').onclick = fecharSlideover;
 
 function toggleAccordion(id) {
-  const el = document.getElementById(id);
-  el.classList.toggle('open');
+  document.getElementById(id).classList.toggle('open');
 }
 
 function starLabel(k) {
-  const m = {S:'Situação',T:'Tarefa',A:'Ação',R:'Resultado'};
-  return m[k.toUpperCase()]||k;
+  return { S: 'Situação', T: 'Tarefa', A: 'Ação', R: 'Resultado' }[k.toUpperCase()] || k;
 }
 
-function scoreColor(n) {
-  return n>=80?'var(--success)':n>=60?'var(--warn)':'var(--danger)';
-}
-
-// slide-over action buttons
-document.getElementById('so-btn-aprovar').onclick = () => mudarStatusCandidato('Aprovado');
-document.getElementById('so-btn-rejeitar').onclick = () => mudarStatusCandidato('Reprovado');
+// ─── AÇÕES SLIDE-OVER ─────────────────────────────────────────────
+document.getElementById('so-btn-aprovar').onclick    = () => mudarStatusCandidato('Aprovado');
+document.getElementById('so-btn-rejeitar').onclick   = () => mudarStatusCandidato('Reprovado');
 document.getElementById('so-btn-entrevista').onclick = () => {
   const cfg = localStorage.getItem('cfg_calendly');
-  if (cfg) window.open(cfg,'_blank');
+  if (cfg) window.open(cfg, '_blank');
   mudarStatusCandidato('Entrevista');
 };
 
 function mudarStatusCandidato(novoStatus) {
   if (!currentCandidatoId) return;
-  const c = candidatos.find(x=>x.candidato_id===currentCandidatoId);
+  const c = candidatos.find(x => x.candidato_id === currentCandidatoId);
   if (!c) return;
   c.status_candidatura = novoStatus;
   renderCandidatos();
   fecharSlideover();
-  const msgs = {Aprovado:'Candidato aprovado!', Reprovado:'Candidato reprovado.', Entrevista:'Entrevista agendada!'};
-  const tipos = {Aprovado:'success', Reprovado:'error', Entrevista:'info'};
-  showToast(msgs[novoStatus]||'Status atualizado.', tipos[novoStatus]||'info');
+  const msgs  = { Aprovado: 'Candidato aprovado!', Reprovado: 'Candidato reprovado.', Entrevista: 'Entrevista agendada!' };
+  const tipos = { Aprovado: 'success', Reprovado: 'error', Entrevista: 'info' };
+  showToast(msgs[novoStatus] || 'Status atualizado.', tipos[novoStatus] || 'info');
 }
 
 // ─── SLIDERS CONFIG ───────────────────────────────────────────────
 function updatePeso() {
-  const ids = ['tecnico','exp','comp','cult'];
+  const ids = ['tecnico', 'exp', 'comp', 'cult'];
   let sum = 0;
   ids.forEach(id => {
-    const val = parseInt(document.getElementById('sl-'+id).value);
-    document.getElementById('sv-'+id).textContent = val+'%';
+    const val = parseInt(document.getElementById('sl-' + id).value);
+    document.getElementById('sv-' + id).textContent = val + '%';
     sum += val;
   });
-  const box = document.getElementById('slider-sum-box');
-  document.getElementById('slider-sum-val').textContent = sum+'%';
-  box.className = 'slider-sum '+(sum===100?'ok':'warn');
+  document.getElementById('slider-sum-val').textContent = sum + '%';
+  document.getElementById('slider-sum-box').className = 'slider-sum ' + (sum === 100 ? 'ok' : 'warn');
 }
 
 function salvarPesos() {
-  const ids = ['tecnico','exp','comp','cult'];
-  const sum = ids.reduce((s,id)=>s+parseInt(document.getElementById('sl-'+id).value),0);
-  if (sum!==100) { showToast('A soma dos pesos deve ser 100%. Atual: '+sum+'%.','error'); return; }
+  const ids = ['tecnico', 'exp', 'comp', 'cult'];
+  const sum = ids.reduce((s, id) => s + parseInt(document.getElementById('sl-' + id).value), 0);
+  if (sum !== 100) { showToast('A soma dos pesos deve ser 100%. Atual: ' + sum + '%.', 'error'); return; }
   const pesos = {};
-  ids.forEach(id=>pesos[id]=parseInt(document.getElementById('sl-'+id).value));
+  ids.forEach(id => pesos[id] = parseInt(document.getElementById('sl-' + id).value));
   localStorage.setItem('cfg_pesos', JSON.stringify(pesos));
-  showToast('Pesos salvos com sucesso!','success');
+  showToast('Pesos salvos com sucesso!', 'success');
 }
 
 // ─── INTEGRAÇÕES / SEGURANÇA ──────────────────────────────────────
 function loadConfig() {
-  const pesos = JSON.parse(localStorage.getItem('cfg_pesos')||'null');
+  const pesos = JSON.parse(localStorage.getItem('cfg_pesos') || 'null');
   if (pesos) {
-    const ids = ['tecnico','exp','comp','cult'];
-    ids.forEach(id=>{ if(pesos[id]!==undefined) document.getElementById('sl-'+id).value=pesos[id]; });
+    ['tecnico', 'exp', 'comp', 'cult'].forEach(id => {
+      if (pesos[id] !== undefined) document.getElementById('sl-' + id).value = pesos[id];
+    });
     updatePeso();
   }
-  document.getElementById('cfg-whatsapp').value = localStorage.getItem('cfg_whatsapp')||'';
-  document.getElementById('cfg-calendly').value = localStorage.getItem('cfg_calendly')||'';
+  document.getElementById('cfg-whatsapp').value = localStorage.getItem('cfg_whatsapp') || '';
+  document.getElementById('cfg-calendly').value = localStorage.getItem('cfg_calendly') || '';
 }
 
 function salvarIntegracao(tipo) {
-  const val = document.getElementById('cfg-'+tipo).value.trim();
-  localStorage.setItem('cfg_'+tipo, val);
-  showToast(tipo==='whatsapp'?'WhatsApp salvo!':'Calendly salvo!','success');
+  const val = document.getElementById('cfg-' + tipo).value.trim();
+  localStorage.setItem('cfg_' + tipo, val);
+  showToast(tipo === 'whatsapp' ? 'WhatsApp salvo!' : 'Calendly salvo!', 'success');
 }
 
 function alterarSenha() {
   const nova = document.getElementById('cfg-nova-senha').value;
   const conf = document.getElementById('cfg-conf-senha').value;
-  if (!nova || nova.length < 6) { showToast('A senha deve ter ao menos 6 caracteres.','error'); return; }
-  if (nova !== conf) { showToast('As senhas não coincidem.','error'); return; }
+  if (!nova || nova.length < 6) { showToast('A senha deve ter ao menos 6 caracteres.', 'error'); return; }
+  if (nova !== conf) { showToast('As senhas não coincidem.', 'error'); return; }
   adminPassword = nova;
   sessionStorage.setItem('admin_pwd', nova);
-  document.getElementById('cfg-nova-senha').value='';
-  document.getElementById('cfg-conf-senha').value='';
-  showToast('Senha alterada com sucesso!','success');
+  document.getElementById('cfg-nova-senha').value = '';
+  document.getElementById('cfg-conf-senha').value = '';
+  showToast('Senha alterada com sucesso!', 'success');
 }
 
 // ─── TOASTS ───────────────────────────────────────────────────────
-function showToast(msg, type='info') {
+function showToast(msg, type = 'info') {
   const icons = {
-    success:`<svg class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`,
-    error:`<svg class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>`,
-    info:`<svg class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`,
-    warn:`<svg class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`
+    success: `<svg class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`,
+    error:   `<svg class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>`,
+    info:    `<svg class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`,
+    warn:    `<svg class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`
   };
   const t = document.createElement('div');
   t.className = `toast toast-${type}`;
-  t.innerHTML = `${icons[type]||icons.info}<span>${msg}</span>`;
+  t.innerHTML = `${icons[type] || icons.info}<span>${msg}</span>`;
   document.getElementById('toasts').appendChild(t);
-  setTimeout(()=>{
+  setTimeout(() => {
     t.classList.add('removing');
-    setTimeout(()=>t.remove(), 300);
+    setTimeout(() => t.remove(), 300);
   }, 3500);
 }
 
