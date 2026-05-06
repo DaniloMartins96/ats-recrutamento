@@ -627,6 +627,7 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
     </div>
     <div class="modal-footer">
       <button class="btn btn-outline" id="mv-cancel">Cancelar</button>
+      <button class="btn btn-outline" id="mv-rascunho">Salvar Rascunho</button>
       <button class="btn btn-primary" id="mv-save">Publicar Vaga</button>
     </div>
   </div>
@@ -967,7 +968,7 @@ function fecharModalVaga() {
 
 function editarVaga(id) { abrirModalVaga(id); }
 
-document.getElementById('mv-save').onclick = async () => {
+async function salvarVaga(statusOverride) {
   const titulo = document.getElementById('mv-titulo').value.trim();
   const dept = document.getElementById('mv-departamento').value;
   const nivel = document.getElementById('mv-nivel').value;
@@ -986,23 +987,32 @@ document.getElementById('mv-save').onclick = async () => {
     descricao: document.getElementById('mv-descricao').value.trim(),
     stack: tagData.stack,
     competencias: tagData.comp,
-    status: document.getElementById('mv-status').value,
+    status: statusOverride,
     criado_em: currentVagaId ? (vagas.find(v=>v.id===currentVagaId)||{}).criado_em : new Date().toISOString(),
     candidatos: currentVagaId ? (vagas.find(v=>v.id===currentVagaId)||{candidatos:0}).candidatos : 0
   };
-  if (isNova) payload.publicar = true;
 
   try {
-    await fetch(BASE_URL+'/ats-admin-criar-vaga', {
+    const r = await fetch(BASE_URL+'/ats-admin-criar-vaga', {
       method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload),
       signal: AbortSignal.timeout(5000)
     });
-  } catch { /* offline – update locally */ }
+    if (!r.ok) throw new Error('HTTP '+r.status);
+  } catch {
+    showToast('Erro ao salvar vaga. Verifique a conexão.','error');
+    return;
+  }
 
   fecharModalVaga();
   showToast(isNova ? 'Vaga criada com sucesso!' : 'Vaga atualizada com sucesso!', 'success');
   await carregarVagas();
+}
+
+document.getElementById('mv-save').onclick = () => {
+  const status = currentVagaId ? document.getElementById('mv-status').value : 'ativa';
+  salvarVaga(status);
 };
+document.getElementById('mv-rascunho').onclick = () => salvarVaga('rascunho');
 
 // ─── TAG INPUTS ───────────────────────────────────────────────────
 function initTagInputs() {
@@ -1054,8 +1064,8 @@ async function carregarCandidatos() {
     const r = await fetch(BASE_URL+'/ats-admin-candidatos', {signal: AbortSignal.timeout(5000)});
     if (!r.ok) throw new Error();
     const data = await r.json();
-    candidatos = Array.isArray(data) ? data : (Array.isArray(data.candidatos) ? data.candidatos : MOCK_CANDIDATOS);
-  } catch { candidatos = MOCK_CANDIDATOS; }
+    candidatos = Array.isArray(data) ? data : (Array.isArray(data.candidatos) ? data.candidatos : []);
+  } catch { candidatos = []; showToast('Erro ao carregar candidatos da API.','error'); }
   renderCandidatos();
 }
 
