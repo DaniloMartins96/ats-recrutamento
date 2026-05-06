@@ -470,48 +470,6 @@
   <!-- =========================================================  JAVASCRIPT  ========================================================= -->
   <script>
     /* ----------------------------------------------------------
-       Dados estáticos de fallback — exibidos se a API falhar
-    ---------------------------------------------------------- */
-    const VAGAS_ESTATICAS = [
-      {
-        id: 'vg001',
-        titulo: 'Desenvolvedor(a) Full-Stack',
-        departamento: 'Tecnologia',
-        senioridade: 'Pleno',
-        modalidade: 'Remoto',
-        cidade: 'Remoto',
-        tipo_contrato: 'CLT',
-        stack: ['React', 'Node.js', 'TypeScript', 'PostgreSQL', 'Docker'],
-        faixa_salarial: 'R$ 7.000 – R$ 11.000',
-        criado_em: new Date().toISOString()
-      },
-      {
-        id: 'vg002',
-        titulo: 'Analista de Marketing Digital',
-        departamento: 'Marketing',
-        senioridade: 'Júnior',
-        modalidade: 'Híbrido',
-        cidade: 'São Paulo, SP',
-        tipo_contrato: 'CLT',
-        stack: ['Google Ads', 'Meta Ads', 'Analytics', 'SEO'],
-        faixa_salarial: 'R$ 3.500 – R$ 5.000',
-        criado_em: new Date(Date.now() - 3 * 86400000).toISOString()
-      },
-      {
-        id: 'vg003',
-        titulo: 'Assistente Comercial',
-        departamento: 'Comercial/Vendas',
-        senioridade: 'Primeiro emprego',
-        modalidade: 'Presencial',
-        cidade: 'São Paulo, SP',
-        tipo_contrato: 'CLT',
-        stack: ['Excel', 'CRM', 'Atendimento'],
-        faixa_salarial: 'R$ 2.000 – R$ 3.000',
-        criado_em: new Date(Date.now() - 1 * 86400000).toISOString()
-      }
-    ];
-
-    /* ----------------------------------------------------------
        Estado global
     ---------------------------------------------------------- */
     let todasVagas = [];
@@ -541,7 +499,7 @@
     }
 
     /* ----------------------------------------------------------
-       Busca vagas da API; usa fallback estático se falhar
+       Busca vagas da API
     ---------------------------------------------------------- */
     async function carregarVagas() {
       try {
@@ -549,10 +507,9 @@
         if (!res.ok) throw new Error('HTTP ' + res.status);
         const data = await res.json();
         const raw = Array.isArray(data) ? data : (data.vagas || data.data || []);
-        if (!raw.length) throw new Error('empty');
         todasVagas = raw.map(normalizar);
       } catch {
-        todasVagas = VAGAS_ESTATICAS.map(normalizar);
+        todasVagas = [];
       }
       renderizarVagas();
     }
@@ -656,6 +613,17 @@
       const filtradas = filtrarVagas();
 
       grid.innerHTML = '';
+
+      if (!todasVagas.length) {
+        grid.innerHTML = `
+          <div class="no-results">
+            <div class="no-results__icon" aria-hidden="true">🔍</div>
+            <h3 style="color:#ccc">Nenhuma vaga disponível no momento</h3>
+            <p>Novas oportunidades em breve. Fique de olho!</p>
+          </div>`;
+        countEl.innerHTML = '';
+        return;
+      }
 
       if (!filtradas.length) {
         grid.innerHTML = `
