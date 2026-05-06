@@ -945,6 +945,8 @@ async function salvarVaga(statusOverride) {
     criado_em:  vagaExistente.criado_em || new Date().toISOString()
   };
 
+  console.log('[salvarVaga] payload enviado:', JSON.stringify(payload, null, 2));
+
   try {
     const r = await fetch(BASE_URL + '/ats-admin-criar-vaga', {
       method: 'POST',
@@ -963,10 +965,7 @@ async function salvarVaga(statusOverride) {
   await carregarVagas();
 }
 
-document.getElementById('mv-save').onclick = () => {
-  const status = currentVagaId ? document.getElementById('mv-status').value : 'ativa';
-  salvarVaga(status);
-};
+document.getElementById('mv-save').onclick = () => salvarVaga('ativa');
 document.getElementById('mv-rascunho').onclick = () => salvarVaga('rascunho');
 
 // ─── TAG INPUTS ───────────────────────────────────────────────────
