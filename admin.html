@@ -441,11 +441,10 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
           <input class="search-input" type="text" id="cand-search" placeholder="Buscar candidatos...">
           <div style="margin-left:auto;display:flex;gap:8px">
             <select class="form-select" id="cand-filter-status" style="width:160px">
-              <option value="">Todos os status</option>
-              <option value="Em análise">Em análise</option>
-              <option value="Aprovado">Aprovado</option>
-              <option value="Reprovado">Reprovado</option>
-              <option value="Entrevista">Entrevista</option>
+              <option value="">Todos</option>
+              <option value="avancar">Avançar</option>
+              <option value="banco_talentos">Banco de Talentos</option>
+              <option value="reprovar">Reprovar</option>
             </select>
           </div>
         </div>
@@ -648,7 +647,7 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
       <div class="score-circle" id="so-score-circle">
         <div class="score-inner">
           <div class="score-num" id="so-score-num">—</div>
-          <div class="score-max">/100</div>
+          <div class="score-max">/10</div>
         </div>
       </div>
       <div class="score-label" id="so-score-label">Score IA</div>
@@ -857,19 +856,22 @@ async function init() {
 // ─── VAGAS ────────────────────────────────────────────────────────
 async function carregarVagas() {
   try {
-    const r = await fetch(BASE_URL+'/ats-vagas-publicas', {signal: AbortSignal.timeout(5000)});
-    if (!r.ok) throw new Error();
+    const r = await fetch(BASE_URL+'/ats-vagas-publicas', {signal: AbortSignal.timeout(8000)});
+    if (!r.ok) throw new Error('HTTP '+r.status);
     const data = await r.json();
-    vagas = Array.isArray(data) ? data : (Array.isArray(data.vagas) ? data.vagas : MOCK_VAGAS);
-  } catch { vagas = MOCK_VAGAS; }
+    vagas = Array.isArray(data) ? data : (Array.isArray(data.vagas) ? data.vagas : []);
+  } catch(e) {
+    vagas = [];
+    showToast('Erro ao carregar vagas da API.','error');
+  }
   renderVagas();
 }
 
 function renderVagas() {
   const q = document.getElementById('vagas-search').value.toLowerCase();
   const filtered = vagas.filter(v =>
-    v.titulo.toLowerCase().includes(q) ||
-    v.departamento.toLowerCase().includes(q)
+    (v.titulo||'').toLowerCase().includes(q) ||
+    (v.departamento||'').toLowerCase().includes(q)
   );
 
   // stats
@@ -877,8 +879,8 @@ function renderVagas() {
   stats.innerHTML = `
     <div class="stat-card"><div class="stat-value">${vagas.length}</div><div class="stat-label">Total de Vagas</div></div>
     <div class="stat-card"><div class="stat-value">${vagas.filter(v=>v.status==='ativa').length}</div><div class="stat-label">Vagas Ativas</div></div>
-    <div class="stat-card"><div class="stat-value">${vagas.reduce((s,v)=>s+(v.candidatos||0),0)}</div><div class="stat-label">Candidaturas Recebidas</div></div>
     <div class="stat-card"><div class="stat-value">${vagas.filter(v=>v.status==='pausada').length}</div><div class="stat-label">Vagas Pausadas</div></div>
+    <div class="stat-card"><div class="stat-value">${vagas.filter(v=>v.status==='encerrada').length}</div><div class="stat-label">Vagas Encerradas</div></div>
   `;
   document.getElementById('nav-badge-vagas').textContent = vagas.filter(v=>v.status==='ativa').length;
 
@@ -895,16 +897,15 @@ function renderVagas() {
     <table>
       <thead><tr>
         <th>Vaga</th><th>Departamento</th><th>Nível</th><th>Modalidade</th>
-        <th>Candidatos</th><th>Status</th><th></th>
+        <th>Status</th><th></th>
       </tr></thead>
       <tbody>
         ${filtered.map(v=>`
           <tr onclick="editarVaga('${v.id}')">
-            <td><div style="font-weight:600">${v.titulo}</div><div style="font-size:11px;color:var(--muted)">${v.local||'—'}</div></td>
-            <td><span class="badge badge-purple">${v.departamento}</span></td>
-            <td><span style="font-size:12px">${v.nivel}</span></td>
-            <td><span class="badge badge-blue">${v.modalidade}</span></td>
-            <td><span style="font-weight:700;color:var(--accent)">${v.candidatos||0}</span></td>
+            <td><div style="font-weight:600">${v.titulo}</div><div style="font-size:11px;color:var(--muted)">${v.cidade||'—'}</div></td>
+            <td><span class="badge badge-purple">${v.departamento||'—'}</span></td>
+            <td><span style="font-size:12px">${v.senioridade||'—'}</span></td>
+            <td><span class="badge badge-blue">${v.modalidade||'—'}</span></td>
             <td><span class="badge ${statusBadge(v.status)}">${statusLabel(v.status)}</span></td>
             <td onclick="event.stopPropagation()">
               <button class="btn btn-ghost btn-sm" onclick="editarVaga('${v.id}')">Editar</button>
@@ -935,13 +936,16 @@ function abrirModalVaga(id) {
     document.getElementById('mv-save').textContent = 'Salvar Alterações';
     document.getElementById('mv-titulo').value = v.titulo||'';
     document.getElementById('mv-departamento').value = v.departamento||'';
-    document.getElementById('mv-nivel').value = v.nivel||'';
+    document.getElementById('mv-nivel').value = v.senioridade||v.nivel||'';
     document.getElementById('mv-modalidade').value = v.modalidade||'';
-    document.getElementById('mv-local').value = v.local||'';
-    document.getElementById('mv-salario').value = v.salario||'';
+    document.getElementById('mv-local').value = v.cidade||v.local||'';
+    const salarioFmt = v.salario_min||v.salario_max
+      ? [v.salario_min, v.salario_max].filter(Boolean).join(' – ')
+      : (v.salario||'');
+    document.getElementById('mv-salario').value = salarioFmt;
     document.getElementById('mv-descricao').value = v.descricao||'';
     document.getElementById('mv-status').value = v.status||'ativa';
-    tagData.stack = [...(v.stack||[])];
+    tagData.stack = [...(v.stack_tecnica||v.stack||[])];
     tagData.comp = [...(v.competencias||[])];
   } else {
     document.getElementById('modal-vaga-title').textContent = 'Nova Vaga';
@@ -995,20 +999,9 @@ document.getElementById('mv-save').onclick = async () => {
     });
   } catch { /* offline – update locally */ }
 
-  if (!isNova) {
-    const idx = vagas.findIndex(v=>v.id===currentVagaId);
-    if (idx>-1) vagas[idx] = payload;
-  } else {
-    vagas.unshift(payload);
-  }
-
   fecharModalVaga();
   showToast(isNova ? 'Vaga criada com sucesso!' : 'Vaga atualizada com sucesso!', 'success');
-  if (isNova) {
-    await carregarVagas();
-  } else {
-    renderVagas();
-  }
+  await carregarVagas();
 };
 
 // ─── TAG INPUTS ───────────────────────────────────────────────────
@@ -1070,21 +1063,25 @@ function renderCandidatos() {
   const q = document.getElementById('cand-search').value.toLowerCase();
   const fs = document.getElementById('cand-filter-status').value;
   const filtered = candidatos.filter(c => {
-    const matchQ = c.nome.toLowerCase().includes(q) || c.vaga.toLowerCase().includes(q) || c.email.toLowerCase().includes(q);
-    const matchS = !fs || c.status===fs;
+    const matchQ = (c.nome||'').toLowerCase().includes(q)
+      || (c.vaga_titulo||'').toLowerCase().includes(q)
+      || (c.email||'').toLowerCase().includes(q);
+    const matchS = !fs || c.recomendacao===fs;
     return matchQ && matchS;
   });
 
   // stats
   const stats = document.getElementById('cand-stats');
-  const avg = candidatos.length ? Math.round(candidatos.reduce((s,c)=>s+c.score,0)/candidatos.length) : 0;
+  const avgScore = candidatos.length
+    ? (candidatos.reduce((s,c)=>s+(c.score_total||0),0)/candidatos.length).toFixed(1)
+    : '0.0';
   stats.innerHTML = `
     <div class="stat-card"><div class="stat-value">${candidatos.length}</div><div class="stat-label">Total de Candidatos</div></div>
-    <div class="stat-card"><div class="stat-value">${candidatos.filter(c=>c.status==='Em análise').length}</div><div class="stat-label">Em Análise</div></div>
-    <div class="stat-card"><div class="stat-value">${candidatos.filter(c=>c.status==='Aprovado').length}</div><div class="stat-label">Aprovados</div></div>
-    <div class="stat-card"><div class="stat-value">${avg}%</div><div class="stat-label">Score Médio IA</div></div>
+    <div class="stat-card"><div class="stat-value">${candidatos.filter(c=>c.recomendacao==='avancar').length}</div><div class="stat-label">Para Avançar</div></div>
+    <div class="stat-card"><div class="stat-value">${candidatos.filter(c=>c.recomendacao==='banco_talentos').length}</div><div class="stat-label">Banco de Talentos</div></div>
+    <div class="stat-card"><div class="stat-value">${avgScore}/10</div><div class="stat-label">Score Médio IA</div></div>
   `;
-  document.getElementById('nav-badge-cand').textContent = candidatos.filter(c=>c.status==='Em análise').length;
+  document.getElementById('nav-badge-cand').textContent = candidatos.filter(c=>c.recomendacao==='avancar').length;
 
   const tbody = document.getElementById('cand-table-body');
   if (!filtered.length) {
@@ -1092,30 +1089,31 @@ function renderCandidatos() {
     return;
   }
 
-  const statusColor = s => s==='Aprovado'?'badge-green':s==='Reprovado'?'badge-red':s==='Entrevista'?'badge-blue':'badge-yellow';
-  const scoreColor = n => n>=80?'var(--success)':n>=60?'var(--warn)':'var(--danger)';
+  const fitColor = f => f==='alto'?'badge-green':f==='medio'?'badge-yellow':'badge-red';
+  const fitLabel = f => f==='alto'?'Alto':f==='medio'?'Médio':'Baixo';
+  const scoreColor = n => n>=8?'var(--success)':n>=6?'var(--warn)':'var(--danger)';
 
   tbody.innerHTML = `
     <table>
       <thead><tr>
-        <th>Candidato</th><th>Vaga</th><th>Nível</th><th>Score IA</th><th>Status</th><th></th>
+        <th>Candidato</th><th>Vaga</th><th>Senioridade</th><th>Score IA</th><th>Fit</th><th></th>
       </tr></thead>
       <tbody>
         ${filtered.map(c=>`
-          <tr onclick="abrirCandidato('${c.id}')">
+          <tr onclick="abrirCandidato('${c.candidato_id}')">
             <td>
-              <div style="font-weight:600">${c.nome}</div>
-              <div style="font-size:11px;color:var(--muted)">${c.email}</div>
+              <div style="font-weight:600">${c.nome||'—'}</div>
+              <div style="font-size:11px;color:var(--muted)">${c.email||'—'}</div>
             </td>
-            <td style="font-size:12px">${c.vaga}</td>
-            <td style="font-size:12px;color:var(--muted)">${c.nivel_experiencia||'—'}</td>
+            <td style="font-size:12px">${c.vaga_titulo||'—'}</td>
+            <td style="font-size:12px;color:var(--muted)">${c.senioridade_declarada||'—'}</td>
             <td>
-              <span style="font-weight:700;color:${scoreColor(c.score)}">${c.score}</span>
-              <span style="color:var(--muted);font-size:11px">/100</span>
+              <span style="font-weight:700;color:${scoreColor(c.score_total||0)}">${(c.score_total||0).toFixed(1)}</span>
+              <span style="color:var(--muted);font-size:11px">/10</span>
             </td>
-            <td><span class="badge ${statusColor(c.status)}">${c.status}</span></td>
+            <td><span class="badge ${fitColor(c.nivel_fit)}">${fitLabel(c.nivel_fit||'')}</span></td>
             <td onclick="event.stopPropagation()">
-              <button class="btn btn-ghost btn-sm" onclick="abrirCandidato('${c.id}')">Ver</button>
+              <button class="btn btn-ghost btn-sm" onclick="abrirCandidato('${c.candidato_id}')">Ver</button>
             </td>
           </tr>
         `).join('')}
@@ -1129,55 +1127,78 @@ document.getElementById('cand-filter-status').onchange = renderCandidatos;
 
 // ─── SLIDE-OVER CANDIDATO ─────────────────────────────────────────
 function abrirCandidato(id) {
-  const c = candidatos.find(x=>x.id===id);
+  const c = candidatos.find(x=>x.candidato_id===id);
   if (!c) return;
   currentCandidatoId = id;
 
-  document.getElementById('so-nome').textContent = c.nome;
-  document.getElementById('so-meta').textContent = `${c.vaga} · ${c.nivel_experiencia||'Não informado'} · Inglês: ${c.nivel_ingles||'—'}`;
+  document.getElementById('so-nome').textContent = c.nome||'—';
+  document.getElementById('so-meta').textContent = `${c.vaga_titulo||'—'} · ${c.senioridade_declarada||'Não informado'}`;
 
-  // score circle
-  const pct = c.score / 100 * 360;
+  // score circle (score_total é 0-10; ring usa porcentagem 0-100)
+  const scorePct = (c.score_total||0) * 10;
   const circle = document.getElementById('so-score-circle');
-  circle.style.setProperty('--pct', `${c.score}%`);
-  document.getElementById('so-score-num').textContent = c.score;
+  circle.style.setProperty('--pct', `${scorePct}%`);
+  document.getElementById('so-score-num').textContent = (c.score_total||0).toFixed(1);
 
-  // dimension bars
+  // dimension bars — competencias_identificadas
   const dims = document.getElementById('so-dims');
-  dims.innerHTML = (c.dimensoes||[]).map(d=>`
-    <div class="dim-item">
-      <div class="dim-head">
-        <span class="dim-name">${d.nome}</span>
-        <span class="dim-pct" style="color:${scoreColor(d.pct)}">${d.pct}%</span>
-      </div>
-      <div class="dim-bar"><div class="dim-fill" style="width:${d.pct}%;background:${scoreColor(d.pct)}"></div></div>
-    </div>
-  `).join('');
+  const comps = c.competencias_identificadas || [];
+  if (comps.length) {
+    dims.innerHTML = comps.map(comp => {
+      if (typeof comp === 'object' && comp !== null) {
+        const nome = comp.nome || comp.name || String(comp);
+        const pct = typeof comp.pct === 'number' ? comp.pct
+          : typeof comp.score === 'number' ? comp.score * 10 : 70;
+        return `
+          <div class="dim-item">
+            <div class="dim-head">
+              <span class="dim-name">${nome}</span>
+              <span class="dim-pct" style="color:${scoreColor(pct)}">${pct}%</span>
+            </div>
+            <div class="dim-bar"><div class="dim-fill" style="width:${pct}%;background:${scoreColor(pct)}"></div></div>
+          </div>`;
+      }
+      return `<div class="dim-item" style="margin-bottom:6px"><span class="badge badge-purple">${comp}</span></div>`;
+    }).join('');
+  } else {
+    dims.innerHTML = '';
+  }
 
-  // STAR accordions
+  // STAR accordions — analise_star tem q1/q2/q3
   const accEl = document.getElementById('so-accordions');
-  accEl.innerHTML = (c.respostas||[]).map((r,i)=>`
-    <div class="accordion-item" id="acc-${i}">
-      <div class="accordion-head" onclick="toggleAccordion('acc-${i}')">
-        <span>${r.pergunta}</span>
-        <svg class="accordion-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14"><polyline points="6 9 12 15 18 9"/></svg>
-      </div>
-      <div class="accordion-body">
-        ${r.star ? Object.entries(r.star).map(([k,v])=>`
+  const starObj = c.analise_star || {};
+  const starEntries = Object.entries(starObj);
+  if (starEntries.length) {
+    accEl.innerHTML = starEntries.map(([key, r], i) => {
+      const pergunta = (typeof r === 'object' && r.pergunta) ? r.pergunta : key;
+      let bodyHtml = '';
+      if (typeof r === 'object' && r !== null) {
+        const starData = r.star || r;
+        const starKeys = Object.entries(starData).filter(([k]) => k !== 'pergunta');
+        bodyHtml = starKeys.map(([k, v]) => `
           <div class="star-section">
             <span class="star-letter">${k[0].toUpperCase()}</span>
             <span style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">${starLabel(k)}</span>
             <div class="star-text" style="margin-top:4px">${v}</div>
+          </div>`).join('');
+      } else if (typeof r === 'string') {
+        bodyHtml = `<div class="star-text">${r}</div>`;
+      }
+      return `
+        <div class="accordion-item" id="acc-${i}">
+          <div class="accordion-head" onclick="toggleAccordion('acc-${i}')">
+            <span>${pergunta}</span>
+            <svg class="accordion-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14"><polyline points="6 9 12 15 18 9"/></svg>
           </div>
-        `).join('') : `<div class="star-text">${r.resposta||'—'}</div>`}
-      </div>
-    </div>
-  `).join('');
+          <div class="accordion-body">${bodyHtml||'<div class="star-text">—</div>'}</div>
+        </div>`;
+    }).join('');
+  } else {
+    accEl.innerHTML = `<div class="empty-state" style="padding:20px 0"><p>Nenhuma análise STAR disponível.</p></div>`;
+  }
 
   // CV
-  document.getElementById('so-cv-info').textContent = c.curriculo_nome
-    ? `📄 ${c.curriculo_nome}`
-    : 'Nenhum arquivo enviado';
+  document.getElementById('so-cv-info').textContent = 'Nenhum arquivo enviado';
 
   document.getElementById('slideover-cand').classList.add('open');
   document.getElementById('so-backdrop').classList.add('open');
@@ -1217,9 +1238,9 @@ document.getElementById('so-btn-entrevista').onclick = () => {
 
 function mudarStatusCandidato(novoStatus) {
   if (!currentCandidatoId) return;
-  const c = candidatos.find(x=>x.id===currentCandidatoId);
+  const c = candidatos.find(x=>x.candidato_id===currentCandidatoId);
   if (!c) return;
-  c.status = novoStatus;
+  c.status_candidatura = novoStatus;
   renderCandidatos();
   fecharSlideover();
   const msgs = {Aprovado:'Candidato aprovado!', Reprovado:'Candidato reprovado.', Entrevista:'Entrevista agendada!'};
