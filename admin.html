@@ -277,13 +277,21 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
 .accordion-arrow{transition:transform .2s;color:var(--muted)}
 .accordion-item.open .accordion-arrow{transform:rotate(180deg)}
 .accordion-body{padding:0 16px;max-height:0;overflow:hidden;transition:max-height .3s ease,padding .3s}
-.accordion-item.open .accordion-body{max-height:400px;padding:12px 16px}
+.accordion-item.open .accordion-body{max-height:800px;padding:12px 16px}
 .star-section{margin-bottom:10px}
 .star-letter{
   display:inline-block;width:22px;height:22px;border-radius:5px;background:var(--accent-dim);
   color:var(--accent2);font-size:11px;font-weight:800;text-align:center;line-height:22px;margin-right:6px;
 }
 .star-text{font-size:12px;color:var(--muted);line-height:1.6}
+
+/* perguntas tabs */
+.tab-bar{display:flex;gap:4px;margin-bottom:12px;border-bottom:1px solid var(--border);padding-bottom:8px;flex-wrap:wrap}
+.tab-btn{background:none;border:none;padding:6px 12px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;border-radius:6px;transition:background .15s,color .15s}
+.tab-btn:hover{background:var(--surface2);color:var(--text)}
+.tab-btn.active{background:var(--accent-dim);color:var(--accent2)}
+.tab-pane{display:none}
+.tab-pane.active{display:block}
 
 /* status pill in table */
 .status-select{
@@ -1146,109 +1154,113 @@ function abrirCandidato(id) {
 
   const comps = c.competencias_identificadas || [];
   if (comps.length) {
-    dimsHtml += comps.map(comp => {
-      if (typeof comp === 'object' && comp !== null) {
-        const nome = comp.nome || comp.name || String(comp);
-        const pct  = typeof comp.pct === 'number' ? comp.pct : typeof comp.score === 'number' ? comp.score * 10 : 70;
-        const col  = scoreColor(pct);
-        return `
-          <div class="dim-item">
-            <div class="dim-head">
-              <span class="dim-name">${nome}</span>
-              <span class="dim-pct" style="color:${col}">${pct}%</span>
-            </div>
-            <div class="dim-bar"><div class="dim-fill" style="width:${pct}%;background:${col}"></div></div>
-          </div>`;
-      }
-      return `<div class="dim-item" style="margin-bottom:6px"><span class="badge badge-purple">${comp}</span></div>`;
-    }).join('');
+    const compNomes = comps.map(comp => typeof comp === 'object' && comp !== null ? (comp.nome || comp.name || String(comp)) : String(comp));
+    dimsHtml += `
+      <div style="margin-bottom:14px">
+        <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Competências Identificadas</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px">${compNomes.map(n => `<span class="badge badge-purple">${n}</span>`).join('')}</div>
+      </div>`;
   }
 
-  const buildList = (label, items, color) => {
+  const buildList = (label, items, color, icon) => {
     if (!Array.isArray(items) || !items.length) return '';
     return `<div style="margin-bottom:12px">
-      <div style="font-size:11px;font-weight:700;color:${color};text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">${label}</div>
-      ${items.map(i => `<div style="font-size:12px;color:var(--muted);padding:3px 0 3px 8px;border-left:2px solid ${color};margin-bottom:4px">${i}</div>`).join('')}
+      <div style="font-size:11px;font-weight:700;color:${color};text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">${icon} ${label}</div>
+      ${items.map(i => `<div style="font-size:12px;color:var(--muted);padding:4px 0 4px 10px;border-left:2px solid ${color};margin-bottom:4px">${i}</div>`).join('')}
     </div>`;
   };
 
-  dimsHtml += buildList('Pontos Fortes',      c.pontos_fortes,   'var(--success)');
-  dimsHtml += buildList('Pontos de Atenção',   c.pontos_atencao,  'var(--warn)');
-  dimsHtml += buildList('Green Flags',         c.green_flags,     'var(--success)');
-  dimsHtml += buildList('Red Flags',           c.red_flags,       'var(--danger)');
+  dimsHtml += buildList('Pontos Fortes',      c.pontos_fortes,   'var(--success)', '✅');
+  dimsHtml += buildList('Pontos de Atenção',   c.pontos_atencao,  'var(--warn)',    '⚠️');
+  dimsHtml += buildList('Green Flags',         c.green_flags,     'var(--success)', '✅');
+  dimsHtml += buildList('Red Flags',           c.red_flags,       'var(--danger)',  '🚩');
 
   document.getElementById('so-dims').innerHTML = dimsHtml;
 
-  // ── accordions: STAR + perguntas + briefing ──
+  // ── STAR ──────────────────────────────────────────────────────────
+  const starTitles  = { q1: 'Q1 — Situação desafiadora', q2: 'Q2 — Feedback negativo', q3: 'Q3 — Maior projeto' };
+  const starFLetter = k => ({ situacao:'S', tarefa:'T', acao:'A', resultado:'R' }[k] || k[0].toUpperCase());
+  const starFLabel  = k => ({ situacao:'Situação', tarefa:'Tarefa', acao:'Ação', resultado:'Resultado' }[k] || k);
+  const qualBadge   = q => q === 'alta' ? 'badge-green' : q === 'media' ? 'badge-yellow' : 'badge-red';
+  const qualLabel   = q => ({ alta:'Alta', media:'Média', baixa:'Baixa' }[q] || q || '—');
+
   let accHtml = '';
-  let accIdx  = 0;
-
   const starObj = c.analise_star || {};
-  const starEntries = Object.entries(starObj);
-  if (starEntries.length) {
-    starEntries.forEach(([key, r]) => {
-      const pergunta = (typeof r === 'object' && r && r.pergunta) ? r.pergunta : key;
-      let body = '';
-      if (typeof r === 'object' && r !== null) {
-        const src = r.star || r;
-        body = Object.entries(src)
-          .filter(([k]) => k !== 'pergunta')
-          .map(([k, v]) => `
-            <div class="star-section">
-              <span class="star-letter">${k[0].toUpperCase()}</span>
-              <span style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">${starLabel(k)}</span>
-              <div class="star-text" style="margin-top:4px">${v}</div>
-            </div>`).join('');
-      } else if (typeof r === 'string') {
-        body = `<div class="star-text">${r}</div>`;
-      }
-      const i = accIdx++;
-      accHtml += `
-        <div class="accordion-item" id="acc-${i}">
-          <div class="accordion-head" onclick="toggleAccordion('acc-${i}')">
-            <span>${pergunta}</span>
-            <svg class="accordion-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14"><polyline points="6 9 12 15 18 9"/></svg>
-          </div>
-          <div class="accordion-body">${body || '<div class="star-text">—</div>'}</div>
-        </div>`;
-    });
-  }
 
-  const buildAcc = (label, arr) => {
-    if (!Array.isArray(arr) || !arr.length) return '';
-    const i = accIdx++;
-    const items = arr.map(p => `<div style="font-size:12px;color:var(--muted);padding:6px 0;border-bottom:1px solid var(--border)">${p}</div>`).join('');
-    return `
-      <div class="accordion-item" id="acc-${i}" style="margin-top:8px">
-        <div class="accordion-head" onclick="toggleAccordion('acc-${i}')">
-          <span>${label}</span>
-          <svg class="accordion-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14"><polyline points="6 9 12 15 18 9"/></svg>
+  ['q1','q2','q3'].forEach((key, idx) => {
+    const r = starObj[key];
+    if (!r || typeof r !== 'object') return;
+    let body = ['situacao','tarefa','acao','resultado'].map(f => {
+      if (!r[f]) return '';
+      return `<div class="star-section">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+          <span class="star-letter">${starFLetter(f)}</span>
+          <span style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">${starFLabel(f)}</span>
         </div>
-        <div class="accordion-body">${items}</div>
+        <div class="star-text">${r[f]}</div>
       </div>`;
-  };
+    }).join('');
+    if (r.qualidade) {
+      body += `<div style="margin-top:10px;display:flex;align-items:center;gap:8px">
+        <span style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">Qualidade</span>
+        <span class="badge ${qualBadge(r.qualidade)}">${qualLabel(r.qualidade)}</span>
+      </div>`;
+    }
+    accHtml += `<div class="accordion-item${idx === 0 ? ' open' : ''}" id="acc-star-${key}">
+      <div class="accordion-head" onclick="toggleAccordion('acc-star-${key}')">
+        <span>${starTitles[key] || key.toUpperCase()}</span>
+        <svg class="accordion-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="accordion-body">${body || '<div class="star-text">—</div>'}</div>
+    </div>`;
+  });
 
-  if (c.perguntas_rh || c.perguntas_tecnicas || c.perguntas_comportamentais) {
-    accHtml += `<div style="font-size:13px;font-weight:700;margin:16px 0 8px">Perguntas para Entrevista</div>`;
-    accHtml += buildAcc('Perguntas RH',               c.perguntas_rh);
-    accHtml += buildAcc('Perguntas Técnicas',          c.perguntas_tecnicas);
-    accHtml += buildAcc('Perguntas Comportamentais',   c.perguntas_comportamentais);
-  }
+  if (!accHtml) accHtml = '<div class="star-text" style="padding:8px 0;color:var(--muted)">Nenhuma análise STAR disponível.</div>';
 
+  // ── PERGUNTAS (abas) ───────────────────────────────────────────────
+  const pergRH   = Array.isArray(c.perguntas_rh)             ? c.perguntas_rh             : [];
+  const pergTec  = Array.isArray(c.perguntas_tecnicas)        ? c.perguntas_tecnicas        : [];
+  const pergComp = Array.isArray(c.perguntas_comportamentais) ? c.perguntas_comportamentais : [];
+  const mkPergs  = arr => arr.length
+    ? arr.map((p, i) => `<div style="font-size:12px;color:var(--muted);padding:8px 0;border-bottom:1px solid var(--border)"><strong style="color:var(--text)">${i+1}.</strong> ${p}</div>`).join('')
+    : '<div class="star-text">Nenhuma pergunta disponível.</div>';
+
+  accHtml += `
+  <div style="font-size:13px;font-weight:700;margin:20px 0 10px">Perguntas para Entrevista</div>
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="switchPergTab(this,'ptab-rh')">RH${pergRH.length ? ' ('+pergRH.length+')' : ''}</button>
+    <button class="tab-btn" onclick="switchPergTab(this,'ptab-tec')">Técnicas${pergTec.length ? ' ('+pergTec.length+')' : ''}</button>
+    <button class="tab-btn" onclick="switchPergTab(this,'ptab-comp')">Comportamentais${pergComp.length ? ' ('+pergComp.length+')' : ''}</button>
+  </div>
+  <div id="ptab-rh" class="tab-pane active">${mkPergs(pergRH)}</div>
+  <div id="ptab-tec" class="tab-pane">${mkPergs(pergTec)}</div>
+  <div id="ptab-comp" class="tab-pane">${mkPergs(pergComp)}</div>`;
+
+  // ── BRIEFING ───────────────────────────────────────────────────────
   if (c.briefing_entrevistador) {
-    const i = accIdx++;
     accHtml += `
-      <div class="accordion-item" id="acc-${i}" style="margin-top:8px">
-        <div class="accordion-head" onclick="toggleAccordion('acc-${i}')">
-          <span>Briefing do Entrevistador</span>
-          <svg class="accordion-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14"><polyline points="6 9 12 15 18 9"/></svg>
-        </div>
-        <div class="accordion-body"><div class="star-text">${c.briefing_entrevistador}</div></div>
-      </div>`;
+  <div style="font-size:13px;font-weight:700;margin:20px 0 10px">Briefing do Entrevistador</div>
+  <div style="background:var(--surface2);border:1px solid var(--accent-dim);border-radius:8px;padding:14px 16px;font-size:12px;color:var(--muted);line-height:1.7">${c.briefing_entrevistador}</div>`;
   }
 
-  document.getElementById('so-accordions').innerHTML = accHtml
-    || `<div class="empty-state" style="padding:20px 0"><p>Nenhuma análise disponível.</p></div>`;
+  // ── FIT CULTURAL ──────────────────────────────────────────────────
+  if (c.evidencias_fit_cultural || c.alinhamento_valores) {
+    accHtml += `<div style="font-size:13px;font-weight:700;margin:20px 0 10px">Fit Cultural</div>`;
+    if (c.evidencias_fit_cultural) {
+      accHtml += `<div style="margin-bottom:12px">
+        <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Evidências</div>
+        <div class="star-text">${c.evidencias_fit_cultural}</div>
+      </div>`;
+    }
+    if (c.alinhamento_valores) {
+      accHtml += `<div>
+        <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Alinhamento de Valores</div>
+        <div class="star-text">${c.alinhamento_valores}</div>
+      </div>`;
+    }
+  }
+
+  document.getElementById('so-accordions').innerHTML = accHtml;
 
   let infoHtml = `Etapa: <strong>${c.etapa_atual || '—'}</strong> &nbsp;|&nbsp; Status: <strong>${c.status_candidatura || '—'}</strong>`;
   if (c.telefone) infoHtml += `<br>Tel: ${c.telefone}`;
@@ -1271,8 +1283,18 @@ function toggleAccordion(id) {
   document.getElementById(id).classList.toggle('open');
 }
 
+function switchPergTab(btn, tabId) {
+  const bar = btn.parentElement;
+  bar.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  bar.parentElement.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  document.getElementById(tabId).classList.add('active');
+}
+
 function starLabel(k) {
-  return { S: 'Situação', T: 'Tarefa', A: 'Ação', R: 'Resultado' }[k.toUpperCase()] || k;
+  return { situacao:'Situação', tarefa:'Tarefa', acao:'Ação', resultado:'Resultado', qualidade:'Qualidade',
+           S:'Situação', T:'Tarefa', A:'Ação', R:'Resultado' }[k] ||
+         { S:'Situação', T:'Tarefa', A:'Ação', R:'Resultado' }[k.toUpperCase()] || k;
 }
 
 // ─── AÇÕES SLIDE-OVER ─────────────────────────────────────────────
