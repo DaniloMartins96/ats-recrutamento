@@ -857,10 +857,10 @@ async function init() {
 // ─── VAGAS ────────────────────────────────────────────────────────
 async function carregarVagas() {
   try {
-    const r = await fetch(BASE_URL+'/ats-admin-vagas', {signal: AbortSignal.timeout(5000)});
+    const r = await fetch(BASE_URL+'/ats-vagas-publicas', {signal: AbortSignal.timeout(5000)});
     if (!r.ok) throw new Error();
     const data = await r.json();
-    vagas = Array.isArray(data) ? data : MOCK_VAGAS;
+    vagas = Array.isArray(data) ? data : (Array.isArray(data.vagas) ? data.vagas : MOCK_VAGAS);
   } catch { vagas = MOCK_VAGAS; }
   renderVagas();
 }
@@ -973,6 +973,7 @@ document.getElementById('mv-save').onclick = async () => {
     showToast('Preencha todos os campos obrigatórios.','error'); return;
   }
 
+  const isNova = !currentVagaId;
   const payload = {
     id: currentVagaId || ('v'+Date.now()),
     titulo, departamento:dept, nivel, modalidade:modal,
@@ -985,6 +986,7 @@ document.getElementById('mv-save').onclick = async () => {
     criado_em: currentVagaId ? (vagas.find(v=>v.id===currentVagaId)||{}).criado_em : new Date().toISOString(),
     candidatos: currentVagaId ? (vagas.find(v=>v.id===currentVagaId)||{candidatos:0}).candidatos : 0
   };
+  if (isNova) payload.publicar = true;
 
   try {
     await fetch(BASE_URL+'/ats-admin-criar-vaga', {
@@ -993,7 +995,7 @@ document.getElementById('mv-save').onclick = async () => {
     });
   } catch { /* offline – update locally */ }
 
-  if (currentVagaId) {
+  if (!isNova) {
     const idx = vagas.findIndex(v=>v.id===currentVagaId);
     if (idx>-1) vagas[idx] = payload;
   } else {
@@ -1001,8 +1003,12 @@ document.getElementById('mv-save').onclick = async () => {
   }
 
   fecharModalVaga();
-  renderVagas();
-  showToast(currentVagaId ? 'Vaga atualizada com sucesso!' : 'Vaga criada com sucesso!', 'success');
+  showToast(isNova ? 'Vaga criada com sucesso!' : 'Vaga atualizada com sucesso!', 'success');
+  if (isNova) {
+    await carregarVagas();
+  } else {
+    renderVagas();
+  }
 };
 
 // ─── TAG INPUTS ───────────────────────────────────────────────────
@@ -1055,7 +1061,7 @@ async function carregarCandidatos() {
     const r = await fetch(BASE_URL+'/ats-admin-candidatos', {signal: AbortSignal.timeout(5000)});
     if (!r.ok) throw new Error();
     const data = await r.json();
-    candidatos = Array.isArray(data) ? data : MOCK_CANDIDATOS;
+    candidatos = Array.isArray(data) ? data : (Array.isArray(data.candidatos) ? data.candidatos : MOCK_CANDIDATOS);
   } catch { candidatos = MOCK_CANDIDATOS; }
   renderCandidatos();
 }
