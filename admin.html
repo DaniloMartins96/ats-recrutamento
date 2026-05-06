@@ -746,7 +746,7 @@ document.addEventListener('keydown', e => {
 // ─── VAGAS ────────────────────────────────────────────────────────
 async function carregarVagas() {
   try {
-    const r = await fetch(BASE_URL + '/ats-vagas-publicas', { signal: AbortSignal.timeout(8000) });
+    const r = await fetch(BASE_URL + '/ats-admin-vagas', { signal: AbortSignal.timeout(8000) });
     if (!r.ok) throw new Error('HTTP ' + r.status);
     const data = await r.json();
     vagas = Array.isArray(data) ? data : (Array.isArray(data.vagas) ? data.vagas : []);
@@ -798,8 +798,7 @@ function renderVagas() {
             btns += ` <button class="btn btn-ghost btn-sm" onclick="atualizarStatusVaga('${v.id}','pausada')">Pausar</button>`;
           else if (v.status === 'pausada')
             btns += ` <button class="btn btn-ghost btn-sm" onclick="atualizarStatusVaga('${v.id}','ativa')">Ativar</button>`;
-          if (v.status === 'encerrada')
-            btns += ` <button class="btn btn-danger btn-sm" onclick="deletarVaga('${v.id}','${tid}')">Apagar</button>`;
+          btns += ` <button class="btn btn-danger btn-sm" onclick="deletarVaga('${v.id}','${tid}')">Apagar</button>`;
           return `
           <tr onclick="editarVaga('${v.id}')">
             <td><div style="font-weight:600">${v.titulo || '—'}</div><div style="font-size:11px;color:var(--muted)">${v.cidade || '—'}</div></td>
@@ -836,10 +835,10 @@ async function atualizarStatusVaga(id, novoStatus) {
 
 // ─── APAGAR VAGA ──────────────────────────────────────────────────
 async function deletarVaga(id, titulo) {
-  if (!confirm(`Tem certeza que deseja apagar a vaga "${titulo}"? Esta ação não pode ser desfeita.`)) return;
+  if (!confirm("Tem certeza que deseja apagar a vaga '" + titulo + "'?")) return;
   try {
     const r = await fetch(BASE_URL + '/ats-admin-deletar-vaga', {
-      method: 'DELETE',
+      method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ vaga_id: id }),
       signal: AbortSignal.timeout(5000)
@@ -849,6 +848,24 @@ async function deletarVaga(id, titulo) {
     await carregarVagas();
   } catch {
     showToast('Erro ao apagar vaga.', 'error');
+  }
+}
+
+// ─── APAGAR CANDIDATO ─────────────────────────────────────────────
+async function deletarCandidato(id, nome) {
+  if (!confirm("Tem certeza que deseja apagar o candidato '" + nome + "'?")) return;
+  try {
+    const r = await fetch(BASE_URL + '/ats-admin-deletar-candidato', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ candidato_id: id }),
+      signal: AbortSignal.timeout(5000)
+    });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    showToast('Candidato apagado com sucesso.', 'success');
+    await carregarCandidatos();
+  } catch {
+    showToast('Erro ao apagar candidato.', 'error');
   }
 }
 
@@ -1054,6 +1071,7 @@ function renderCandidatos() {
       <tbody>
         ${filtered.map(c => {
           const score = parseFloat(c.score_total) || 0;
+          const nomeEsc = (c.nome || '').replace(/'/g, "\\'");
           return `
           <tr onclick="abrirCandidato('${c.candidato_id}')">
             <td>
@@ -1067,8 +1085,9 @@ function renderCandidatos() {
               <span style="color:var(--muted);font-size:11px">/10</span>
             </td>
             <td><span class="badge ${fitColor(c.nivel_fit)}">${fitLabel(c.nivel_fit || '')}</span></td>
-            <td onclick="event.stopPropagation()">
+            <td onclick="event.stopPropagation()" style="white-space:nowrap">
               <button class="btn btn-ghost btn-sm" onclick="abrirCandidato('${c.candidato_id}')">Ver</button>
+              <button class="btn btn-danger btn-sm" onclick="deletarCandidato('${c.candidato_id}','${nomeEsc}')">Apagar</button>
             </td>
           </tr>`;
         }).join('')}
