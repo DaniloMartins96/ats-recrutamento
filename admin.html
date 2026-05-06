@@ -1178,17 +1178,23 @@ function abrirCandidato(id) {
   document.getElementById('so-dims').innerHTML = dimsHtml;
 
   // ── STAR ──────────────────────────────────────────────────────────
-  const starTitles  = { q1: 'Q1 — Situação desafiadora', q2: 'Q2 — Feedback negativo', q3: 'Q3 — Maior projeto' };
+  const starTitles  = { q1: 'Q1 — Situação Desafiadora', q2: 'Q2 — Feedback Negativo', q3: 'Q3 — Maior Projeto' };
   const starFLetter = k => ({ situacao:'S', tarefa:'T', acao:'A', resultado:'R' }[k] || k[0].toUpperCase());
   const starFLabel  = k => ({ situacao:'Situação', tarefa:'Tarefa', acao:'Ação', resultado:'Resultado' }[k] || k);
-  const qualBadge   = q => q === 'alta' ? 'badge-green' : q === 'media' ? 'badge-yellow' : 'badge-red';
-  const qualLabel   = q => ({ alta:'Alta', media:'Média', baixa:'Baixa' }[q] || q || '—');
+  const qualBadge   = q => { const ql = (q||'').toLowerCase(); return ql === 'alta' ? 'badge-green' : (ql === 'media' || ql === 'média') ? 'badge-yellow' : 'badge-red'; };
+  const qualLabel   = q => { const ql = (q||'').toLowerCase(); return ql === 'alta' ? 'Alta' : (ql === 'media' || ql === 'média') ? 'Média' : ql === 'baixa' ? 'Baixa' : q || '—'; };
 
   let accHtml = '';
-  const starObj = c.analise_star || {};
+  let rawStar = c.analise_star;
+  if (typeof rawStar === 'string') { try { rawStar = JSON.parse(rawStar); } catch { rawStar = {}; } }
+  const starObj = (rawStar && typeof rawStar === 'object') ? rawStar : {};
+
+  console.log('[STAR debug] analise_star raw:', c.analise_star);
+  console.log('[STAR debug] starObj keys:', Object.keys(starObj));
 
   ['q1','q2','q3'].forEach((key, idx) => {
     const r = starObj[key];
+    console.log(`[STAR debug] ${key}:`, r);
     if (!r || typeof r !== 'object') return;
     let body = ['situacao','tarefa','acao','resultado'].map(f => {
       if (!r[f]) return '';
@@ -1218,6 +1224,7 @@ function abrirCandidato(id) {
   if (!accHtml) accHtml = '<div class="star-text" style="padding:8px 0;color:var(--muted)">Nenhuma análise STAR disponível.</div>';
 
   // ── PERGUNTAS (abas) ───────────────────────────────────────────────
+  console.log('[Perguntas debug] rh:', c.perguntas_rh, '| tec:', c.perguntas_tecnicas, '| comp:', c.perguntas_comportamentais);
   const pergRH   = Array.isArray(c.perguntas_rh)             ? c.perguntas_rh             : [];
   const pergTec  = Array.isArray(c.perguntas_tecnicas)        ? c.perguntas_tecnicas        : [];
   const pergComp = Array.isArray(c.perguntas_comportamentais) ? c.perguntas_comportamentais : [];
