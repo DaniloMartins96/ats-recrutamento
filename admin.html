@@ -679,6 +679,33 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
   </div>
 </div>
 
+<!-- ══════════════ MODAL LINKEDIN ══════════════ -->
+<div class="modal-overlay" id="modal-linkedin">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-linkedin-title">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-linkedin-title">🎉 Vaga publicada! Post para LinkedIn</div>
+      <button class="modal-close" onclick="fecharModalLinkedIn()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Link de Candidatura</label>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input class="form-input" type="text" id="li-link-text" readonly style="flex:1">
+          <button class="btn btn-outline btn-sm" onclick="copiarLinkLinkedIn()">Copiar link</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Post para LinkedIn</label>
+        <textarea class="form-textarea" id="li-post-text" rows="14"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="fecharModalLinkedIn()">Fechar</button>
+      <button class="btn btn-primary" onclick="copiarTextoLinkedIn()">Copiar texto completo</button>
+    </div>
+  </div>
+</div>
+
 <!-- ══════════════ TOASTS ══════════════ -->
 <div class="toast-container" id="toasts"></div>
 
@@ -967,22 +994,42 @@ async function salvarVaga(statusOverride) {
   console.log('[salvarVaga] status que será enviado:', payload.status);
   console.log('[salvarVaga] payload completo:', JSON.stringify(payload, null, 2));
 
+  const btnSave = document.getElementById('mv-save');
+  const btnRasc = document.getElementById('mv-rascunho');
+  const savedSaveText = btnSave.textContent;
+  btnSave.disabled = true;
+  btnRasc.disabled = true;
+  btnSave.textContent = '⏳ Gerando post LinkedIn...';
+  btnRasc.textContent = '⏳ Gerando post LinkedIn...';
+
+  let resData = null;
   try {
     const r = await fetch(BASE_URL + '/ats-admin-criar-vaga', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
-      signal: AbortSignal.timeout(5000)
+      signal: AbortSignal.timeout(30000)
     });
     if (!r.ok) throw new Error('HTTP ' + r.status);
+    resData = await r.json();
   } catch {
     showToast('Erro ao salvar vaga. Verifique a conexão.', 'error');
+    btnSave.disabled = false;
+    btnRasc.disabled = false;
+    btnSave.textContent = savedSaveText;
+    btnRasc.textContent = 'Salvar Rascunho';
     return;
   }
 
+  btnSave.disabled = false;
+  btnRasc.disabled = false;
   fecharModalVaga();
-  showToast(isNova ? 'Vaga criada com sucesso!' : 'Vaga atualizada com sucesso!', 'success');
   await carregarVagas();
+  if (isNova && statusOverride === 'ativa' && resData?.linkedin_post) {
+    abrirModalLinkedIn(resData.linkedin_post, resData.link_candidatura);
+  } else {
+    showToast(isNova ? 'Vaga criada com sucesso!' : 'Vaga atualizada com sucesso!', 'success');
+  }
 }
 
 document.getElementById('mv-save').onclick = () => {
@@ -993,6 +1040,28 @@ document.getElementById('mv-rascunho').onclick = () => {
   console.log('[botão clicado] Salvar Rascunho → status = "rascunho"');
   salvarVaga('rascunho');
 };
+
+// ─── MODAL LINKEDIN ──────────────────────────────────────────────
+function abrirModalLinkedIn(post, link) {
+  document.getElementById('li-post-text').value = post || '';
+  document.getElementById('li-link-text').value = link || '';
+  document.getElementById('modal-linkedin').classList.add('open');
+  showToast('Vaga publicada com sucesso!', 'success');
+}
+
+function fecharModalLinkedIn() {
+  document.getElementById('modal-linkedin').classList.remove('open');
+}
+
+function copiarTextoLinkedIn() {
+  navigator.clipboard.writeText(document.getElementById('li-post-text').value);
+  showToast('Texto copiado!', 'success');
+}
+
+function copiarLinkLinkedIn() {
+  navigator.clipboard.writeText(document.getElementById('li-link-text').value);
+  showToast('Link copiado!', 'success');
+}
 
 // ─── TAG INPUTS ───────────────────────────────────────────────────
 function initTagInputs() {
