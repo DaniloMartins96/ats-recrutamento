@@ -1045,6 +1045,11 @@ async function carregarCandidatos() {
     if (!r.ok) throw new Error('HTTP ' + r.status);
     const data = await r.json();
     candidatos = Array.isArray(data) ? data : (Array.isArray(data.candidatos) ? data.candidatos : []);
+    if (candidatos.length) {
+      console.log('[carregarCandidatos] total:', candidatos.length);
+      console.log('[carregarCandidatos] chaves do 1º candidato:', Object.keys(candidatos[0]));
+      console.log('[carregarCandidatos] analise_star do 1º:', candidatos[0].analise_star);
+    }
   } catch {
     candidatos = [];
     showToast('Erro ao carregar candidatos da API.', 'error');
@@ -1134,6 +1139,17 @@ function abrirCandidato(id) {
   if (!c) return;
   currentCandidatoId = id;
 
+  // ── DEBUG: inspecionar o objeto completo do candidato ──
+  console.log('[abrirCandidato] ID:', id);
+  console.log('[abrirCandidato] objeto completo:', JSON.parse(JSON.stringify(c)));
+  console.log('[abrirCandidato] analise_star:', c.analise_star, '| tipo:', typeof c.analise_star);
+  console.log('[abrirCandidato] perguntas_rh:', c.perguntas_rh, '| tipo:', typeof c.perguntas_rh);
+  console.log('[abrirCandidato] perguntas_tecnicas:', c.perguntas_tecnicas);
+  console.log('[abrirCandidato] perguntas_comportamentais:', c.perguntas_comportamentais);
+  console.log('[abrirCandidato] pontos_fortes:', c.pontos_fortes);
+  console.log('[abrirCandidato] briefing_entrevistador:', c.briefing_entrevistador);
+  console.log('[abrirCandidato] chaves disponíveis:', Object.keys(c));
+
   document.getElementById('so-nome').textContent = c.nome || '—';
   document.getElementById('so-meta').textContent = `${c.vaga_titulo || '—'} · ${c.senioridade_declarada || 'Não informado'}`;
 
@@ -1186,16 +1202,28 @@ function abrirCandidato(id) {
 
   let accHtml = '';
   let rawStar = c.analise_star;
-  if (typeof rawStar === 'string') { try { rawStar = JSON.parse(rawStar); } catch { rawStar = {}; } }
-  const starObj = (rawStar && typeof rawStar === 'object') ? rawStar : {};
-
-  console.log('[STAR debug] analise_star raw:', c.analise_star);
-  console.log('[STAR debug] starObj keys:', Object.keys(starObj));
+  // normalizar: string JSON → objeto
+  if (typeof rawStar === 'string') { try { rawStar = JSON.parse(rawStar); } catch { rawStar = null; } }
+  // normalizar: array [{chave,valor}] → objeto
+  if (Array.isArray(rawStar)) {
+    const tmp = {};
+    rawStar.forEach((item, i) => {
+      if (item && typeof item === 'object') {
+        const k = item.chave || item.key || item.id || ('q' + (i + 1));
+        tmp[k] = item;
+      }
+    });
+    rawStar = tmp;
+  }
+  const starObj = (rawStar && typeof rawStar === 'object' && !Array.isArray(rawStar)) ? rawStar : {};
+  console.log('[STAR] starObj final:', starObj, '| chaves:', Object.keys(starObj));
 
   ['q1','q2','q3'].forEach((key, idx) => {
     const r = starObj[key];
-    console.log(`[STAR debug] ${key}:`, r);
-    if (!r || typeof r !== 'object') return;
+    if (!r || typeof r !== 'object') {
+      console.log(`[STAR] ${key} ignorado — valor:`, r, '| tipo:', typeof r);
+      return;
+    }
     let body = ['situacao','tarefa','acao','resultado'].map(f => {
       if (!r[f]) return '';
       return `<div class="star-section">
@@ -1224,10 +1252,11 @@ function abrirCandidato(id) {
   if (!accHtml) accHtml = '<div class="star-text" style="padding:8px 0;color:var(--muted)">Nenhuma análise STAR disponível.</div>';
 
   // ── PERGUNTAS (abas) ───────────────────────────────────────────────
-  console.log('[Perguntas debug] rh:', c.perguntas_rh, '| tec:', c.perguntas_tecnicas, '| comp:', c.perguntas_comportamentais);
-  const pergRH   = Array.isArray(c.perguntas_rh)             ? c.perguntas_rh             : [];
-  const pergTec  = Array.isArray(c.perguntas_tecnicas)        ? c.perguntas_tecnicas        : [];
-  const pergComp = Array.isArray(c.perguntas_comportamentais) ? c.perguntas_comportamentais : [];
+  const toArray = v => Array.isArray(v) ? v : (v && typeof v === 'string' ? v.split('\n').filter(Boolean) : []);
+  const pergRH   = toArray(c.perguntas_rh);
+  const pergTec  = toArray(c.perguntas_tecnicas);
+  const pergComp = toArray(c.perguntas_comportamentais);
+  console.log('[Perguntas] rh:', pergRH.length, '| tec:', pergTec.length, '| comp:', pergComp.length);
   const mkPergs  = arr => arr.length
     ? arr.map((p, i) => `<div style="font-size:12px;color:var(--muted);padding:8px 0;border-bottom:1px solid var(--border)"><strong style="color:var(--text)">${i+1}.</strong> ${p}</div>`).join('')
     : '<div class="star-text">Nenhuma pergunta disponível.</div>';
