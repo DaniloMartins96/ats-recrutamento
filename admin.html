@@ -602,13 +602,43 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
           <input class="form-input" type="text" id="mv-local" placeholder="Ex: São Paulo, SP">
         </div>
         <div class="form-group">
-          <label class="form-label">Faixa Salarial</label>
-          <input class="form-input" type="text" id="mv-salario" placeholder="Ex: R$ 8.000 – 12.000">
+          <label class="form-label">Tipo de Contrato</label>
+          <select class="form-select" id="mv-contrato">
+            <option value="CLT">CLT</option>
+            <option value="PJ">PJ</option>
+            <option value="Estágio">Estágio</option>
+            <option value="Temporário">Temporário</option>
+            <option value="Freelancer">Freelancer</option>
+          </select>
         </div>
       </div>
+
+      <div style="margin:24px 0 16px;padding-bottom:8px;border-bottom:1px solid var(--border);font-size:11px;font-weight:700;color:var(--accent2);text-transform:uppercase;letter-spacing:.08em">Sobre a Empresa</div>
+      <div class="form-group">
+        <label class="form-label">Sobre a Empresa</label>
+        <textarea class="form-textarea" id="mv-sobre-empresa" rows="3" placeholder="Descreva a empresa, missão, cultura e diferenciais..."></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Valores da Empresa</label>
+        <textarea class="form-textarea" id="mv-valores" rows="2" placeholder="Ex: Inovação, colaboração, foco no cliente..."></textarea>
+      </div>
+
+      <div style="margin:24px 0 16px;padding-bottom:8px;border-bottom:1px solid var(--border);font-size:11px;font-weight:700;color:var(--accent2);text-transform:uppercase;letter-spacing:.08em">Detalhes da Vaga</div>
       <div class="form-group">
         <label class="form-label">Descrição da Vaga</label>
         <textarea class="form-textarea" id="mv-descricao" rows="3" placeholder="Descreva as responsabilidades e o impacto do cargo..."></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Responsabilidades</label>
+        <textarea class="form-textarea" id="mv-responsabilidades" rows="3" placeholder="Liste as principais responsabilidades do cargo..."></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Requisitos Obrigatórios</label>
+        <textarea class="form-textarea" id="mv-requisitos-obrig" rows="3" placeholder="O que é indispensável para a vaga..."></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Requisitos Desejáveis</label>
+        <textarea class="form-textarea" id="mv-requisitos-desej" rows="2" placeholder="Diferenciais que serão valorizados..."></textarea>
       </div>
       <div class="form-group">
         <label class="form-label">Stack Técnico</label>
@@ -618,12 +648,78 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
         <div class="tag-hint">Pressione Enter ou vírgula para adicionar cada tecnologia</div>
       </div>
       <div class="form-group">
-        <label class="form-label">Competências Requeridas</label>
+        <label class="form-label">Competências Comportamentais</label>
         <div class="tag-input-wrap" id="tag-wrap-comp">
           <input type="text" id="tag-input-comp" placeholder="Ex: Comunicação, Liderança — pressione Enter">
         </div>
         <div class="tag-hint">Pressione Enter ou vírgula para adicionar cada competência</div>
       </div>
+
+      <div style="margin:24px 0 16px;padding-bottom:8px;border-bottom:1px solid var(--border);font-size:11px;font-weight:700;color:var(--accent2);text-transform:uppercase;letter-spacing:.08em">Remuneração e Benefícios</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Salário Mínimo</label>
+          <input class="form-input" type="number" id="mv-salario-min" placeholder="Ex: 8000" min="0">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Salário Máximo</label>
+          <input class="form-input" type="number" id="mv-salario-max" placeholder="Ex: 12000" min="0">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Mostrar salário?</label>
+          <select class="form-select" id="mv-mostrar-salario">
+            <option value="sim">Sim, mostrar no post</option>
+            <option value="nao">Não divulgar</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Número de Vagas</label>
+          <input class="form-input" type="number" id="mv-qtd-vagas" value="1" min="1">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Benefícios</label>
+        <textarea class="form-textarea" id="mv-beneficios" rows="2" placeholder="VR, VT, Plano de saúde, Home office, Gympass..."></textarea>
+      </div>
+
+      <div style="margin:24px 0 16px;padding-bottom:8px;border-bottom:1px solid var(--border);font-size:11px;font-weight:700;color:var(--accent2);text-transform:uppercase;letter-spacing:.08em">Requisitos Adicionais</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Experiência Mínima (anos)</label>
+          <input class="form-input" type="number" id="mv-exp-anos" placeholder="0" min="0">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Data Limite para Candidaturas</label>
+          <input class="form-input" type="date" id="mv-data-limite">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Inglês Obrigatório?</label>
+          <select class="form-select" id="mv-ingles-obrig" onchange="toggleNivelIngles()">
+            <option value="nao">Não</option>
+            <option value="sim">Sim</option>
+          </select>
+        </div>
+        <div class="form-group" id="mv-nivel-ingles-wrap" style="display:none">
+          <label class="form-label">Nível de Inglês</label>
+          <select class="form-select" id="mv-nivel-ingles">
+            <option value="">Selecione</option>
+            <option>Básico</option>
+            <option>Intermediário</option>
+            <option>Avançado</option>
+            <option>Fluente</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Recrutador Responsável</label>
+        <input class="form-input" type="text" id="mv-recrutador" placeholder="Nome do recrutador">
+      </div>
+
+      <div style="margin:24px 0 16px;padding-bottom:8px;border-bottom:1px solid var(--border);font-size:11px;font-weight:700;color:var(--accent2);text-transform:uppercase;letter-spacing:.08em">Publicação</div>
       <div class="form-group">
         <label class="form-label">Status da Vaga</label>
         <select class="form-select" id="mv-status">
@@ -935,20 +1031,41 @@ function abrirModalVaga(id) {
     setSelectValue('mv-nivel', v.senioridade || v.nivel || '');
     setSelectValue('mv-modalidade', v.modalidade);
     document.getElementById('mv-local').value = v.cidade || v.local || '';
-    const salarioFmt = (v.salario_min > 0 || v.salario_max > 0)
-      ? [v.salario_min, v.salario_max].filter(Boolean).join(' – ')
-      : (v.salario || '');
-    document.getElementById('mv-salario').value = salarioFmt;
     document.getElementById('mv-descricao').value = v.descricao || '';
     document.getElementById('mv-status').value = v.status || 'ativa';
     tagData.stack = [...(v.stack_tecnica || v.stack || [])];
     tagData.comp  = [...(v.competencias || [])];
+    document.getElementById('mv-sobre-empresa').value = v.sobre_empresa || '';
+    document.getElementById('mv-valores').value = v.valores_empresa || '';
+    document.getElementById('mv-responsabilidades').value = v.responsabilidades || '';
+    document.getElementById('mv-requisitos-obrig').value = v.requisitos_obrigatorios || '';
+    document.getElementById('mv-requisitos-desej').value = v.requisitos_desejaveis || '';
+    document.getElementById('mv-salario-min').value = v.salario_min > 0 ? v.salario_min : '';
+    document.getElementById('mv-salario-max').value = v.salario_max > 0 ? v.salario_max : '';
+    document.getElementById('mv-beneficios').value = v.beneficios || '';
+    document.getElementById('mv-qtd-vagas').value = v.vagas_abertas || 1;
+    setSelectValue('mv-contrato', v.tipo_contrato || 'CLT');
+    document.getElementById('mv-exp-anos').value = v.experiencia_minima_anos || '';
+    setSelectValue('mv-ingles-obrig', v.ingles_obrigatorio ? 'sim' : 'nao');
+    setSelectValue('mv-nivel-ingles', v.nivel_ingles_minimo || '');
+    document.getElementById('mv-data-limite').value = v.data_limite ? v.data_limite.split('T')[0] : '';
+    document.getElementById('mv-recrutador').value = v.recrutador_responsavel || '';
+    toggleNivelIngles();
   } else {
     document.getElementById('modal-vaga-title').textContent = 'Nova Vaga';
     document.getElementById('mv-save').textContent = 'Publicar Vaga';
-    ['mv-titulo', 'mv-local', 'mv-salario', 'mv-descricao'].forEach(i => document.getElementById(i).value = '');
+    ['mv-titulo', 'mv-local', 'mv-descricao'].forEach(i => document.getElementById(i).value = '');
     ['mv-departamento', 'mv-nivel', 'mv-modalidade'].forEach(i => document.getElementById(i).value = '');
     document.getElementById('mv-status').value = 'ativa';
+    ['mv-sobre-empresa','mv-valores','mv-responsabilidades',
+     'mv-requisitos-obrig','mv-requisitos-desej','mv-beneficios',
+     'mv-salario-min','mv-salario-max','mv-recrutador','mv-data-limite',
+     'mv-exp-anos'].forEach(i => {
+       const el = document.getElementById(i);
+       if (el) el.value = '';
+     });
+    document.getElementById('mv-qtd-vagas').value = 1;
+    toggleNivelIngles();
   }
 
   renderTags('stack');
@@ -959,6 +1076,11 @@ function abrirModalVaga(id) {
 function fecharModalVaga() {
   document.getElementById('modal-vaga').classList.remove('open');
   currentVagaId = null;
+}
+
+function toggleNivelIngles() {
+  const show = document.getElementById('mv-ingles-obrig').value === 'sim';
+  document.getElementById('mv-nivel-ingles-wrap').style.display = show ? '' : 'none';
 }
 
 function editarVaga(id) { abrirModalVaga(id); }
@@ -985,12 +1107,26 @@ async function salvarVaga(statusOverride) {
     nivel,
     modalidade: modal,
     local:      document.getElementById('mv-local').value.trim(),
-    salario:    document.getElementById('mv-salario').value.trim(),
     descricao:  document.getElementById('mv-descricao').value.trim(),
     stack:      tagData.stack,
     competencias: tagData.comp,
     status:     statusOverride,
-    criado_em:  vagaExistente.criado_em || new Date().toISOString()
+    criado_em:  vagaExistente.criado_em || new Date().toISOString(),
+    sobre_empresa: document.getElementById('mv-sobre-empresa').value.trim(),
+    valores_empresa: document.getElementById('mv-valores').value.trim(),
+    responsabilidades: document.getElementById('mv-responsabilidades').value.trim(),
+    requisitos_obrigatorios: document.getElementById('mv-requisitos-obrig').value.trim(),
+    requisitos_desejaveis: document.getElementById('mv-requisitos-desej').value.trim(),
+    salario_min: parseFloat(document.getElementById('mv-salario-min').value) || 0,
+    salario_max: parseFloat(document.getElementById('mv-salario-max').value) || 0,
+    beneficios: document.getElementById('mv-beneficios').value.trim(),
+    vagas_abertas: parseInt(document.getElementById('mv-qtd-vagas').value) || 1,
+    tipo_contrato: document.getElementById('mv-contrato').value,
+    experiencia_minima_anos: parseInt(document.getElementById('mv-exp-anos').value) || 0,
+    ingles_obrigatorio: document.getElementById('mv-ingles-obrig').value === 'sim',
+    nivel_ingles_minimo: document.getElementById('mv-nivel-ingles').value,
+    data_limite: document.getElementById('mv-data-limite').value || null,
+    recrutador_responsavel: document.getElementById('mv-recrutador').value.trim(),
   };
 
   console.log('[salvarVaga] status que será enviado:', payload.status);
