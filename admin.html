@@ -1481,13 +1481,13 @@ function renderCandidatos() {
         <span style="color:var(--muted);font-size:11px">/10</span>
       </td>
       <td><div style="width:116px">${miniBarras(c)}</div></td>
-      <td><span class="badge ${fitColor(c.nivel_fit)}">${fitLabel(c.nivel_fit || '')}</span></td>
+      <td><span class="badge ${fitColor(c.nivel_fit || c.fit || c.nivel_fit_cultural || c.score_fit)}">${fitLabel(c.nivel_fit || c.fit || c.nivel_fit_cultural || c.score_fit || '')}</span></td>
       <td><span class="badge badge-gray" style="font-size:10px">${c.etapa_atual || '—'}</span></td>
       <td onclick="event.stopPropagation()" style="white-space:nowrap">
         <button class="btn btn-ghost btn-sm" onclick="abrirCandidato('${c.candidato_id}')">Ver</button>
-        <button class="btn btn-primary btn-sm" onclick="mudarStatusCandidatoTabela('${c.candidato_id}','Aprovado')">Avançar</button>
+        <button class="btn btn-primary btn-sm" onclick="avancarCandidato('${c.candidatura_id || c.candidato_id}','${c.etapa_atual||''}')">Avançar</button>
         <button class="btn btn-danger btn-sm" onclick="mudarStatusCandidatoTabela('${c.candidato_id}','Reprovado')">Rejeitar</button>
-        ${(c.etapa_atual||'').toLowerCase()==='aprovado'?`<button class="btn btn-outline btn-sm" style="border-color:var(--success);color:var(--success)" onclick="liberarAdmissao('${c.candidato_id}')">Liberar Admissão</button>`:''}
+        ${(c.etapa_atual||'').toLowerCase()==='aprovado'?`<button class="btn btn-outline btn-sm" style="border-color:var(--success);color:var(--success)" onclick="liberarAdmissao('${c.candidatura_id || c.candidato_id}')">Liberar Admissão</button>`:''}
       </td>
     </tr>`;
   }).join('');
@@ -1550,6 +1550,30 @@ document.getElementById('ordenar-candidatos').onchange = renderCandidatos;
 function mudarStatusCandidatoTabela(id, novoStatus) {
   currentCandidatoId = id;
   mudarStatusCandidato(novoStatus);
+}
+
+const ETAPAS = ['triagem', 'entrevista_rh', 'entrevista_tecnica', 'aprovado'];
+
+async function avancarCandidato(candidaturaId, etapaAtual) {
+  const idx = ETAPAS.indexOf((etapaAtual || '').toLowerCase().replace(/ /g, '_'));
+  const proximaEtapa = ETAPAS[idx + 1] || 'aprovado';
+  const label = { triagem: 'Triagem', entrevista_rh: 'Entrevista RH', entrevista_tecnica: 'Entrevista Técnica', aprovado: 'Aprovado' };
+  if (!confirm(`Avançar candidato para "${label[proximaEtapa] || proximaEtapa}"?`)) return;
+  try {
+    const r = await fetch(BASE_URL + '/ats-avancar-entrevista', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ candidatura_id: candidaturaId }),
+      signal: AbortSignal.timeout(8000)
+    });
+    if (!r.ok) throw new Error();
+    showToast(`Candidato avançado para "${label[proximaEtapa] || proximaEtapa}"!`, 'success');
+    await carregarCandidatos();
+    if (proximaEtapa === 'aprovado') {
+      if (confirm('Candidato aprovado! Deseja liberar o processo de admissão agora?')) {
+        await liberarAdmissao(candidaturaId);
+      }
+    }
+  } catch { showToast('Erro ao avançar candidato.', 'error'); }
 }
 
 async function exportarExcel() {
@@ -2100,7 +2124,9 @@ async function liberarAdmissao(candidaturaId) {
       signal: AbortSignal.timeout(8000)
     });
     if (!r.ok) throw new Error();
-    showToast('Admissão liberada! Formulário enviado ao candidato.', 'success');
+    showToast('Admissão liberada! WhatsApp enviado ao candidato.', 'success');
+    await carregarCandidatos();
+    mostrarSecao('dp');
   } catch { showToast('Erro ao liberar admissão.', 'error'); }
 }
 
