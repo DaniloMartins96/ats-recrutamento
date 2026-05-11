@@ -1445,7 +1445,7 @@ function renderCandidatos() {
       { label: 'Téc', val: parseFloat(c.score_tecnico)        || 0, color: '#6c63ff' },
       { label: 'Exp', val: parseFloat(c.score_experiencia)    || 0, color: '#10b981' },
       { label: 'Com', val: parseFloat(c.score_comportamental) || 0, color: '#f59e0b' },
-      { label: 'Fit', val: parseFloat(c.score_fit)            || 0, color: '#a78bfa' },
+      { label: 'Fs',  val: parseFloat(c.score_fit_cultural)   || 0, color: '#a78bfa' },
     ];
     return dims.map(d => `
       <div style="display:flex;align-items:center;gap:4px;margin-bottom:2px">
@@ -1927,8 +1927,9 @@ async function carregarDP() {
     const r = await fetch(BASE_URL + '/ats-dp-admissoes', { signal: AbortSignal.timeout(10000) });
     if (!r.ok) throw new Error('HTTP ' + r.status);
     const data = await r.json();
+    if (data.success === false) throw new Error(data.message || 'Erro na API');
     admissoes = Array.isArray(data) ? data : (Array.isArray(data.admissoes) ? data.admissoes : []);
-  } catch {
+  } catch (e) {
     admissoes = [];
     showToast('Erro ao carregar admissões.', 'error');
   }
