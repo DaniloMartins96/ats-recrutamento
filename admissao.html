@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Formulário de Admissão — TechRecruit AI</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0a0f;--surface:#13131a;--surface2:#1a1a24;--surface3:#22222f;
+  --border:#2a2a3a;--accent:#6c63ff;--accent2:#a78bfa;--accent-dim:#6c63ff22;
+  --text:#e2e2f0;--muted:#6b6b8a;--danger:#ff4d6d;--success:#10b981;--warn:#f59e0b;
+}
+html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:14px;line-height:1.5}
+
+.page-wrap{max-width:680px;margin:0 auto;padding:40px 20px 80px}
+
+/* header */
+.form-header{text-align:center;margin-bottom:40px}
+.logo{display:inline-flex;align-items:center;gap:10px;margin-bottom:20px}
+.logo-icon{width:36px;height:36px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:8px;display:flex;align-items:center;justify-content:center}
+.logo-icon svg{width:20px;height:20px;fill:#fff}
+.logo span{font-size:18px;font-weight:700;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.form-header h1{font-size:26px;font-weight:800;margin-bottom:8px}
+.form-header p{font-size:14px;color:var(--muted)}
+
+/* card */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px;margin-bottom:20px}
+.section-title{font-size:11px;font-weight:700;color:var(--accent2);text-transform:uppercase;letter-spacing:.08em;padding-bottom:12px;border-bottom:1px solid var(--border);margin-bottom:20px}
+
+/* form */
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+@media(max-width:520px){.form-row{grid-template-columns:1fr}}
+.form-group{margin-bottom:16px}
+.form-group.full{grid-column:1/-1}
+.form-label{display:block;font-size:11px;font-weight:600;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em}
+.required{color:var(--accent2)}
+.form-input,.form-select,.form-textarea{
+  width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;
+  padding:10px 14px;color:var(--text);font-size:14px;font-family:inherit;outline:none;
+  transition:border-color .2s;
+}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--accent)}
+.form-select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b6b8a' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center}
+.form-select option{background:var(--surface)}
+.form-textarea{resize:vertical;min-height:80px;line-height:1.6}
+
+/* submit */
+.btn-submit{
+  width:100%;padding:14px;background:linear-gradient(135deg,var(--accent),var(--accent2));
+  border:none;border-radius:10px;color:#fff;font-size:16px;font-weight:700;font-family:inherit;
+  cursor:pointer;transition:opacity .2s,transform .2s;margin-top:8px;
+}
+.btn-submit:hover{opacity:.9;transform:translateY(-1px)}
+.btn-submit:disabled{opacity:.5;cursor:not-allowed;transform:none}
+
+/* error */
+.field-error{font-size:11px;color:var(--danger);margin-top:4px}
+.input-error{border-color:var(--danger)!important}
+
+/* confirmation */
+#tela-confirmacao{display:none;text-align:center;padding:60px 20px}
+.check-circle{width:80px;height:80px;border-radius:50%;background:#10b98122;border:2px solid var(--success);display:flex;align-items:center;justify-content:center;margin:0 auto 24px;font-size:36px}
+#tela-confirmacao h2{font-size:24px;font-weight:800;margin-bottom:12px}
+#tela-confirmacao p{font-size:15px;color:var(--muted);max-width:400px;margin:0 auto}
+
+/* loading overlay */
+.loading-overlay{display:none;position:fixed;inset:0;background:#00000088;backdrop-filter:blur(4px);z-index:999;align-items:center;justify-content:center;flex-direction:column;gap:16px}
+.loading-overlay.active{display:flex}
+.spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{color:var(--text);font-weight:600}
+
+/* scrollbar */
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+</style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loading">
+  <div class="spinner"></div>
+  <div class="loading-text">Enviando formulário...</div>
+</div>
+
+<div class="page-wrap">
+
+  <!-- HEADER -->
+  <div class="form-header">
+    <div class="logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      </div>
+      <span>TechRecruit AI</span>
+    </div>
+    <h1>Formulário de Admissão</h1>
+    <p>Preencha seus dados com atenção. Todos os campos marcados com <span style="color:var(--accent2)">*</span> são obrigatórios.</p>
+  </div>
+
+  <!-- FORMULÁRIO -->
+  <form id="form-admissao" novalidate>
+
+    <!-- SEÇÃO 1 — DADOS PESSOAIS -->
+    <div class="card">
+      <div class="section-title">Dados Pessoais</div>
+      <div class="form-row">
+        <div class="form-group full">
+          <label class="form-label">Nome Completo <span class="required">*</span></label>
+          <input class="form-input" type="text" name="nome" id="f-nome" placeholder="Como consta no documento oficial" required>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">CPF <span class="required">*</span></label>
+          <input class="form-input" type="text" name="cpf" id="f-cpf" placeholder="000.000.000-00" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">RG <span class="required">*</span></label>
+          <input class="form-input" type="text" name="rg" id="f-rg" placeholder="00.000.000-0" required>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Data de Nascimento <span class="required">*</span></label>
+          <input class="form-input" type="date" name="data_nascimento" id="f-nascimento" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Estado Civil <span class="required">*</span></label>
+          <select class="form-select" name="estado_civil" id="f-estado-civil" required>
+            <option value="">Selecione</option>
+            <option>Solteiro(a)</option>
+            <option>Casado(a)</option>
+            <option>Divorciado(a)</option>
+            <option>Viúvo(a)</option>
+            <option>União Estável</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Nacionalidade</label>
+          <input class="form-input" type="text" name="nacionalidade" id="f-nacionalidade" placeholder="Ex: Brasileiro(a)" value="Brasileiro(a)">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Naturalidade</label>
+          <input class="form-input" type="text" name="naturalidade" id="f-naturalidade" placeholder="Cidade onde nasceu">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Nome da Mãe <span class="required">*</span></label>
+          <input class="form-input" type="text" name="nome_mae" id="f-mae" required placeholder="Nome completo">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Nome do Pai</label>
+          <input class="form-input" type="text" name="nome_pai" id="f-pai" placeholder="Nome completo (opcional)">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group full">
+          <label class="form-label">Endereço Completo <span class="required">*</span></label>
+          <input class="form-input" type="text" name="endereco" id="f-endereco" placeholder="Rua, número, complemento, bairro" required>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">CEP <span class="required">*</span></label>
+          <input class="form-input" type="text" name="cep" id="f-cep" placeholder="00000-000" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Cidade <span class="required">*</span></label>
+          <input class="form-input" type="text" name="cidade" id="f-cidade" required>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Estado <span class="required">*</span></label>
+          <select class="form-select" name="estado" id="f-estado" required>
+            <option value="">Selecione</option>
+            <option>AC</option><option>AL</option><option>AP</option><option>AM</option>
+            <option>BA</option><option>CE</option><option>DF</option><option>ES</option>
+            <option>GO</option><option>MA</option><option>MT</option><option>MS</option>
+            <option>MG</option><option>PA</option><option>PB</option><option>PR</option>
+            <option>PE</option><option>PI</option><option>RJ</option><option>RN</option>
+            <option>RS</option><option>RO</option><option>RR</option><option>SC</option>
+            <option>SP</option><option>SE</option><option>TO</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- SEÇÃO 2 — DADOS BANCÁRIOS -->
+    <div class="card">
+      <div class="section-title">Dados Bancários</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Banco <span class="required">*</span></label>
+          <input class="form-input" type="text" name="banco" id="f-banco" placeholder="Ex: Nubank, Bradesco, Itaú" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tipo de Conta <span class="required">*</span></label>
+          <select class="form-select" name="tipo_conta" id="f-tipo-conta" required>
+            <option value="">Selecione</option>
+            <option value="corrente">Conta Corrente</option>
+            <option value="poupanca">Conta Poupança</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Agência <span class="required">*</span></label>
+          <input class="form-input" type="text" name="agencia" id="f-agencia" placeholder="0000" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Conta <span class="required">*</span></label>
+          <input class="form-input" type="text" name="conta" id="f-conta" placeholder="00000-0" required>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Chave PIX</label>
+        <input class="form-input" type="text" name="pix" id="f-pix" placeholder="CPF, e-mail, telefone ou chave aleatória (opcional)">
+      </div>
+    </div>
+
+    <!-- SEÇÃO 3 — INFORMAÇÕES COMPLEMENTARES -->
+    <div class="card">
+      <div class="section-title">Informações Complementares</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Data de Início Disponível <span class="required">*</span></label>
+          <input class="form-input" type="date" name="data_inicio" id="f-data-inicio" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Carga Horária Desejada</label>
+          <input class="form-input" type="text" name="carga_horaria" id="f-carga-horaria" placeholder="Ex: 40h semanais">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Observações</label>
+        <textarea class="form-textarea" name="observacoes" id="f-observacoes" rows="3" placeholder="Alguma informação adicional que queira compartilhar..."></textarea>
+      </div>
+    </div>
+
+    <button type="submit" class="btn-submit" id="btn-submit">Enviar Formulário</button>
+
+  </form>
+
+  <!-- CONFIRMAÇÃO -->
+  <div id="tela-confirmacao" class="card">
+    <div class="check-circle">✅</div>
+    <h2>Formulário enviado!</h2>
+    <p>Seus dados foram recebidos com sucesso. O Departamento Pessoal entrará em contato em breve com as próximas orientações.</p>
+  </div>
+
+</div>
+
+<script>
+const WEBHOOK = 'https://webhook.danns.com.br/webhook/ats-formulario-admissao';
+const params = new URLSearchParams(window.location.search);
+const admissaoId = params.get('id') || '';
+
+function showLoading(on) {
+  document.getElementById('loading').classList.toggle('active', on);
+}
+
+function markError(id, msg) {
+  const el = document.getElementById(id);
+  el.classList.add('input-error');
+  let err = el.parentElement.querySelector('.field-error');
+  if (!err) { err = document.createElement('div'); err.className = 'field-error'; el.parentElement.appendChild(err); }
+  err.textContent = msg;
+}
+
+function clearErrors() {
+  document.querySelectorAll('.input-error').forEach(e => e.classList.remove('input-error'));
+  document.querySelectorAll('.field-error').forEach(e => e.remove());
+}
+
+function validate() {
+  clearErrors();
+  const required = [
+    ['f-nome', 'Nome completo é obrigatório'],
+    ['f-cpf', 'CPF é obrigatório'],
+    ['f-rg', 'RG é obrigatório'],
+    ['f-nascimento', 'Data de nascimento é obrigatória'],
+    ['f-estado-civil', 'Estado civil é obrigatório'],
+    ['f-mae', 'Nome da mãe é obrigatório'],
+    ['f-endereco', 'Endereço é obrigatório'],
+    ['f-cep', 'CEP é obrigatório'],
+    ['f-cidade', 'Cidade é obrigatória'],
+    ['f-estado', 'Estado é obrigatório'],
+    ['f-banco', 'Banco é obrigatório'],
+    ['f-tipo-conta', 'Tipo de conta é obrigatório'],
+    ['f-agencia', 'Agência é obrigatória'],
+    ['f-conta', 'Conta é obrigatória'],
+    ['f-data-inicio', 'Data de início é obrigatória'],
+  ];
+  let ok = true;
+  required.forEach(([id, msg]) => {
+    const val = document.getElementById(id)?.value?.trim();
+    if (!val) { markError(id, msg); ok = false; }
+  });
+  return ok;
+}
+
+document.getElementById('form-admissao').addEventListener('submit', async e => {
+  e.preventDefault();
+  if (!validate()) {
+    document.querySelector('.input-error')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+
+  const btn = document.getElementById('btn-submit');
+  btn.disabled = true;
+  btn.textContent = 'Enviando...';
+  showLoading(true);
+
+  const body = {
+    admissao_id: admissaoId,
+    nome:          document.getElementById('f-nome').value.trim(),
+    cpf:           document.getElementById('f-cpf').value.trim(),
+    rg:            document.getElementById('f-rg').value.trim(),
+    data_nascimento: document.getElementById('f-nascimento').value,
+    estado_civil:  document.getElementById('f-estado-civil').value,
+    nacionalidade: document.getElementById('f-nacionalidade').value.trim(),
+    naturalidade:  document.getElementById('f-naturalidade').value.trim(),
+    nome_mae:      document.getElementById('f-mae').value.trim(),
+    nome_pai:      document.getElementById('f-pai').value.trim(),
+    endereco:      document.getElementById('f-endereco').value.trim(),
+    cep:           document.getElementById('f-cep').value.trim(),
+    cidade:        document.getElementById('f-cidade').value.trim(),
+    estado:        document.getElementById('f-estado').value,
+    banco:         document.getElementById('f-banco').value.trim(),
+    tipo_conta:    document.getElementById('f-tipo-conta').value,
+    agencia:       document.getElementById('f-agencia').value.trim(),
+    conta:         document.getElementById('f-conta').value.trim(),
+    pix:           document.getElementById('f-pix').value.trim(),
+    data_inicio:   document.getElementById('f-data-inicio').value,
+    carga_horaria: document.getElementById('f-carga-horaria').value.trim(),
+    observacoes:   document.getElementById('f-observacoes').value.trim(),
+  };
+
+  try {
+    const r = await fetch(WEBHOOK, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    showLoading(false);
+    document.getElementById('form-admissao').style.display = 'none';
+    document.querySelector('.form-header').style.display = 'none';
+    document.getElementById('tela-confirmacao').style.display = 'block';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  } catch {
+    showLoading(false);
+    btn.disabled = false;
+    btn.textContent = 'Enviar Formulário';
+    alert('Ocorreu um erro ao enviar o formulário. Verifique sua conexão e tente novamente.');
+  }
+});
+</script>
+</body>
+</html>

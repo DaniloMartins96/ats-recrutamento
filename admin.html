@@ -403,6 +403,11 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
       Candidatos
       <span class="nav-badge" id="nav-badge-cand">3</span>
     </div>
+    <div class="nav-item" data-nav="dp">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      Depto. Pessoal
+      <span class="nav-badge" id="nav-badge-dp" style="display:none">0</span>
+    </div>
     <div class="sidebar-section" style="margin-top:24px">Sistema</div>
     <div class="nav-item" data-nav="config">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
@@ -462,6 +467,27 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
           </select>
         </div>
         <div id="cand-table-body"></div>
+      </div>
+    </section>
+
+    <!-- ── DEPTO. PESSOAL ── -->
+    <section class="section" id="sec-dp">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Departamento Pessoal</div>
+          <div class="page-sub">Gestão de admissões e documentação</div>
+        </div>
+        <button class="btn btn-outline" onclick="carregarDP()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+          Atualizar
+        </button>
+      </div>
+      <div class="stats-row" id="dp-stats"></div>
+      <div class="table-wrap">
+        <div class="table-toolbar">
+          <input class="search-input" type="text" id="dp-search" placeholder="Buscar admissões..." oninput="renderDP()">
+        </div>
+        <div id="dp-table-body"><div class="empty-state"><p>Selecione a aba para carregar as admissões.</p></div></div>
       </div>
     </section>
 
@@ -807,6 +833,38 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
   </div>
 </div>
 
+<!-- ══════════════ MODAL DEPTO. PESSOAL ══════════════ -->
+<div class="modal-overlay" id="modal-dp">
+  <div class="modal" role="dialog" aria-modal="true" style="max-width:780px">
+    <div class="modal-header">
+      <div class="modal-title" id="dp-modal-title">Admissão</div>
+      <button class="modal-close" onclick="fecharModalDP()">&times;</button>
+    </div>
+    <div class="modal-body" style="padding-top:0">
+      <div class="tab-bar" style="margin:0 0 0;padding:16px 0 0">
+        <button class="tab-btn active" onclick="switchDPTab(this,'dp-tab-dados')">Dados Pessoais</button>
+        <button class="tab-btn" onclick="switchDPTab(this,'dp-tab-docs')">Documentos</button>
+        <button class="tab-btn" onclick="switchDPTab(this,'dp-tab-contrato')">Contrato</button>
+      </div>
+      <div class="tab-pane active" id="dp-tab-dados" style="padding-top:16px">
+        <div id="dp-dados-content"></div>
+      </div>
+      <div class="tab-pane" id="dp-tab-docs" style="padding-top:16px">
+        <div id="dp-docs-content"></div>
+      </div>
+      <div class="tab-pane" id="dp-tab-contrato" style="padding-top:16px">
+        <button class="btn btn-primary" id="dp-btn-gerar-contrato" onclick="gerarContrato()">✨ Gerar Contrato via IA</button>
+        <textarea class="form-textarea" id="dp-contrato-text" rows="18" style="margin-top:12px;font-size:12px;font-family:monospace;line-height:1.6" placeholder="O contrato gerado aparecerá aqui..."></textarea>
+        <button class="btn btn-outline btn-sm" style="margin-top:8px" onclick="copiarContrato()">Copiar Contrato</button>
+      </div>
+    </div>
+    <div class="modal-footer" style="justify-content:space-between">
+      <button class="btn btn-outline" onclick="fecharModalDP()">Fechar</button>
+      <button class="btn btn-primary" id="dp-btn-admitir" style="display:none" onclick="confirmarAdmissao()">✅ Confirmar Admissão</button>
+    </div>
+  </div>
+</div>
+
 <!-- ══════════════ TOASTS ══════════════ -->
 <div class="toast-container" id="toasts"></div>
 
@@ -818,9 +876,11 @@ let adminPassword = sessionStorage.getItem('admin_pwd') || 'TechRecruit@2025';
 // ─── STATE ────────────────────────────────────────────────────────
 let vagas = [];
 let candidatos = [];
+let admissoes = [];
 let currentVagaId = null;
 let tagData = { stack: [], comp: [] };
 let currentCandidatoId = null;
+let currentAdmissao = null;
 
 // ─── LOGIN ────────────────────────────────────────────────────────
 function checkAuth() {
@@ -856,12 +916,13 @@ document.getElementById('logout-btn').onclick = () => {
 
 // ─── NAV ──────────────────────────────────────────────────────────
 function mostrarSecao(nav) {
-  const valid = ['vagas', 'candidatos', 'config'];
+  const valid = ['vagas', 'candidatos', 'config', 'dp'];
   if (!valid.includes(nav)) nav = 'vagas';
   document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.nav === nav));
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   document.getElementById('sec-' + nav).classList.add('active');
   if (window.location.hash.replace('#', '') !== nav) window.location.hash = nav;
+  if (nav === 'dp' && !admissoes.length) carregarDP();
 }
 
 document.querySelectorAll('.nav-item').forEach(el => {
@@ -1426,6 +1487,7 @@ function renderCandidatos() {
         <button class="btn btn-ghost btn-sm" onclick="abrirCandidato('${c.candidato_id}')">Ver</button>
         <button class="btn btn-primary btn-sm" onclick="mudarStatusCandidatoTabela('${c.candidato_id}','Aprovado')">Avançar</button>
         <button class="btn btn-danger btn-sm" onclick="mudarStatusCandidatoTabela('${c.candidato_id}','Reprovado')">Rejeitar</button>
+        ${(c.etapa_atual||'').toLowerCase()==='aprovado'?`<button class="btn btn-outline btn-sm" style="border-color:var(--success);color:var(--success)" onclick="liberarAdmissao('${c.candidato_id}')">Liberar Admissão</button>`:''}
       </td>
     </tr>`;
   }).join('');
@@ -1807,6 +1869,239 @@ function alterarSenha() {
   document.getElementById('cfg-nova-senha').value = '';
   document.getElementById('cfg-conf-senha').value = '';
   showToast('Senha alterada com sucesso!', 'success');
+}
+
+// ─── DEPTO. PESSOAL ───────────────────────────────────────────────
+async function carregarDP() {
+  const tbody = document.getElementById('dp-table-body');
+  if (tbody) tbody.innerHTML = '<div style="padding:20px;color:var(--muted);text-align:center">Carregando admissões...</div>';
+  try {
+    const r = await fetch(BASE_URL + '/ats-dp-admissoes', { signal: AbortSignal.timeout(10000) });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const data = await r.json();
+    admissoes = Array.isArray(data) ? data : (Array.isArray(data.admissoes) ? data.admissoes : []);
+  } catch {
+    admissoes = [];
+    showToast('Erro ao carregar admissões.', 'error');
+  }
+  renderDP();
+}
+
+function renderDP() {
+  const q = (document.getElementById('dp-search')?.value || '').toLowerCase();
+  const filtered = admissoes.filter(a =>
+    (a.nome || '').toLowerCase().includes(q) ||
+    (a.vaga_titulo || '').toLowerCase().includes(q)
+  );
+
+  const total      = admissoes.length;
+  const aguardando = admissoes.filter(a => a.status === 'formulario_enviado').length;
+  const pendentes  = admissoes.filter(a => a.status === 'documentos_pendentes').length;
+  const admitidos  = admissoes.filter(a => a.status === 'admitido').length;
+
+  const dpStats = document.getElementById('dp-stats');
+  if (dpStats) dpStats.innerHTML = `
+    <div class="stat-card"><div class="stat-value">${total}</div><div class="stat-label">Total de Admissões</div></div>
+    <div class="stat-card"><div class="stat-value">${aguardando}</div><div class="stat-label">Aguardando Formulário</div></div>
+    <div class="stat-card"><div class="stat-value">${pendentes}</div><div class="stat-label">Documentos Pendentes</div></div>
+    <div class="stat-card"><div class="stat-value">${admitidos}</div><div class="stat-label">Admitidos</div></div>
+  `;
+
+  const tbody = document.getElementById('dp-table-body');
+  if (!filtered.length) {
+    tbody.innerHTML = '<div class="empty-state"><p>Nenhuma admissão encontrada.</p></div>';
+    return;
+  }
+
+  const statusMap = {
+    formulario_enviado:   ['badge-blue',   'Formulário Enviado'],
+    formulario_preenchido:['badge-yellow',  'Form. Preenchido'],
+    documentos_pendentes: ['badge-red',    'Docs. Pendentes'],
+    documentos_ok:        ['badge-green',  'Docs. OK'],
+    contrato_gerado:      ['badge-purple', 'Contrato Gerado'],
+    admitido:             ['badge-green',  'Admitido'],
+  };
+
+  tbody.innerHTML = `
+    <table>
+      <thead><tr>
+        <th>Candidato</th><th>Vaga</th><th>Status</th><th>Docs</th><th>Data Liberação</th><th></th>
+      </tr></thead>
+      <tbody>
+        ${filtered.map(a => {
+          const [cls, lbl] = statusMap[a.status] || ['badge-gray', a.status || '—'];
+          const docs = a.documentos || [];
+          const docsAprov = docs.filter(d => d.status === 'aprovado').length;
+          const dataLib = a.data_liberacao ? new Date(a.data_liberacao).toLocaleDateString('pt-BR') : '—';
+          return `
+          <tr onclick="abrirModalDP('${a.admissao_id}')">
+            <td><div style="font-weight:600">${a.nome||'—'}</div><div style="font-size:11px;color:var(--muted)">${a.email||''}</div></td>
+            <td style="font-size:12px">${a.vaga_titulo||'—'}</td>
+            <td><span class="badge ${cls}">${lbl}</span></td>
+            <td style="font-size:12px">${docs.length ? docsAprov+'/'+docs.length : '—'}</td>
+            <td style="font-size:12px;color:var(--muted)">${dataLib}</td>
+            <td onclick="event.stopPropagation()">
+              <button class="btn btn-ghost btn-sm" onclick="abrirModalDP('${a.admissao_id}')">Ver</button>
+            </td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+function abrirModalDP(admissaoId) {
+  const a = admissoes.find(x => x.admissao_id === admissaoId);
+  if (!a) return;
+  currentAdmissao = a;
+  document.getElementById('dp-modal-title').textContent = 'Admissão — ' + (a.nome || '');
+
+  const campos = [
+    ['Nome Completo', a.nome], ['CPF', a.cpf], ['RG', a.rg],
+    ['Data Nascimento', a.data_nascimento], ['Estado Civil', a.estado_civil], ['Nacionalidade', a.nacionalidade],
+    ['Naturalidade', a.naturalidade], ['Nome da Mãe', a.nome_mae], ['Nome do Pai', a.nome_pai],
+    ['Endereço', a.endereco], ['CEP', a.cep], ['Cidade', a.cidade], ['Estado', a.estado],
+    ['Banco', a.banco], ['Agência', a.agencia], ['Conta', a.conta], ['Tipo de Conta', a.tipo_conta], ['PIX', a.pix],
+    ['Carga Horária', a.carga_horaria], ['Data de Início', a.data_inicio], ['Observações', a.observacoes],
+  ].filter(([, v]) => v);
+
+  document.getElementById('dp-dados-content').innerHTML = campos.length
+    ? `<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        ${campos.map(([l, v]) => `
+          <div>
+            <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px">${l}</div>
+            <div style="font-size:13px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:8px 10px">${v}</div>
+          </div>`).join('')}
+       </div>`
+    : '<div style="color:var(--muted);font-size:13px;padding:12px 0">Formulário ainda não preenchido.</div>';
+
+  const docs = a.documentos || [];
+  document.getElementById('dp-docs-content').innerHTML = docs.length
+    ? docs.map(d => {
+        const [cls, lbl] = d.status === 'aprovado' ? ['badge-green','Aprovado'] : d.status === 'reprovado' ? ['badge-red','Reprovado'] : ['badge-gray','Pendente'];
+        return `
+          <div style="border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin-bottom:8px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <div style="flex:1;min-width:140px">
+              <div style="font-weight:600;font-size:13px">${d.nome||d.tipo||'—'}</div>
+              ${d.obs?`<div style="font-size:11px;color:var(--muted);margin-top:2px">${d.obs}</div>`:''}
+            </div>
+            ${d.url?`<a href="${d.url}" target="_blank" class="btn btn-ghost btn-sm">Ver arquivo</a>`:''}
+            <span class="badge ${cls}">${lbl}</span>
+            ${d.status!=='aprovado'?`<button class="btn btn-primary btn-sm" onclick="aprovarDoc('${d.doc_id}')">✅ Aprovar</button>`:''}
+            ${d.status!=='reprovado'?`<div style="display:flex;gap:6px;align-items:center">
+              <input class="form-input" type="text" id="obs-${d.doc_id}" placeholder="Motivo" style="width:120px;padding:5px 8px;font-size:11px">
+              <button class="btn btn-danger btn-sm" onclick="reprovarDoc('${d.doc_id}')">❌ Reprovar</button>
+            </div>`:''}
+          </div>`;
+      }).join('')
+    : '<div class="empty-state"><p>Nenhum documento enviado ainda.</p></div>';
+
+  document.getElementById('dp-contrato-text').value = a.contrato_texto || '';
+  document.getElementById('dp-btn-admitir').style.display = a.status === 'contrato_gerado' ? '' : 'none';
+
+  document.querySelectorAll('#modal-dp .tab-btn').forEach((b, i) => b.classList.toggle('active', i === 0));
+  document.querySelectorAll('#modal-dp .tab-pane').forEach((p, i) => p.classList.toggle('active', i === 0));
+  document.getElementById('modal-dp').classList.add('open');
+}
+
+function fecharModalDP() {
+  document.getElementById('modal-dp').classList.remove('open');
+  currentAdmissao = null;
+}
+
+function switchDPTab(btn, tabId) {
+  btn.closest('.tab-bar').querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('#modal-dp .tab-pane').forEach(p => p.classList.remove('active'));
+  document.getElementById(tabId).classList.add('active');
+}
+
+async function aprovarDoc(docId) {
+  if (!currentAdmissao) return;
+  try {
+    const r = await fetch(BASE_URL + '/ats-dp-acao', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ acao: 'aprovar_doc', doc_id: docId, admissao_id: currentAdmissao.admissao_id }),
+      signal: AbortSignal.timeout(8000)
+    });
+    if (!r.ok) throw new Error();
+    showToast('Documento aprovado!', 'success');
+    const id = currentAdmissao.admissao_id;
+    await carregarDP();
+    abrirModalDP(id);
+  } catch { showToast('Erro ao aprovar documento.', 'error'); }
+}
+
+async function reprovarDoc(docId) {
+  if (!currentAdmissao) return;
+  const obs = document.getElementById('obs-' + docId)?.value || '';
+  try {
+    const r = await fetch(BASE_URL + '/ats-dp-acao', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ acao: 'reprovar_doc', doc_id: docId, admissao_id: currentAdmissao.admissao_id, observacao: obs }),
+      signal: AbortSignal.timeout(8000)
+    });
+    if (!r.ok) throw new Error();
+    showToast('Documento reprovado.', 'warn');
+    const id = currentAdmissao.admissao_id;
+    await carregarDP();
+    abrirModalDP(id);
+  } catch { showToast('Erro ao reprovar documento.', 'error'); }
+}
+
+async function gerarContrato() {
+  if (!currentAdmissao) return;
+  const btn = document.getElementById('dp-btn-gerar-contrato');
+  btn.disabled = true;
+  btn.textContent = '⏳ Gerando contrato (~20s)...';
+  try {
+    const r = await fetch(BASE_URL + '/ats-dp-acao', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ acao: 'gerar_contrato', admissao_id: currentAdmissao.admissao_id }),
+      signal: AbortSignal.timeout(35000)
+    });
+    if (!r.ok) throw new Error();
+    const data = await r.json();
+    document.getElementById('dp-contrato-text').value = data.contrato || '';
+    currentAdmissao.status = 'contrato_gerado';
+    document.getElementById('dp-btn-admitir').style.display = '';
+    showToast('Contrato gerado com sucesso!', 'success');
+  } catch { showToast('Erro ao gerar contrato.', 'error'); }
+  finally { btn.disabled = false; btn.textContent = '✨ Gerar Contrato via IA'; }
+}
+
+function copiarContrato() {
+  navigator.clipboard.writeText(document.getElementById('dp-contrato-text').value)
+    .then(() => showToast('Contrato copiado!', 'success'));
+}
+
+async function confirmarAdmissao() {
+  if (!currentAdmissao) return;
+  if (!confirm('Confirmar a admissão de ' + (currentAdmissao.nome || '') + '?')) return;
+  try {
+    const r = await fetch(BASE_URL + '/ats-dp-acao', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ acao: 'admitir', admissao_id: currentAdmissao.admissao_id }),
+      signal: AbortSignal.timeout(8000)
+    });
+    if (!r.ok) throw new Error();
+    showToast('Admissão confirmada! 🎉', 'success');
+    fecharModalDP();
+    await carregarDP();
+  } catch { showToast('Erro ao confirmar admissão.', 'error'); }
+}
+
+async function liberarAdmissao(candidaturaId) {
+  if (!confirm('Liberar processo de admissão para este candidato?')) return;
+  try {
+    const r = await fetch(BASE_URL + '/ats-liberar-admissao', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ candidatura_id: candidaturaId, liberado_por: 'Administrador' }),
+      signal: AbortSignal.timeout(8000)
+    });
+    if (!r.ok) throw new Error();
+    showToast('Admissão liberada! Formulário enviado ao candidato.', 'success');
+  } catch { showToast('Erro ao liberar admissão.', 'error'); }
 }
 
 // ─── TOASTS ───────────────────────────────────────────────────────
