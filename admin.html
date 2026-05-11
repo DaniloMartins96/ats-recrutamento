@@ -442,19 +442,24 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
           <div class="page-title">Candidatos</div>
           <div class="page-sub">Análise e triagem de candidaturas</div>
         </div>
+        <button class="btn btn-outline" onclick="exportarExcel()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Exportar Excel
+        </button>
       </div>
       <div class="stats-row" id="cand-stats"></div>
       <div class="table-wrap">
-        <div class="table-toolbar">
-          <input class="search-input" type="text" id="cand-search" placeholder="Buscar candidatos...">
-          <div style="margin-left:auto;display:flex;gap:8px">
-            <select class="form-select" id="cand-filter-status" style="width:160px">
-              <option value="">Todos</option>
-              <option value="avancar">Avançar</option>
-              <option value="banco_talentos">Banco de Talentos</option>
-              <option value="reprovar">Reprovar</option>
-            </select>
-          </div>
+        <div class="table-toolbar" style="flex-wrap:wrap;gap:10px">
+          <select class="form-select" id="filtro-vaga-ranking" style="width:220px">
+            <option value="">Todos os candidatos</option>
+          </select>
+          <input class="search-input" type="text" id="cand-search" placeholder="Buscar candidatos..." style="max-width:220px">
+          <select class="form-select" id="ordenar-candidatos" style="width:160px">
+            <option value="score_desc">Maior Score</option>
+            <option value="score_asc">Menor Score</option>
+            <option value="recente">Mais Recente</option>
+            <option value="nome">Nome A-Z</option>
+          </select>
         </div>
         <div id="cand-table-body"></div>
       </div>
@@ -1281,36 +1286,55 @@ async function carregarCandidatos() {
     if (!r.ok) throw new Error('HTTP ' + r.status);
     const data = await r.json();
     candidatos = Array.isArray(data) ? data : (Array.isArray(data.candidatos) ? data.candidatos : []);
-    if (candidatos.length) {
-      console.log('[carregarCandidatos] total:', candidatos.length);
-      console.log('[carregarCandidatos] chaves do 1º candidato:', Object.keys(candidatos[0]));
-      console.log('[carregarCandidatos] analise_star do 1º:', candidatos[0].analise_star);
-    }
   } catch {
     candidatos = [];
     showToast('Erro ao carregar candidatos da API.', 'error');
   }
+  calcularRankings();
+  preencherFiltroVagas();
   renderCandidatos();
 }
 
-function renderCandidatos() {
-  const q  = document.getElementById('cand-search').value.toLowerCase();
-  const fs = document.getElementById('cand-filter-status').value;
-
-  const filtered = candidatos.filter(c => {
-    const matchQ = (c.nome || '').toLowerCase().includes(q)
-      || (c.vaga_titulo || '').toLowerCase().includes(q)
-      || (c.email || '').toLowerCase().includes(q);
-    const matchS = !fs || c.recomendacao === fs;
-    return matchQ && matchS;
+function calcularRankings() {
+  const porVaga = {};
+  candidatos.forEach(c => {
+    const vid = c.vaga_id || c.vaga_titulo || 'sem-vaga';
+    if (!porVaga[vid]) porVaga[vid] = [];
+    porVaga[vid].push(c);
   });
+  Object.values(porVaga).forEach(grupo => {
+    grupo.sort((a, b) => (parseFloat(b.score_total) || 0) - (parseFloat(a.score_total) || 0));
+    grupo.forEach((c, i) => { c.rank_posicao = i + 1; });
+  });
+}
+
+function preencherFiltroVagas() {
+  const sel = document.getElementById('filtro-vaga-ranking');
+  const vagaSel = sel.value;
+  const vagasMap = {};
+  candidatos.forEach(c => {
+    if (c.vaga_id && c.vaga_titulo) vagasMap[c.vaga_id] = c.vaga_titulo;
+  });
+  sel.innerHTML = '<option value="">Todos os candidatos</option>';
+  Object.entries(vagasMap).forEach(([id, titulo]) => {
+    const opt = document.createElement('option');
+    opt.value = id;
+    opt.textContent = titulo;
+    sel.appendChild(opt);
+  });
+  if (vagaSel) sel.value = vagaSel;
+}
+
+function renderCandidatos() {
+  const q      = document.getElementById('cand-search').value.toLowerCase();
+  const vagaId = document.getElementById('filtro-vaga-ranking').value;
+  const ordem  = document.getElementById('ordenar-candidatos').value;
 
   const paraAvancar   = candidatos.filter(c => c.recomendacao === 'avancar').length;
   const bancoTalentos = candidatos.filter(c => c.recomendacao === 'banco_talentos').length;
   const avgScore = candidatos.length
     ? (candidatos.reduce((s, c) => s + (parseFloat(c.score_total) || 0), 0) / candidatos.length).toFixed(1)
     : '0.0';
-
   document.getElementById('cand-stats').innerHTML = `
     <div class="stat-card"><div class="stat-value">${candidatos.length}</div><div class="stat-label">Total de Candidatos</div></div>
     <div class="stat-card"><div class="stat-value">${paraAvancar}</div><div class="stat-label">Para Avançar</div></div>
@@ -1319,41 +1343,103 @@ function renderCandidatos() {
   `;
   document.getElementById('nav-badge-cand').textContent = paraAvancar;
 
+  let filtered = candidatos.filter(c => {
+    const matchQ = !q
+      || (c.nome || '').toLowerCase().includes(q)
+      || (c.vaga_titulo || '').toLowerCase().includes(q)
+      || (c.email || '').toLowerCase().includes(q);
+    const matchV = !vagaId || c.vaga_id === vagaId;
+    return matchQ && matchV;
+  });
+
+  filtered = [...filtered];
+  if (ordem === 'score_desc') filtered.sort((a, b) => (parseFloat(b.score_total)||0) - (parseFloat(a.score_total)||0));
+  else if (ordem === 'score_asc') filtered.sort((a, b) => (parseFloat(a.score_total)||0) - (parseFloat(b.score_total)||0));
+  else if (ordem === 'recente')   filtered.sort((a, b) => new Date(b.criado_em||0) - new Date(a.criado_em||0));
+  else if (ordem === 'nome')      filtered.sort((a, b) => (a.nome||'').localeCompare(b.nome||''));
+
   const tbody = document.getElementById('cand-table-body');
+
+  let vagaHeaderHtml = '';
+  if (vagaId) {
+    const vagaNome = document.getElementById('filtro-vaga-ranking').selectedOptions[0]?.text || '';
+    const vObj = vagas.find(v => v.id === vagaId) || {};
+    const niv  = vObj.senioridade || vObj.nivel || '';
+    vagaHeaderHtml = `
+      <div style="padding:14px 20px;border-bottom:1px solid var(--border);background:var(--surface2);display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+        <div style="flex:1;min-width:160px">
+          <div style="font-size:15px;font-weight:700">${vagaNome}</div>
+          ${vObj.departamento ? `<div style="font-size:12px;color:var(--muted);margin-top:2px">${vObj.departamento}</div>` : ''}
+        </div>
+        ${niv ? `<span class="badge badge-purple">${niv}</span>` : ''}
+        <div style="font-size:13px;color:var(--muted)">${filtered.length} candidato${filtered.length !== 1 ? 's' : ''}</div>
+      </div>`;
+  }
+
   if (!filtered.length) {
-    tbody.innerHTML = `<div class="empty-state"><p>Nenhum candidato encontrado.</p></div>`;
+    tbody.innerHTML = vagaHeaderHtml + `<div class="empty-state"><p>Nenhum candidato encontrado.</p></div>`;
     return;
   }
 
+  const rankMedal = r => r === 1 ? '🥇' : r === 2 ? '🥈' : r === 3 ? '🥉' : `${r}º`;
   const fitColor  = f => f === 'alto' ? 'badge-green' : f === 'medio' ? 'badge-yellow' : 'badge-red';
   const fitLabel  = f => f === 'alto' ? 'Alto' : f === 'medio' ? 'Médio' : 'Baixo';
-  const scoreColor = n => n >= 8 ? 'var(--success)' : n >= 6 ? 'var(--warn)' : 'var(--danger)';
+  const scoreCol  = n => n >= 7 ? 'var(--success)' : n >= 5 ? 'var(--warn)' : 'var(--danger)';
 
-  tbody.innerHTML = `
+  const miniBarras = c => {
+    const dims = [
+      { label: 'Téc', val: parseFloat(c.score_tecnico)        || 0, color: '#6c63ff' },
+      { label: 'Exp', val: parseFloat(c.score_experiencia)    || 0, color: '#10b981' },
+      { label: 'Com', val: parseFloat(c.score_comportamental) || 0, color: '#f59e0b' },
+      { label: 'Fit', val: parseFloat(c.score_fit)            || 0, color: '#a78bfa' },
+    ];
+    return dims.map(d => `
+      <div style="display:flex;align-items:center;gap:4px;margin-bottom:2px">
+        <span style="font-size:9px;color:var(--muted);width:22px;flex-shrink:0">${d.label}</span>
+        <div style="flex:1;height:4px;background:var(--surface3);border-radius:2px;overflow:hidden">
+          <div style="width:${Math.min(d.val * 10, 100)}%;height:100%;background:${d.color};border-radius:2px"></div>
+        </div>
+        <span style="font-size:9px;color:var(--muted);width:18px;text-align:right">${d.val > 0 ? d.val.toFixed(1) : ''}</span>
+      </div>`).join('');
+  };
+
+  const showRank = !!vagaId;
+
+  tbody.innerHTML = vagaHeaderHtml + `
     <table>
       <thead><tr>
-        <th>Candidato</th><th>Vaga</th><th>Senioridade</th><th>Score IA</th><th>Fit</th><th></th>
+        ${showRank ? '<th style="width:52px">RANK</th>' : ''}
+        <th>Candidato</th>
+        ${!vagaId ? '<th>Vaga</th>' : ''}
+        <th style="width:80px">Score</th>
+        <th style="width:130px">Dimensões</th>
+        <th>Fit</th>
+        <th>Etapa</th>
+        <th></th>
       </tr></thead>
       <tbody>
         ${filtered.map(c => {
-          const score = parseFloat(c.score_total) || 0;
+          const score   = parseFloat(c.score_total) || 0;
           const nomeEsc = (c.nome || '').replace(/'/g, "\\'");
           return `
           <tr onclick="abrirCandidato('${c.candidato_id}')">
+            ${showRank ? `<td style="text-align:center;font-size:18px;line-height:1">${rankMedal(c.rank_posicao || 99)}</td>` : ''}
             <td>
               <div style="font-weight:600">${c.nome || '—'}</div>
               <div style="font-size:11px;color:var(--muted)">${c.email || '—'}</div>
             </td>
-            <td style="font-size:12px">${c.vaga_titulo || '—'}</td>
-            <td style="font-size:12px;color:var(--muted)">${c.senioridade_declarada || '—'}</td>
+            ${!vagaId ? `<td style="font-size:12px;color:var(--muted);max-width:140px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.vaga_titulo || '—'}</td>` : ''}
             <td>
-              <span style="font-weight:700;color:${scoreColor(score)}">${score.toFixed(1)}</span>
+              <span style="font-size:20px;font-weight:800;color:${scoreCol(score)}">${score.toFixed(1)}</span>
               <span style="color:var(--muted);font-size:11px">/10</span>
             </td>
+            <td><div style="width:116px">${miniBarras(c)}</div></td>
             <td><span class="badge ${fitColor(c.nivel_fit)}">${fitLabel(c.nivel_fit || '')}</span></td>
+            <td><span class="badge badge-gray" style="font-size:10px">${c.etapa_atual || '—'}</span></td>
             <td onclick="event.stopPropagation()" style="white-space:nowrap">
               <button class="btn btn-ghost btn-sm" onclick="abrirCandidato('${c.candidato_id}')">Ver</button>
-              <button class="btn btn-danger btn-sm" onclick="deletarCandidato('${c.candidato_id}','${nomeEsc}')">Apagar</button>
+              <button class="btn btn-primary btn-sm" onclick="mudarStatusCandidatoTabela('${c.candidato_id}','Aprovado')">Avançar</button>
+              <button class="btn btn-danger btn-sm" onclick="mudarStatusCandidatoTabela('${c.candidato_id}','Reprovado')">Rejeitar</button>
             </td>
           </tr>`;
         }).join('')}
@@ -1363,7 +1449,47 @@ function renderCandidatos() {
 }
 
 document.getElementById('cand-search').oninput = renderCandidatos;
-document.getElementById('cand-filter-status').onchange = renderCandidatos;
+document.getElementById('filtro-vaga-ranking').onchange = renderCandidatos;
+document.getElementById('ordenar-candidatos').onchange = renderCandidatos;
+
+function mudarStatusCandidatoTabela(id, novoStatus) {
+  currentCandidatoId = id;
+  mudarStatusCandidato(novoStatus);
+}
+
+async function exportarExcel() {
+  showToast('Gerando planilha...', 'info');
+  const vagaId = document.getElementById('filtro-vaga-ranking').value;
+  const url = BASE_URL + '/ats-exportar-candidatos' + (vagaId ? '?vaga_id=' + vagaId : '');
+  try {
+    const r = await fetch(url);
+    const data = await r.json();
+    if (!data.rows || data.rows.length === 0) {
+      showToast('Nenhum candidato para exportar.', 'error');
+      return;
+    }
+    const headers = Object.keys(data.rows[0]);
+    const csvRows = [
+      headers.join(';'),
+      ...data.rows.map(row =>
+        headers.map(h => {
+          const val = String(row[h] || '').replace(/;/g, ',').replace(/\n/g, ' ');
+          return '"' + val + '"';
+        }).join(';')
+      )
+    ];
+    const csvContent = '﻿' + csvRows.join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    const vagaNome = document.getElementById('filtro-vaga-ranking').selectedOptions[0].text;
+    link.download = 'candidatos_' + (vagaId ? vagaNome.replace(/\s/g, '_') : 'todos') + '_' + new Date().toISOString().split('T')[0] + '.csv';
+    link.click();
+    showToast('Planilha exportada com sucesso!', 'success');
+  } catch {
+    showToast('Erro ao exportar planilha.', 'error');
+  }
+}
 
 // ─── SLIDE-OVER CANDIDATO ─────────────────────────────────────────
 function scoreColor(n) {
