@@ -930,11 +930,11 @@ function abrirModalVaga(id) {
     document.getElementById('modal-vaga-title').textContent = 'Editar Vaga';
     document.getElementById('mv-save').textContent = 'Salvar Alterações';
     document.getElementById('mv-titulo').value = v.titulo || '';
-    document.getElementById('mv-departamento').value = v.departamento || '';
-    document.getElementById('mv-nivel').value = v.senioridade || v.nivel || '';
-    document.getElementById('mv-modalidade').value = v.modalidade || '';
+    setSelectValue('mv-departamento', v.departamento);
+    setSelectValue('mv-nivel', v.senioridade || v.nivel || '');
+    setSelectValue('mv-modalidade', v.modalidade);
     document.getElementById('mv-local').value = v.cidade || v.local || '';
-    const salarioFmt = v.salario_min || v.salario_max
+    const salarioFmt = (v.salario_min > 0 || v.salario_max > 0)
       ? [v.salario_min, v.salario_max].filter(Boolean).join(' – ')
       : (v.salario || '');
     document.getElementById('mv-salario').value = salarioFmt;
@@ -1061,6 +1061,17 @@ function copiarTextoLinkedIn() {
 function copiarLinkLinkedIn() {
   navigator.clipboard.writeText(document.getElementById('li-link-text').value);
   showToast('Link copiado!', 'success');
+}
+
+// ─── SET SELECT CASE-INSENSITIVE ─────────────────────────────────
+function setSelectValue(id, val) {
+  const el = document.getElementById(id);
+  const v = (val || '').toLowerCase().trim();
+  Array.from(el.options).forEach(o => {
+    if (o.value.toLowerCase().trim() === v || o.text.toLowerCase().trim() === v) {
+      el.value = o.value;
+    }
+  });
 }
 
 // ─── TAG INPUTS ───────────────────────────────────────────────────
