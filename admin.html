@@ -880,6 +880,7 @@ let admissoes = [];
 let currentVagaId = null;
 let tagData = { stack: [], comp: [] };
 let currentCandidatoId = null;
+let currentCandidaturaId = null;
 let currentAdmissao = null;
 
 // ─── LOGIN ────────────────────────────────────────────────────────
@@ -1485,9 +1486,9 @@ function renderCandidatos() {
       <td><span class="badge badge-gray" style="font-size:10px">${c.etapa_atual || '—'}</span></td>
       <td onclick="event.stopPropagation()" style="white-space:nowrap">
         <button class="btn btn-ghost btn-sm" onclick="abrirCandidato('${c.candidato_id}')">Ver</button>
-        <button class="btn btn-primary btn-sm" onclick="avancarCandidato('${c.candidatura_id || c.candidato_id}','${c.etapa_atual||''}')">Avançar</button>
+        ${(c.etapa_atual||'').toLowerCase()!=='aprovado'?`<button class="btn btn-primary btn-sm" onclick="avancarCandidato('${c.candidatura_id || c.candidato_id}','${c.etapa_atual||''}')">Avançar</button>`:''}
         <button class="btn btn-danger btn-sm" onclick="mudarStatusCandidatoTabela('${c.candidato_id}','Reprovado')">Rejeitar</button>
-        ${(c.etapa_atual||'').toLowerCase()==='aprovado'?`<button class="btn btn-outline btn-sm" style="border-color:var(--success);color:var(--success)" onclick="liberarAdmissao('${c.candidatura_id || c.candidato_id}')">Liberar Admissão</button>`:''}
+        ${(c.etapa_atual||'').toLowerCase()==='aprovado'?`<button class="btn btn-outline btn-sm" style="border-color:var(--success);color:var(--success)" onclick="liberarAdmissao('${c.candidatura_id || c.candidato_id}')">&#128203; Admissão</button>`:''}
       </td>
     </tr>`;
   }).join('');
@@ -1619,6 +1620,7 @@ function abrirCandidato(id) {
   const c = candidatos.find(x => x.candidato_id === id);
   if (!c) return;
   currentCandidatoId = id;
+  currentCandidaturaId = c.candidatura_id || c.id || id;
 
   // ── DEBUG: inspecionar o objeto completo do candidato ──
   console.log('[abrirCandidato] ID:', id);
@@ -1797,6 +1799,7 @@ function fecharSlideover() {
   document.getElementById('slideover-cand').classList.remove('open');
   document.getElementById('so-backdrop').classList.remove('open');
   currentCandidatoId = null;
+  currentCandidaturaId = null;
 }
 
 document.getElementById('so-close').onclick = fecharSlideover;
@@ -1821,7 +1824,7 @@ function starLabel(k) {
 }
 
 // ─── AÇÕES SLIDE-OVER ─────────────────────────────────────────────
-document.getElementById('so-btn-aprovar').onclick    = () => mudarStatusCandidato('Aprovado');
+document.getElementById('so-btn-aprovar').onclick    = () => aprovarCandidato(currentCandidaturaId);
 document.getElementById('so-btn-rejeitar').onclick   = () => mudarStatusCandidato('Reprovado');
 document.getElementById('so-btn-entrevista').onclick = () => {
   const cfg = localStorage.getItem('cfg_calendly');
@@ -1839,6 +1842,27 @@ function mudarStatusCandidato(novoStatus) {
   const msgs  = { Aprovado: 'Candidato aprovado!', Reprovado: 'Candidato reprovado.', Entrevista: 'Entrevista agendada!' };
   const tipos = { Aprovado: 'success', Reprovado: 'error', Entrevista: 'info' };
   showToast(msgs[novoStatus] || 'Status atualizado.', tipos[novoStatus] || 'info');
+}
+
+async function aprovarCandidato(candidaturaId) {
+  if (!candidaturaId) { showToast('ID da candidatura não encontrado.', 'error'); return; }
+  if (!confirm('Aprovar este candidato? Ele será marcado como aprovado e você poderá liberar o processo de admissão.')) return;
+  showToast('Aprovando candidato...', 'info');
+  try {
+    const r = await fetch(BASE_URL + '/ats-aprovar-candidato', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ candidatura_id: candidaturaId }),
+      signal: AbortSignal.timeout(8000)
+    });
+    const data = await r.json().catch(() => ({}));
+    if (r.ok && data.success !== false) {
+      showToast('Candidato aprovado! Agora você pode liberar a admissão.', 'success');
+      fecharSlideover();
+      await carregarCandidatos();
+    } else {
+      showToast(data.message || 'Erro ao aprovar candidato.', 'error');
+    }
+  } catch { showToast('Erro ao conectar com o servidor.', 'error'); }
 }
 
 // ─── SLIDERS CONFIG ───────────────────────────────────────────────
