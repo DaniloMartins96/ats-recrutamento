@@ -1580,8 +1580,26 @@ async function avancarCandidato(candidaturaId, etapaAtual) {
 
 async function exportarExcel() {
   showToast('Gerando planilha profissional...', 'info');
-  const vagaId = document.getElementById('filtro-vaga-ranking')?.value || '';
-  const vagaNome = document.getElementById('filtro-vaga-ranking')?.selectedOptions?.[0]?.text || 'Todos';
+  const vagaId  = document.getElementById('filtro-vaga-ranking')?.value || '';
+
+  // ── Estilos ──────────────────────────────────────────────────────
+  const S_HDR  = { fill:{patternType:'solid',fgColor:{rgb:'1E3A5F'}}, font:{bold:true,color:{rgb:'FFFFFF'},sz:11}, alignment:{horizontal:'center',vertical:'center',wrapText:true} };
+  const S_SECT = { fill:{patternType:'solid',fgColor:{rgb:'2C5282'}}, font:{bold:true,color:{rgb:'FFFFFF'},sz:10} };
+  const S_EVEN = { fill:{patternType:'solid',fgColor:{rgb:'FFFFFF'}} };
+  const S_ODD  = { fill:{patternType:'solid',fgColor:{rgb:'F5F6FA'}} };
+  const S_HIGH = { fill:{patternType:'solid',fgColor:{rgb:'D4EDDA'}}, font:{color:{rgb:'155724'},bold:true} };
+  const S_MID  = { fill:{patternType:'solid',fgColor:{rgb:'FFF3CD'}}, font:{color:{rgb:'856404'},bold:true} };
+  const S_LOW  = { fill:{patternType:'solid',fgColor:{rgb:'F8D7DA'}}, font:{color:{rgb:'721C24'},bold:true} };
+
+  const scoreStyle = v => { const n=Number(v); return n>=7?S_HIGH:n>=4.5?S_MID:n>0?S_LOW:null; };
+
+  function styleRow(ws, ri, nCols, base, overrides) {
+    for (let c = 0; c < nCols; c++) {
+      const addr = XLSX.utils.encode_cell({r:ri, c});
+      if (!ws[addr]) ws[addr] = {t:'z', v:''};
+      ws[addr].s = (overrides && overrides[c]) ? overrides[c] : base;
+    }
+  }
 
   try {
     const r = await fetch(BASE_URL + '/ats-exportar-candidatos' + (vagaId ? '?vaga_id=' + vagaId : ''));
@@ -1594,113 +1612,149 @@ async function exportarExcel() {
     const wb = XLSX.utils.book_new();
     wb.Props = { Title: "TechRecruit AI — Relatório de Candidatos", Author: "TechRecruit AI" };
 
+    // ── Mapa de vagas (compartilhado entre abas) ──────────────────
+    const vagasMap = {};
+    data.rows.forEach(row => {
+      if (!vagasMap[row['Vaga']]) vagasMap[row['Vaga']] = [];
+      vagasMap[row['Vaga']].push(row);
+    });
+    const pct = n => `${data.rows.length ? Math.round(n/data.rows.length*100) : 0}%`;
+    const avg = f => (data.rows.reduce((a,row)=>a+Number(row[f]||0),0)/Math.max(data.rows.length,1)).toFixed(1);
+
     // === ABA 1: CANDIDATOS COMPLETO ===
     const headers = Object.keys(data.rows[0]);
-    const wsData = [
-      headers,
-      ...data.rows.map(r => headers.map(h => r[h]))
-    ];
-    const ws1 = XLSX.utils.aoa_to_sheet(wsData);
-
+    const ws1 = XLSX.utils.aoa_to_sheet([headers, ...data.rows.map(row => headers.map(h => row[h]))]);
     ws1['!cols'] = [
       {wch:8},{wch:25},{wch:28},{wch:16},{wch:12},
       {wch:28},{wch:16},{wch:12},{wch:10},{wch:10},
       {wch:10},{wch:10},{wch:10},{wch:10},{wch:20},
       {wch:35},{wch:25},{wch:16},{wch:12},{wch:14}
     ];
-    ws1['!freeze'] = { xSplit: 0, ySplit: 1 };
+    ws1['!freeze'] = { xSplit:0, ySplit:1 };
+    styleRow(ws1, 0, headers.length, S_HDR, null);
+    const scoreCol1 = headers.indexOf('Score Total');
+    data.rows.forEach((row, i) => {
+      const base = i%2===0 ? S_EVEN : S_ODD;
+      const ov   = scoreCol1 >= 0 ? { [scoreCol1]: scoreStyle(row['Score Total']) || base } : null;
+      styleRow(ws1, i+1, headers.length, base, ov);
+    });
     XLSX.utils.book_append_sheet(wb, ws1, '📋 Candidatos');
 
     // === ABA 2: RANKING POR VAGA ===
-    const vagasMap = {};
-    data.rows.forEach(r => {
-      if (!vagasMap[r['Vaga']]) vagasMap[r['Vaga']] = [];
-      vagasMap[r['Vaga']].push(r);
-    });
-
-    const rankHeaders = ['#', 'Nome', 'Email', 'Score Total', 'Técnico', 'Experiência', 'Comportamental', 'Fit Cultural', 'Fit', 'Recomendação', 'Etapa'];
+    const rankHeaders = ['#','Nome','Email','Score Total','Técnico','Experiência','Comportamental','Fit Cultural','Fit','Recomendação','Etapa'];
     const rankData = [rankHeaders];
-
+    const rankMeta = [{ type:'header' }];
     Object.entries(vagasMap).forEach(([vaga, cands]) => {
-      rankData.push([`── ${vaga} ──`, '', '', '', '', '', '', '', '', '', '']);
-      cands.sort((a,b) => b['Score Total'] - a['Score Total']).forEach((c, i) => {
-        const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i+1}º`;
-        rankData.push([medal, c['Nome'], c['Email'], c['Score Total'], c['Score Técnico'], c['Score Experiência'], c['Score Comportamental'], c['Score Fit Cultural'], c['Fit'], c['Recomendação IA'], c['Etapa']]);
+      rankData.push([`── ${vaga} ──`,'','','','','','','','','','']);
+      rankMeta.push({ type:'section' });
+      cands.sort((a,b) => b['Score Total']-a['Score Total']).forEach((c, i) => {
+        const medal = i===0?'🥇':i===1?'🥈':i===2?'🥉':`${i+1}º`;
+        rankData.push([medal,c['Nome'],c['Email'],c['Score Total'],c['Score Técnico'],c['Score Experiência'],c['Score Comportamental'],c['Score Fit Cultural'],c['Fit'],c['Recomendação IA'],c['Etapa']]);
+        rankMeta.push({ type:'data', score:c['Score Total'], idx:i });
       });
-      rankData.push(['', '', '', '', '', '', '', '', '', '', '']);
+      rankData.push(['','','','','','','','','','','']);
+      rankMeta.push({ type:'empty' });
     });
-
     const ws2 = XLSX.utils.aoa_to_sheet(rankData);
     ws2['!cols'] = [{wch:5},{wch:25},{wch:28},{wch:12},{wch:10},{wch:12},{wch:14},{wch:12},{wch:10},{wch:18},{wch:16}];
-    ws2['!freeze'] = { xSplit: 0, ySplit: 1 };
+    ws2['!freeze'] = { xSplit:0, ySplit:1 };
+    styleRow(ws2, 0, rankHeaders.length, S_HDR, null);
+    rankMeta.slice(1).forEach((meta, i) => {
+      const ri = i+1;
+      if (meta.type === 'section') {
+        styleRow(ws2, ri, rankHeaders.length, S_SECT, null);
+      } else if (meta.type === 'data') {
+        const base = meta.idx%2===0 ? S_EVEN : S_ODD;
+        styleRow(ws2, ri, rankHeaders.length, base, { 3: scoreStyle(meta.score)||base });
+      }
+    });
     XLSX.utils.book_append_sheet(wb, ws2, '🏆 Ranking por Vaga');
 
     // === ABA 3: DASHBOARD / KPIs ===
-    const total = data.rows.length;
-    const scores = data.rows.map(r => Number(r['Score Total'])).filter(s => s > 0);
+    const total      = data.rows.length;
+    const scores     = data.rows.map(row => Number(row['Score Total'])).filter(s => s > 0);
     const mediaScore = scores.length ? (scores.reduce((a,b)=>a+b,0)/scores.length).toFixed(1) : 0;
-    const aprovados = data.rows.filter(r => r['Etapa'] === 'aprovado').length;
-    const entrevistas = data.rows.filter(r => ['entrevista_rh','entrevista_tecnica'].includes(r['Etapa'])).length;
-    const scoreAlto = data.rows.filter(r => Number(r['Score Total']) >= 7).length;
-    const scoreMedio = data.rows.filter(r => Number(r['Score Total']) >= 4.5 && Number(r['Score Total']) < 7).length;
-    const scoreBaixo = data.rows.filter(r => Number(r['Score Total']) > 0 && Number(r['Score Total']) < 4.5).length;
-    const fitAlto = data.rows.filter(r => r['Fit'] === 'alto').length;
-    const fitMedio = data.rows.filter(r => r['Fit'] === 'médio' || r['Fit'] === 'medio').length;
-    const fitBaixo = data.rows.filter(r => r['Fit'] === 'baixo').length;
-    const porVaga = Object.entries(vagasMap).map(([v, c]) => [v, c.length]);
+    const aprovados  = data.rows.filter(row => row['Etapa']==='aprovado').length;
+    const entrevistas= data.rows.filter(row => ['entrevista_rh','entrevista_tecnica'].includes(row['Etapa'])).length;
+    const scoreAlto  = data.rows.filter(row => Number(row['Score Total'])>=7).length;
+    const scoreMedio = data.rows.filter(row => Number(row['Score Total'])>=4.5 && Number(row['Score Total'])<7).length;
+    const scoreBaixo = data.rows.filter(row => Number(row['Score Total'])>0 && Number(row['Score Total'])<4.5).length;
+    const fitAlto    = data.rows.filter(row => row['Fit']==='alto').length;
+    const fitMedio   = data.rows.filter(row => row['Fit']==='médio'||row['Fit']==='medio').length;
+    const fitBaixo   = data.rows.filter(row => row['Fit']==='baixo').length;
 
     const kpiData = [
-      ['TechRecruit AI — Dashboard de Recrutamento', '', '', ''],
-      ['Gerado em: ' + new Date().toLocaleString('pt-BR'), '', '', ''],
-      ['', '', '', ''],
-      ['📊 KPIs GERAIS', '', '', ''],
-      ['Total de Candidatos', total, '', ''],
-      ['Score Médio Geral', mediaScore, '', ''],
-      ['Candidatos Aprovados', aprovados, '', ''],
-      ['Em Entrevista', entrevistas, '', ''],
-      ['', '', '', ''],
-      ['🎯 DISTRIBUIÇÃO DE SCORES', '', '', ''],
-      ['Score Alto (≥7)', scoreAlto, `${total ? Math.round(scoreAlto/total*100) : 0}%`, ''],
-      ['Score Médio (4.5–7)', scoreMedio, `${total ? Math.round(scoreMedio/total*100) : 0}%`, ''],
-      ['Score Baixo (<4.5)', scoreBaixo, `${total ? Math.round(scoreBaixo/total*100) : 0}%`, ''],
-      ['', '', '', ''],
-      ['🤝 FIT CULTURAL', '', '', ''],
-      ['Fit Alto', fitAlto, `${total ? Math.round(fitAlto/total*100) : 0}%`, ''],
-      ['Fit Médio', fitMedio, `${total ? Math.round(fitMedio/total*100) : 0}%`, ''],
-      ['Fit Baixo', fitBaixo, `${total ? Math.round(fitBaixo/total*100) : 0}%`, ''],
-      ['', '', '', ''],
-      ['💼 CANDIDATOS POR VAGA', '', '', ''],
-      ...porVaga.map(([v, n]) => [v, n, `${total ? Math.round(n/total*100) : 0}%`, '']),
-      ['', '', '', ''],
-      ['📈 SCORES POR DIMENSÃO (Média)', '', '', ''],
-      ['Técnico', (data.rows.reduce((a,r)=>a+Number(r['Score Técnico']||0),0)/Math.max(data.rows.length,1)).toFixed(1), '', ''],
-      ['Experiência', (data.rows.reduce((a,r)=>a+Number(r['Score Experiência']||0),0)/Math.max(data.rows.length,1)).toFixed(1), '', ''],
-      ['Comportamental', (data.rows.reduce((a,r)=>a+Number(r['Score Comportamental']||0),0)/Math.max(data.rows.length,1)).toFixed(1), '', ''],
-      ['Fit Cultural', (data.rows.reduce((a,r)=>a+Number(r['Score Fit Cultural']||0),0)/Math.max(data.rows.length,1)).toFixed(1), '', ''],
+      ['TechRecruit AI — Dashboard de Recrutamento','','',''],
+      ['Gerado em: ' + new Date().toLocaleString('pt-BR'),'','',''],
+      ['','','',''],
+      ['📊 KPIs GERAIS','Total','%',''],
+      ['Total de Candidatos', total, '100%', ''],
+      ['Score Médio Geral', Number(mediaScore), '', ''],
+      ['Candidatos Aprovados', aprovados, pct(aprovados), ''],
+      ['Em Entrevista', entrevistas, pct(entrevistas), ''],
+      ['','','',''],
+      ['🎯 DISTRIBUIÇÃO DE SCORES','Qtd','%',''],
+      ['Score Alto (≥7)', scoreAlto, pct(scoreAlto), ''],
+      ['Score Médio (4.5–7)', scoreMedio, pct(scoreMedio), ''],
+      ['Score Baixo (<4.5)', scoreBaixo, pct(scoreBaixo), ''],
+      ['','','',''],
+      ['🤝 FIT CULTURAL','Qtd','%',''],
+      ['Fit Alto', fitAlto, pct(fitAlto), ''],
+      ['Fit Médio', fitMedio, pct(fitMedio), ''],
+      ['Fit Baixo', fitBaixo, pct(fitBaixo), ''],
+      ['','','',''],
+      ['💼 CANDIDATOS POR VAGA','Qtd','%',''],
+      ...Object.entries(vagasMap).map(([v,c]) => [v, c.length, pct(c.length), '']),
+      ['','','',''],
+      ['📈 SCORES MÉDIOS POR DIMENSÃO','Média','',''],
+      ['Técnico', avg('Score Técnico'), '', ''],
+      ['Experiência', avg('Score Experiência'), '', ''],
+      ['Comportamental', avg('Score Comportamental'), '', ''],
+      ['Fit Cultural', avg('Score Fit Cultural'), '', ''],
     ];
-
     const ws3 = XLSX.utils.aoa_to_sheet(kpiData);
-    ws3['!cols'] = [{wch:30},{wch:12},{wch:10},{wch:10}];
-    ws3['!merges'] = [{ s:{r:0,c:0}, e:{r:0,c:3} }];
+    ws3['!cols'] = [{wch:32},{wch:12},{wch:10},{wch:10}];
+    ws3['!merges'] = [{ s:{r:0,c:0},e:{r:0,c:3} },{ s:{r:1,c:0},e:{r:1,c:3} }];
+    ws3['!freeze'] = { xSplit:0, ySplit:3 };
+    // Título principal
+    ['A1','B1','C1','D1'].forEach(a => { if(ws3[a]) ws3[a].s = { fill:{patternType:'solid',fgColor:{rgb:'1E3A5F'}}, font:{bold:true,color:{rgb:'FFFFFF'},sz:14}, alignment:{horizontal:'center'} }; });
+    ['A2','B2','C2','D2'].forEach(a => { if(ws3[a]) ws3[a].s = { fill:{patternType:'solid',fgColor:{rgb:'2C5282'}}, font:{color:{rgb:'FFFFFF'},sz:10}, alignment:{horizontal:'center'} }; });
+    // Cabeçalhos de seção (linhas 4, 10, 15, 20, porVaga+2, scores)
+    const sectionRows = [3, 9, 14, 19, 19+Object.keys(vagasMap).length+2];
+    kpiData.forEach((row, ri) => {
+      const label = String(row[0]);
+      if (label.startsWith('📊')||label.startsWith('🎯')||label.startsWith('🤝')||label.startsWith('💼')||label.startsWith('📈')) {
+        styleRow(ws3, ri, 4, S_SECT, null);
+      } else if (label && label !== '' && !label.startsWith('Gerado') && !label.startsWith('TechRecruit')) {
+        const base = ri%2===0 ? S_EVEN : S_ODD;
+        styleRow(ws3, ri, 4, base, null);
+      }
+    });
+    // Score alto/médio/baixo nas linhas de distribuição
+    [{ ri:10,s:S_HIGH },{ ri:11,s:S_MID },{ ri:12,s:S_LOW }].forEach(({ri,s}) => {
+      const b = XLSX.utils.encode_cell({r:ri,c:1}); if(ws3[b]) ws3[b].s = s;
+      const c = XLSX.utils.encode_cell({r:ri,c:2}); if(ws3[c]) ws3[c].s = s;
+    });
     XLSX.utils.book_append_sheet(wb, ws3, '📊 Dashboard KPIs');
 
-    // === ABA 4: ETAPAS DO PIPELINE ===
+    // === ABA 4: PIPELINE ===
     const etapas = ['triagem','entrevista_rh','entrevista_tecnica','aprovado','admissao','admitido','banco_talentos','reprovado'];
     const pipelineData = [
-      ['Etapa do Pipeline', 'Quantidade', '% do Total'],
+      ['Etapa do Pipeline','Quantidade','% do Total'],
       ...etapas.map(e => {
-        const count = data.rows.filter(r => r['Etapa'] === e).length;
-        return [e.replace(/_/g,' ').replace(/\b\w/g,l=>l.toUpperCase()), count, `${total ? Math.round(count/total*100) : 0}%`];
+        const count = data.rows.filter(row => row['Etapa']===e).length;
+        return [e.replace(/_/g,' ').replace(/\b\w/g,l=>l.toUpperCase()), count, pct(count)];
       })
     ];
     const ws4 = XLSX.utils.aoa_to_sheet(pipelineData);
     ws4['!cols'] = [{wch:22},{wch:12},{wch:12}];
-    ws4['!freeze'] = { xSplit: 0, ySplit: 1 };
+    ws4['!freeze'] = { xSplit:0, ySplit:1 };
+    styleRow(ws4, 0, 3, S_HDR, null);
+    pipelineData.slice(1).forEach((_, i) => styleRow(ws4, i+1, 3, i%2===0?S_EVEN:S_ODD, null));
     XLSX.utils.book_append_sheet(wb, ws4, '🔄 Pipeline');
 
-    // Gerar e baixar
-    const filename = `TechRecruit_Candidatos_${vagaId ? vagaNome.replace(/\s/g,'_') : 'Todos'}_${new Date().toISOString().split('T')[0]}.xlsx`;
-    XLSX.writeFile(wb, filename);
+    const filename = `TechRecruit_${new Date().toISOString().split('T')[0]}.xlsx`;
+    XLSX.writeFile(wb, filename, { cellStyles: true });
     showToast(`✅ Planilha "${filename}" exportada!`, 'success');
 
   } catch(e) {
@@ -2025,7 +2079,7 @@ async function carregarDP() {
     const r = await fetch(BASE_URL + '/ats-dp-admissoes', { signal: AbortSignal.timeout(10000) });
     if (!r.ok) throw new Error('HTTP ' + r.status);
     const data = await r.json();
-    if (data.success === false) throw new Error(data.message || 'Erro na API');
+    // API retorna { success: true, admissoes: [], stats: {} } mesmo sem admissões — lista vazia é válida
     admissoes = Array.isArray(data) ? data : (Array.isArray(data.admissoes) ? data.admissoes : []);
   } catch (e) {
     admissoes = [];
