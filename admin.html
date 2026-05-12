@@ -347,6 +347,7 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
 ::-webkit-scrollbar-thumb:hover{background:var(--muted)}
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
 
@@ -1578,36 +1579,133 @@ async function avancarCandidato(candidaturaId, etapaAtual) {
 }
 
 async function exportarExcel() {
-  showToast('Gerando planilha...', 'info');
-  const vagaId = document.getElementById('filtro-vaga-ranking').value;
-  const url = BASE_URL + '/ats-exportar-candidatos' + (vagaId ? '?vaga_id=' + vagaId : '');
+  showToast('Gerando planilha profissional...', 'info');
+  const vagaId = document.getElementById('filtro-vaga-ranking')?.value || '';
+  const vagaNome = document.getElementById('filtro-vaga-ranking')?.selectedOptions?.[0]?.text || 'Todos';
+
   try {
-    const r = await fetch(url);
+    const r = await fetch(BASE_URL + '/ats-exportar-candidatos' + (vagaId ? '?vaga_id=' + vagaId : ''));
     const data = await r.json();
     if (!data.rows || data.rows.length === 0) {
       showToast('Nenhum candidato para exportar.', 'error');
       return;
     }
+
+    const wb = XLSX.utils.book_new();
+    wb.Props = { Title: "TechRecruit AI — Relatório de Candidatos", Author: "TechRecruit AI" };
+
+    // === ABA 1: CANDIDATOS COMPLETO ===
     const headers = Object.keys(data.rows[0]);
-    const csvRows = [
-      headers.join(';'),
-      ...data.rows.map(row =>
-        headers.map(h => {
-          const val = String(row[h] || '').replace(/;/g, ',').replace(/\n/g, ' ');
-          return '"' + val + '"';
-        }).join(';')
-      )
+    const wsData = [
+      headers,
+      ...data.rows.map(r => headers.map(h => r[h]))
     ];
-    const csvContent = '﻿' + csvRows.join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    const vagaNome = document.getElementById('filtro-vaga-ranking').selectedOptions[0].text;
-    link.download = 'candidatos_' + (vagaId ? vagaNome.replace(/\s/g, '_') : 'todos') + '_' + new Date().toISOString().split('T')[0] + '.csv';
-    link.click();
-    showToast('Planilha exportada com sucesso!', 'success');
-  } catch {
-    showToast('Erro ao exportar planilha.', 'error');
+    const ws1 = XLSX.utils.aoa_to_sheet(wsData);
+
+    ws1['!cols'] = [
+      {wch:8},{wch:25},{wch:28},{wch:16},{wch:12},
+      {wch:28},{wch:16},{wch:12},{wch:10},{wch:10},
+      {wch:10},{wch:10},{wch:10},{wch:10},{wch:20},
+      {wch:35},{wch:25},{wch:16},{wch:12},{wch:14}
+    ];
+    ws1['!freeze'] = { xSplit: 0, ySplit: 1 };
+    XLSX.utils.book_append_sheet(wb, ws1, '📋 Candidatos');
+
+    // === ABA 2: RANKING POR VAGA ===
+    const vagasMap = {};
+    data.rows.forEach(r => {
+      if (!vagasMap[r['Vaga']]) vagasMap[r['Vaga']] = [];
+      vagasMap[r['Vaga']].push(r);
+    });
+
+    const rankHeaders = ['#', 'Nome', 'Email', 'Score Total', 'Técnico', 'Experiência', 'Comportamental', 'Fit Cultural', 'Fit', 'Recomendação', 'Etapa'];
+    const rankData = [rankHeaders];
+
+    Object.entries(vagasMap).forEach(([vaga, cands]) => {
+      rankData.push([`── ${vaga} ──`, '', '', '', '', '', '', '', '', '', '']);
+      cands.sort((a,b) => b['Score Total'] - a['Score Total']).forEach((c, i) => {
+        const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i+1}º`;
+        rankData.push([medal, c['Nome'], c['Email'], c['Score Total'], c['Score Técnico'], c['Score Experiência'], c['Score Comportamental'], c['Score Fit Cultural'], c['Fit'], c['Recomendação IA'], c['Etapa']]);
+      });
+      rankData.push(['', '', '', '', '', '', '', '', '', '', '']);
+    });
+
+    const ws2 = XLSX.utils.aoa_to_sheet(rankData);
+    ws2['!cols'] = [{wch:5},{wch:25},{wch:28},{wch:12},{wch:10},{wch:12},{wch:14},{wch:12},{wch:10},{wch:18},{wch:16}];
+    ws2['!freeze'] = { xSplit: 0, ySplit: 1 };
+    XLSX.utils.book_append_sheet(wb, ws2, '🏆 Ranking por Vaga');
+
+    // === ABA 3: DASHBOARD / KPIs ===
+    const total = data.rows.length;
+    const scores = data.rows.map(r => Number(r['Score Total'])).filter(s => s > 0);
+    const mediaScore = scores.length ? (scores.reduce((a,b)=>a+b,0)/scores.length).toFixed(1) : 0;
+    const aprovados = data.rows.filter(r => r['Etapa'] === 'aprovado').length;
+    const entrevistas = data.rows.filter(r => ['entrevista_rh','entrevista_tecnica'].includes(r['Etapa'])).length;
+    const scoreAlto = data.rows.filter(r => Number(r['Score Total']) >= 7).length;
+    const scoreMedio = data.rows.filter(r => Number(r['Score Total']) >= 4.5 && Number(r['Score Total']) < 7).length;
+    const scoreBaixo = data.rows.filter(r => Number(r['Score Total']) > 0 && Number(r['Score Total']) < 4.5).length;
+    const fitAlto = data.rows.filter(r => r['Fit'] === 'alto').length;
+    const fitMedio = data.rows.filter(r => r['Fit'] === 'médio' || r['Fit'] === 'medio').length;
+    const fitBaixo = data.rows.filter(r => r['Fit'] === 'baixo').length;
+    const porVaga = Object.entries(vagasMap).map(([v, c]) => [v, c.length]);
+
+    const kpiData = [
+      ['TechRecruit AI — Dashboard de Recrutamento', '', '', ''],
+      ['Gerado em: ' + new Date().toLocaleString('pt-BR'), '', '', ''],
+      ['', '', '', ''],
+      ['📊 KPIs GERAIS', '', '', ''],
+      ['Total de Candidatos', total, '', ''],
+      ['Score Médio Geral', mediaScore, '', ''],
+      ['Candidatos Aprovados', aprovados, '', ''],
+      ['Em Entrevista', entrevistas, '', ''],
+      ['', '', '', ''],
+      ['🎯 DISTRIBUIÇÃO DE SCORES', '', '', ''],
+      ['Score Alto (≥7)', scoreAlto, `${total ? Math.round(scoreAlto/total*100) : 0}%`, ''],
+      ['Score Médio (4.5–7)', scoreMedio, `${total ? Math.round(scoreMedio/total*100) : 0}%`, ''],
+      ['Score Baixo (<4.5)', scoreBaixo, `${total ? Math.round(scoreBaixo/total*100) : 0}%`, ''],
+      ['', '', '', ''],
+      ['🤝 FIT CULTURAL', '', '', ''],
+      ['Fit Alto', fitAlto, `${total ? Math.round(fitAlto/total*100) : 0}%`, ''],
+      ['Fit Médio', fitMedio, `${total ? Math.round(fitMedio/total*100) : 0}%`, ''],
+      ['Fit Baixo', fitBaixo, `${total ? Math.round(fitBaixo/total*100) : 0}%`, ''],
+      ['', '', '', ''],
+      ['💼 CANDIDATOS POR VAGA', '', '', ''],
+      ...porVaga.map(([v, n]) => [v, n, `${total ? Math.round(n/total*100) : 0}%`, '']),
+      ['', '', '', ''],
+      ['📈 SCORES POR DIMENSÃO (Média)', '', '', ''],
+      ['Técnico', (data.rows.reduce((a,r)=>a+Number(r['Score Técnico']||0),0)/Math.max(data.rows.length,1)).toFixed(1), '', ''],
+      ['Experiência', (data.rows.reduce((a,r)=>a+Number(r['Score Experiência']||0),0)/Math.max(data.rows.length,1)).toFixed(1), '', ''],
+      ['Comportamental', (data.rows.reduce((a,r)=>a+Number(r['Score Comportamental']||0),0)/Math.max(data.rows.length,1)).toFixed(1), '', ''],
+      ['Fit Cultural', (data.rows.reduce((a,r)=>a+Number(r['Score Fit Cultural']||0),0)/Math.max(data.rows.length,1)).toFixed(1), '', ''],
+    ];
+
+    const ws3 = XLSX.utils.aoa_to_sheet(kpiData);
+    ws3['!cols'] = [{wch:30},{wch:12},{wch:10},{wch:10}];
+    ws3['!merges'] = [{ s:{r:0,c:0}, e:{r:0,c:3} }];
+    XLSX.utils.book_append_sheet(wb, ws3, '📊 Dashboard KPIs');
+
+    // === ABA 4: ETAPAS DO PIPELINE ===
+    const etapas = ['triagem','entrevista_rh','entrevista_tecnica','aprovado','admissao','admitido','banco_talentos','reprovado'];
+    const pipelineData = [
+      ['Etapa do Pipeline', 'Quantidade', '% do Total'],
+      ...etapas.map(e => {
+        const count = data.rows.filter(r => r['Etapa'] === e).length;
+        return [e.replace(/_/g,' ').replace(/\b\w/g,l=>l.toUpperCase()), count, `${total ? Math.round(count/total*100) : 0}%`];
+      })
+    ];
+    const ws4 = XLSX.utils.aoa_to_sheet(pipelineData);
+    ws4['!cols'] = [{wch:22},{wch:12},{wch:12}];
+    ws4['!freeze'] = { xSplit: 0, ySplit: 1 };
+    XLSX.utils.book_append_sheet(wb, ws4, '🔄 Pipeline');
+
+    // Gerar e baixar
+    const filename = `TechRecruit_Candidatos_${vagaId ? vagaNome.replace(/\s/g,'_') : 'Todos'}_${new Date().toISOString().split('T')[0]}.xlsx`;
+    XLSX.writeFile(wb, filename);
+    showToast(`✅ Planilha "${filename}" exportada!`, 'success');
+
+  } catch(e) {
+    console.error(e);
+    showToast('Erro ao gerar planilha.', 'error');
   }
 }
 
