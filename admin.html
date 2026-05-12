@@ -1587,9 +1587,9 @@ async function exportarExcel() {
   const S_SECT = { fill:{patternType:'solid',fgColor:{rgb:'2C5282'}}, font:{bold:true,color:{rgb:'FFFFFF'},sz:10} };
   const S_EVEN = { fill:{patternType:'solid',fgColor:{rgb:'FFFFFF'}} };
   const S_ODD  = { fill:{patternType:'solid',fgColor:{rgb:'F5F6FA'}} };
-  const S_HIGH = { fill:{patternType:'solid',fgColor:{rgb:'D4EDDA'}}, font:{color:{rgb:'155724'},bold:true} };
-  const S_MID  = { fill:{patternType:'solid',fgColor:{rgb:'FFF3CD'}}, font:{color:{rgb:'856404'},bold:true} };
-  const S_LOW  = { fill:{patternType:'solid',fgColor:{rgb:'F8D7DA'}}, font:{color:{rgb:'721C24'},bold:true} };
+  const S_HIGH = { fill:{patternType:'solid',fgColor:{rgb:'E8F8F0'}}, font:{color:{rgb:'27AE60'},bold:true} };
+  const S_MID  = { fill:{patternType:'solid',fgColor:{rgb:'FEF9E7'}}, font:{color:{rgb:'F39C12'},bold:true} };
+  const S_LOW  = { fill:{patternType:'solid',fgColor:{rgb:'FDEDEC'}}, font:{color:{rgb:'E74C3C'},bold:true} };
 
   const scoreStyle = v => { const n=Number(v); return n>=7?S_HIGH:n>=4.5?S_MID:n>0?S_LOW:null; };
 
@@ -1753,7 +1753,7 @@ async function exportarExcel() {
     pipelineData.slice(1).forEach((_, i) => styleRow(ws4, i+1, 3, i%2===0?S_EVEN:S_ODD, null));
     XLSX.utils.book_append_sheet(wb, ws4, '🔄 Pipeline');
 
-    const filename = `TechRecruit_${new Date().toISOString().split('T')[0]}.xlsx`;
+    const filename = `TechRecruit_Candidatos_${new Date().toISOString().split('T')[0]}.xlsx`;
     XLSX.writeFile(wb, filename, { cellStyles: true });
     showToast(`✅ Planilha "${filename}" exportada!`, 'success');
 
@@ -2076,11 +2076,14 @@ async function carregarDP() {
   const tbody = document.getElementById('dp-table-body');
   if (tbody) tbody.innerHTML = '<div style="padding:20px;color:var(--muted);text-align:center">Carregando admissões...</div>';
   try {
-    const r = await fetch(BASE_URL + '/ats-dp-admissoes', { signal: AbortSignal.timeout(10000) });
-    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const r    = await fetch(BASE_URL + '/ats-dp-admissoes', { signal: AbortSignal.timeout(10000) });
     const data = await r.json();
-    // API retorna { success: true, admissoes: [], stats: {} } mesmo sem admissões — lista vazia é válida
-    admissoes = Array.isArray(data) ? data : (Array.isArray(data.admissoes) ? data.admissoes : []);
+    // success:true é sempre válido, mesmo com lista vazia — nunca lança erro aqui
+    if (data.success === true) {
+      admissoes = Array.isArray(data.admissoes) ? data.admissoes : [];
+    } else {
+      admissoes = Array.isArray(data) ? data : [];
+    }
   } catch (e) {
     admissoes = [];
     showToast('Erro ao carregar admissões.', 'error');
