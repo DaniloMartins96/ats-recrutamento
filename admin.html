@@ -2084,8 +2084,10 @@ async function carregarDP() {
     } else {
       admissoes = Array.isArray(data) ? data : [];
     }
+    window.admissoesData = admissoes;
   } catch (e) {
     admissoes = [];
+    window.admissoesData = [];
     showToast('Erro ao carregar admissões.', 'error');
   }
   renderDP();
@@ -2094,8 +2096,8 @@ async function carregarDP() {
 function renderDP() {
   const q = (document.getElementById('dp-search')?.value || '').toLowerCase();
   const filtered = admissoes.filter(a =>
-    (a.nome || '').toLowerCase().includes(q) ||
-    (a.vaga_titulo || '').toLowerCase().includes(q)
+    (a.candidato_nome || '').toLowerCase().includes(q) ||
+    (a.vaga || '').toLowerCase().includes(q)
   );
 
   const total      = admissoes.length;
@@ -2132,20 +2134,21 @@ function renderDP() {
         <th>Candidato</th><th>Vaga</th><th>Status</th><th>Docs</th><th>Data Liberação</th><th></th>
       </tr></thead>
       <tbody>
-        ${filtered.map(a => {
+        ${filtered.map((a) => {
           const [cls, lbl] = statusMap[a.status] || ['badge-gray', a.status || '—'];
           const docs = a.documentos || [];
           const docsAprov = docs.filter(d => d.status === 'aprovado').length;
           const dataLib = a.data_liberacao ? new Date(a.data_liberacao).toLocaleDateString('pt-BR') : '—';
+          const idx = window.admissoesData.indexOf(a);
           return `
-          <tr onclick="abrirModalDP('${a.admissao_id}')">
-            <td><div style="font-weight:600">${a.nome||'—'}</div><div style="font-size:11px;color:var(--muted)">${a.email||''}</div></td>
-            <td style="font-size:12px">${a.vaga_titulo||'—'}</td>
+          <tr onclick="abrirModalDP(window.admissoesData[${idx}])">
+            <td><div style="font-weight:600">${a.candidato_nome||'—'}</div><div style="font-size:11px;color:var(--muted)">${a.email||''}</div></td>
+            <td style="font-size:12px">${a.vaga||'—'}</td>
             <td><span class="badge ${cls}">${lbl}</span></td>
             <td style="font-size:12px">${docs.length ? docsAprov+'/'+docs.length : '—'}</td>
             <td style="font-size:12px;color:var(--muted)">${dataLib}</td>
             <td onclick="event.stopPropagation()">
-              <button class="btn btn-ghost btn-sm" onclick="abrirModalDP('${a.admissao_id}')">Ver</button>
+              <button class="btn btn-ghost btn-sm" onclick="abrirModalDP(window.admissoesData[${idx}])">Ver</button>
             </td>
           </tr>`;
         }).join('')}
@@ -2154,30 +2157,34 @@ function renderDP() {
   `;
 }
 
-function abrirModalDP(admissaoId) {
-  const a = admissoes.find(x => x.admissao_id === admissaoId);
+function abrirModalDP(a) {
   if (!a) return;
   currentAdmissao = a;
-  document.getElementById('dp-modal-title').textContent = 'Admissão — ' + (a.nome || '');
+  document.getElementById('dp-modal-title').textContent = 'Admissão — ' + (a.candidato_nome || '');
 
-  const campos = [
-    ['Nome Completo', a.nome], ['CPF', a.cpf], ['RG', a.rg],
-    ['Data Nascimento', a.data_nascimento], ['Estado Civil', a.estado_civil], ['Nacionalidade', a.nacionalidade],
-    ['Naturalidade', a.naturalidade], ['Nome da Mãe', a.nome_mae], ['Nome do Pai', a.nome_pai],
-    ['Endereço', a.endereco], ['CEP', a.cep], ['Cidade', a.cidade], ['Estado', a.estado],
-    ['Banco', a.banco], ['Agência', a.agencia], ['Conta', a.conta], ['Tipo de Conta', a.tipo_conta], ['PIX', a.pix],
-    ['Carga Horária', a.carga_horaria], ['Data de Início', a.data_inicio], ['Observações', a.observacoes],
-  ].filter(([, v]) => v);
+  if (!a.nome_completo) {
+    document.getElementById('dp-dados-content').innerHTML =
+      '<div style="color:var(--muted);font-size:13px;padding:12px 0">Aguardando preenchimento do formulário.</div>';
+  } else {
+    const campos = [
+      ['Nome Completo', a.nome_completo], ['CPF', a.cpf], ['RG', a.rg],
+      ['Data Nascimento', a.data_nascimento], ['Estado Civil', a.estado_civil], ['Nacionalidade', a.nacionalidade],
+      ['Naturalidade', a.naturalidade], ['Nome da Mãe', a.nome_mae], ['Nome do Pai', a.nome_pai],
+      ['Endereço', a.endereco], ['CEP', a.cep], ['Cidade', a.cidade], ['Estado', a.estado],
+      ['Banco', a.banco], ['Agência', a.agencia], ['Conta', a.conta], ['Tipo de Conta', a.tipo_conta], ['PIX', a.pix],
+      ['Carga Horária', a.carga_horaria], ['Data de Início', a.data_inicio], ['Observações', a.observacoes],
+    ].filter(([, v]) => v);
 
-  document.getElementById('dp-dados-content').innerHTML = campos.length
-    ? `<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-        ${campos.map(([l, v]) => `
-          <div>
-            <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px">${l}</div>
-            <div style="font-size:13px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:8px 10px">${v}</div>
-          </div>`).join('')}
-       </div>`
-    : '<div style="color:var(--muted);font-size:13px;padding:12px 0">Formulário ainda não preenchido.</div>';
+    document.getElementById('dp-dados-content').innerHTML = campos.length
+      ? `<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          ${campos.map(([l, v]) => `
+            <div>
+              <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px">${l}</div>
+              <div style="font-size:13px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:8px 10px">${v}</div>
+            </div>`).join('')}
+         </div>`
+      : '<div style="color:var(--muted);font-size:13px;padding:12px 0">Aguardando preenchimento do formulário.</div>';
+  }
 
   const docs = a.documentos || [];
   document.getElementById('dp-docs-content').innerHTML = docs.length
@@ -2230,9 +2237,10 @@ async function aprovarDoc(docId) {
     });
     if (!r.ok) throw new Error();
     showToast('Documento aprovado!', 'success');
-    const id = currentAdmissao.admissao_id;
+    const savedId = currentAdmissao.admissao_id;
     await carregarDP();
-    abrirModalDP(id);
+    const updated = window.admissoesData.find(x => x.admissao_id === savedId);
+    if (updated) abrirModalDP(updated);
   } catch { showToast('Erro ao aprovar documento.', 'error'); }
 }
 
@@ -2247,9 +2255,10 @@ async function reprovarDoc(docId) {
     });
     if (!r.ok) throw new Error();
     showToast('Documento reprovado.', 'warn');
-    const id = currentAdmissao.admissao_id;
+    const savedId = currentAdmissao.admissao_id;
     await carregarDP();
-    abrirModalDP(id);
+    const updated = window.admissoesData.find(x => x.admissao_id === savedId);
+    if (updated) abrirModalDP(updated);
   } catch { showToast('Erro ao reprovar documento.', 'error'); }
 }
 
@@ -2281,7 +2290,7 @@ function copiarContrato() {
 
 async function confirmarAdmissao() {
   if (!currentAdmissao) return;
-  if (!confirm('Confirmar a admissão de ' + (currentAdmissao.nome || '') + '?')) return;
+  if (!confirm('Confirmar a admissão de ' + (currentAdmissao.candidato_nome || '') + '?')) return;
   try {
     const r = await fetch(BASE_URL + '/ats-dp-acao', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },

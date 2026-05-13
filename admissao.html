@@ -258,8 +258,14 @@ html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:'In
 
 <script>
 const WEBHOOK = 'https://webhook.danns.com.br/webhook/ats-formulario-admissao';
-const params = new URLSearchParams(window.location.search);
-const admissaoId = params.get('id') || '';
+const urlParams = new URLSearchParams(window.location.search);
+const admissaoId = urlParams.get('id');
+
+if (!admissaoId || admissaoId === 'undefined' || admissaoId === 'null') {
+  document.querySelector('.form-header h1').textContent = 'Link Inválido';
+  document.querySelector('.form-header p').innerHTML = 'Link inválido. Entre em contato com o RH.';
+  document.getElementById('form-admissao').style.display = 'none';
+}
 
 function showLoading(on) {
   document.getElementById('loading').classList.toggle('active', on);
