@@ -2163,8 +2163,13 @@ function abrirModalDP(a) {
   document.getElementById('dp-modal-title').textContent = 'Admissão — ' + (a.candidato_nome || '');
 
   if (!a.nome_completo) {
-    document.getElementById('dp-dados-content').innerHTML =
-      '<div style="color:var(--muted);font-size:13px;padding:12px 0">Aguardando preenchimento do formulário.</div>';
+    document.getElementById('dp-dados-content').innerHTML = `
+      <div style="text-align:center;padding:24px 0">
+        <div style="font-size:32px;margin-bottom:12px">⚠️</div>
+        <div style="font-weight:600;font-size:14px;margin-bottom:6px;color:var(--text)">O candidato ainda não preencheu o formulário de admissão.</div>
+        <div style="color:var(--muted);font-size:13px;margin-bottom:20px">Reenvie o link pelo botão abaixo.</div>
+        <button class="btn btn-primary" onclick="reenviarLinkAdmissao('${a.admissao_id}','${a.candidatura_id}')">📤 Reenviar Link</button>
+      </div>`;
   } else {
     const campos = [
       ['Nome Completo', a.nome_completo], ['CPF', a.cpf], ['RG', a.rg],
@@ -2193,7 +2198,7 @@ function abrirModalDP(a) {
         return `
           <div style="border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin-bottom:8px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
             <div style="flex:1;min-width:140px">
-              <div style="font-weight:600;font-size:13px">${d.nome||d.tipo||'—'}</div>
+              <div style="font-weight:600;font-size:13px">${d.nome_documento||d.nome||d.tipo||'—'}</div>
               ${d.obs?`<div style="font-size:11px;color:var(--muted);margin-top:2px">${d.obs}</div>`:''}
             </div>
             ${d.url?`<a href="${d.url}" target="_blank" class="btn btn-ghost btn-sm">Ver arquivo</a>`:''}
@@ -2302,6 +2307,19 @@ async function confirmarAdmissao() {
     fecharModalDP();
     await carregarDP();
   } catch { showToast('Erro ao confirmar admissão.', 'error'); }
+}
+
+async function reenviarLinkAdmissao(admissaoId, candidaturaId) {
+  if (!candidaturaId) { showToast('ID da candidatura não encontrado.', 'error'); return; }
+  try {
+    const r = await fetch(BASE_URL + '/ats-liberar-admissao', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ candidatura_id: candidaturaId, liberado_por: 'Administrador' }),
+      signal: AbortSignal.timeout(8000)
+    });
+    if (!r.ok) throw new Error();
+    showToast('Link reenviado via WhatsApp!', 'success');
+  } catch { showToast('Erro ao reenviar link.', 'error'); }
 }
 
 async function liberarAdmissao(candidaturaId) {
