@@ -392,7 +392,7 @@ document.getElementById('form-admissao').addEventListener('submit', async e => {
 });
 
 // ─── DOCUMENTOS ──────────────────────────────────────────────────
-const RH_WHATSAPP = '5511999999999'; // Atualize com o número real do RH
+const RH_WHATSAPP = '5511972901708';
 
 const DOCS_OBRIGATORIOS = [
   { nome: 'RG (Carteira de Identidade)', obs: 'Frente e verso' },
@@ -412,17 +412,25 @@ const DOCS_OBRIGATORIOS = [
 (function initDocs() {
   const lista = document.getElementById('lista-documentos');
   if (!lista) return;
-  lista.innerHTML = DOCS_OBRIGATORIOS.map((d, i) => `
+  lista.innerHTML = DOCS_OBRIGATORIOS.map((d, i) => {
+    const txt = encodeURIComponent(`Olá, estou enviando meu documento: ${d.nome}`);
+    return `
     <div class="doc-item">
       <div class="doc-num">${i + 1}</div>
-      <div>
+      <div style="flex:1">
         <div class="doc-nome">${d.nome}</div>
         ${d.obs ? `<div class="doc-obs">${d.obs}</div>` : ''}
       </div>
-    </div>`).join('');
+      <a href="https://wa.me/${RH_WHATSAPP}?text=${txt}" target="_blank"
+         style="flex-shrink:0;background:#25d366;color:#fff;padding:6px 12px;border-radius:6px;font-size:12px;font-weight:600;text-decoration:none;white-space:nowrap">
+        📤 Enviar
+      </a>
+    </div>`;
+  }).join('');
 
   const link = document.getElementById('link-whatsapp-rh');
-  if (link) link.href = `https://wa.me/${RH_WHATSAPP}?text=Ol%C3%A1%2C+sou+candidato(a)+em+processo+de+admiss%C3%A3o+e+gostaria+de+enviar+meus+documentos.`;
+  const txtGeral = encodeURIComponent('Olá, estou enviando meus documentos de admissão.');
+  if (link) link.href = `https://wa.me/${RH_WHATSAPP}?text=${txtGeral}`;
 })();
 </script>
 </body>

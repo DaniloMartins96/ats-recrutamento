@@ -2273,10 +2273,10 @@ async function gerarContrato() {
   btn.disabled = true;
   btn.textContent = '⏳ Gerando contrato (~20s)...';
   try {
-    const r = await fetch(BASE_URL + '/ats-dp-acao', {
+    const r = await fetch(BASE_URL + '/ats-dp-gerar-contrato', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ acao: 'gerar_contrato', admissao_id: currentAdmissao.admissao_id }),
-      signal: AbortSignal.timeout(35000)
+      body: JSON.stringify({ admissao_id: currentAdmissao.admissao_id }),
+      signal: AbortSignal.timeout(60000)
     });
     if (!r.ok) throw new Error();
     const data = await r.json();
