@@ -1591,8 +1591,11 @@ async function arquivarCandidato(candidaturaId, candidatoId) {
       signal: AbortSignal.timeout(8000)
     });
     if (!r.ok) throw new Error();
+    const c = candidatos.find(x => (x.candidatura_id || x.candidato_id) === candidaturaId);
+    if (c) c.etapa_atual = 'arquivado';
+    calcularRankings();
+    renderCandidatos();
     showToast('Candidato arquivado.', 'info');
-    await carregarCandidatos();
   } catch { showToast('Erro ao arquivar candidato.', 'error'); }
 }
 
@@ -1605,8 +1608,11 @@ async function restaurarCandidato(candidaturaId, candidatoId) {
       signal: AbortSignal.timeout(8000)
     });
     if (!r.ok) throw new Error();
+    const c = candidatos.find(x => (x.candidatura_id || x.candidato_id) === candidaturaId);
+    if (c) c.etapa_atual = 'em_aberto';
+    calcularRankings();
+    renderCandidatos();
     showToast('Candidato restaurado.', 'success');
-    await carregarCandidatos();
   } catch { showToast('Erro ao restaurar candidato.', 'error'); }
 }
 
@@ -1831,7 +1837,7 @@ function abrirCandidato(candidaturaId) {
   currentCandidaturaId = candidaturaId;
 
   // ── DEBUG: inspecionar o objeto completo do candidato ──
-  console.log('[abrirCandidato] ID:', id);
+  console.log('[abrirCandidato] candidaturaId:', candidaturaId);
   console.log('[abrirCandidato] objeto completo:', JSON.parse(JSON.stringify(c)));
   console.log('[abrirCandidato] analise_star:', c.analise_star, '| tipo:', typeof c.analise_star);
   console.log('[abrirCandidato] perguntas_rh:', c.perguntas_rh, '| tipo:', typeof c.perguntas_rh);
