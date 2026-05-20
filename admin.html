@@ -2005,6 +2005,13 @@ function abrirCandidato(candidaturaId) {
   if (c.telefone) infoHtml += `<br>Tel: ${c.telefone}`;
   document.getElementById('so-cv-info').innerHTML = infoHtml;
 
+  const cvEl = document.getElementById('so-cv-info');
+  if (c.curriculo_base64) {
+    cvEl.innerHTML += `<br><button class="btn btn-outline btn-sm" style="margin-top:8px" onclick="downloadCurriculo('${c.candidatura_id || c.candidato_id}')">&#128196; Baixar Currículo</button>`;
+  } else {
+    cvEl.innerHTML += `<br><span style="font-size:12px;color:var(--muted);margin-top:4px;display:inline-block">Currículo não enviado</span>`;
+  }
+
   document.getElementById('slideover-cand').classList.add('open');
   document.getElementById('so-backdrop').classList.add('open');
 }
@@ -2014,6 +2021,15 @@ function fecharSlideover() {
   document.getElementById('so-backdrop').classList.remove('open');
   currentCandidatoId = null;
   currentCandidaturaId = null;
+}
+
+function downloadCurriculo(candidaturaId) {
+  const c = candidatos.find(x => (x.candidatura_id || x.candidato_id) === candidaturaId);
+  if (!c || !c.curriculo_base64) return;
+  const link = document.createElement('a');
+  link.href = 'data:application/pdf;base64,' + c.curriculo_base64;
+  link.download = c.curriculo_nome || 'curriculo.pdf';
+  link.click();
 }
 
 document.getElementById('so-close').onclick = fecharSlideover;
