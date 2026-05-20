@@ -812,6 +812,48 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
   </div>
 </div>
 
+<!-- ══════════════ MODAL AGENDAMENTO ══════════════ -->
+<div class="modal-overlay" id="modal-agendamento">
+  <div class="modal" role="dialog" aria-modal="true" style="max-width:460px">
+    <div class="modal-header">
+      <div class="modal-title">📅 Agendar Entrevista</div>
+      <button class="modal-close" onclick="fecharModalAgendamento()">&#10005;</button>
+    </div>
+    <div class="modal-body" style="display:flex;flex-direction:column;gap:14px">
+      <div id="agend-candidato-info" style="font-size:13px;color:var(--muted);background:var(--surface2);padding:10px 12px;border-radius:8px;border:1px solid var(--border)"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div>
+          <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:6px">Data</label>
+          <input type="date" id="agend-data" class="input" style="width:100%">
+        </div>
+        <div>
+          <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:6px">Hora</label>
+          <input type="time" id="agend-hora" class="input" style="width:100%">
+        </div>
+      </div>
+      <div>
+        <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:6px">Tipo</label>
+        <select id="agend-tipo" class="input" style="width:100%" onchange="toggleCampoLocal()">
+          <option value="remoto">Remoto</option>
+          <option value="presencial">Presencial</option>
+        </select>
+      </div>
+      <div id="agend-campo-remoto">
+        <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:6px">Link da reunião</label>
+        <input type="url" id="agend-link" class="input" style="width:100%" placeholder="https://meet.google.com/...">
+      </div>
+      <div id="agend-campo-presencial" style="display:none">
+        <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:6px">Endereço</label>
+        <input type="text" id="agend-endereco" class="input" style="width:100%" placeholder="Rua, número, cidade">
+      </div>
+    </div>
+    <div class="modal-footer" style="display:flex;gap:10px;justify-content:flex-end;padding:16px 20px;border-top:1px solid var(--border)">
+      <button class="btn btn-outline btn-sm" onclick="fecharModalAgendamento()">Cancelar</button>
+      <button class="btn btn-primary btn-sm" onclick="confirmarAgendamento()">Confirmar Agendamento</button>
+    </div>
+  </div>
+</div>
+
 <!-- ══════════════ MODAL LINKEDIN ══════════════ -->
 <div class="modal-overlay" id="modal-linkedin">
   <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-linkedin-title">
@@ -889,6 +931,7 @@ let currentCandidatoId = null;
 let currentCandidaturaId = null;
 let currentAdmissao = null;
 let candTabAtivo = 'em_processo';
+let agendamentoCandidaturaId = null;
 
 // ─── LOGIN ────────────────────────────────────────────────────────
 function checkAuth() {
@@ -1503,8 +1546,8 @@ function renderCandidatos() {
       <td><span class="badge badge-gray" style="font-size:10px">${c.etapa_atual || '—'}</span></td>
       <td onclick="event.stopPropagation()" style="white-space:nowrap">
         <button class="btn btn-ghost btn-sm" onclick="abrirCandidato('${candId}')">Ver</button>
-        ${!isArquivado && !isAprovado ? `<button class="btn btn-primary btn-sm" onclick="avancarCandidato('${candId}','${c.etapa_atual||''}')">Avançar</button>` : ''}
-        ${!isArquivado ? `<button class="btn btn-danger btn-sm" onclick="mudarStatusCandidatoTabela('${candId}','Reprovado')">Rejeitar</button>` : ''}
+        ${!isArquivado && !isAprovado ? `<button class="btn btn-primary btn-sm" onclick="abrirModalAgendamento('${candId}')">Agendar</button>` : ''}
+        ${!isArquivado ? `<button class="btn btn-danger btn-sm" onclick="rejeitarCandidato('${candId}')">Rejeitar</button>` : ''}
         ${!isArquivado ? `<button class="btn btn-outline btn-sm" style="border-color:var(--muted);color:var(--muted)" onclick="arquivarCandidato('${candId}','${c.candidato_id}')">&#128230; Arquivar</button>` : ''}
         ${isArquivado ? `<button class="btn btn-outline btn-sm" onclick="restaurarCandidato('${candId}','${c.candidato_id}')">&#8617; Restaurar</button>` : ''}
         ${isAprovado ? `<button class="btn btn-outline btn-sm" style="border-color:var(--success);color:var(--success)" onclick="liberarAdmissao('${candId}')">&#128203; Admissão</button>` : ''}
@@ -1567,13 +1610,6 @@ document.getElementById('cand-search').oninput = renderCandidatos;
 document.getElementById('filtro-vaga-ranking').onchange = renderCandidatos;
 document.getElementById('ordenar-candidatos').onchange = renderCandidatos;
 
-function mudarStatusCandidatoTabela(candidaturaId, novoStatus) {
-  currentCandidaturaId = candidaturaId;
-  const c = candidatos.find(x => (x.candidatura_id || x.candidato_id) === candidaturaId);
-  currentCandidatoId = c ? c.candidato_id : candidaturaId;
-  mudarStatusCandidato(novoStatus);
-}
-
 function setCandTab(tab) {
   candTabAtivo = tab;
   ['em_processo', 'reprovados', 'arquivados'].forEach(t => {
@@ -1618,34 +1654,6 @@ async function restaurarCandidato(candidaturaId, candidatoId) {
 
 const ETAPAS = ['triagem', 'entrevista_rh', 'entrevista_tecnica', 'aprovado'];
 
-async function avancarCandidato(candidaturaId, etapaAtual) {
-  const idx = ETAPAS.indexOf((etapaAtual || '').toLowerCase().replace(/ /g, '_'));
-  const proximaEtapa = ETAPAS[idx + 1] || 'aprovado';
-  const label = { triagem: 'Triagem', entrevista_rh: 'Entrevista RH', entrevista_tecnica: 'Entrevista Técnica', aprovado: 'Aprovado' };
-  if (!confirm(`Avançar candidato para "${label[proximaEtapa] || proximaEtapa}"?`)) return;
-  const cand = candidatos.find(x => (x.candidatura_id || x.candidato_id) === candidaturaId);
-  try {
-    const r = await fetch(BASE_URL + '/ats-avancar-entrevista', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        candidatura_id: candidaturaId,
-        nova_etapa: proximaEtapa,
-        candidato_nome: cand?.nome || '',
-        candidato_telefone: cand?.telefone || '',
-        vaga_titulo: cand?.vaga_titulo || ''
-      }),
-      signal: AbortSignal.timeout(8000)
-    });
-    if (!r.ok) throw new Error();
-    showToast(`Candidato avançado para "${label[proximaEtapa] || proximaEtapa}"!`, 'success');
-    await carregarCandidatos();
-    if (proximaEtapa === 'aprovado') {
-      if (confirm('Candidato aprovado! Deseja liberar o processo de admissão agora?')) {
-        await liberarAdmissao(candidaturaId);
-      }
-    }
-  } catch { showToast('Erro ao avançar candidato.', 'error'); }
-}
 
 async function exportarExcel() {
   showToast('Gerando planilha profissional...', 'info');
@@ -2062,23 +2070,101 @@ function starLabel(k) {
 
 // ─── AÇÕES SLIDE-OVER ─────────────────────────────────────────────
 document.getElementById('so-btn-aprovar').onclick    = () => aprovarCandidato(currentCandidaturaId);
-document.getElementById('so-btn-rejeitar').onclick   = () => mudarStatusCandidato('Reprovado');
-document.getElementById('so-btn-entrevista').onclick = () => {
-  const cfg = localStorage.getItem('cfg_calendly');
-  if (cfg) window.open(cfg, '_blank');
-  mudarStatusCandidato('Entrevista');
-};
+document.getElementById('so-btn-rejeitar').onclick   = () => rejeitarCandidato(currentCandidaturaId);
+document.getElementById('so-btn-entrevista').onclick = () => abrirModalAgendamento(currentCandidaturaId);
 
-function mudarStatusCandidato(novoStatus) {
-  if (!currentCandidaturaId) return;
-  const c = candidatos.find(x => (x.candidatura_id || x.candidato_id) === currentCandidaturaId);
-  if (!c) return;
-  c.status_candidatura = novoStatus;
-  renderCandidatos();
+async function rejeitarCandidato(candidaturaId) {
+  if (!candidaturaId) return;
+  if (!confirm('Rejeitar este candidato?')) return;
+  const cand = candidatos.find(x => (x.candidatura_id || x.candidato_id) === candidaturaId);
+  try {
+    const r = await fetch(BASE_URL + '/ats-atualizar-etapa', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        candidatura_id: candidaturaId,
+        nova_etapa: 'reprovado',
+        candidato_nome: cand?.nome || '',
+        candidato_telefone: cand?.telefone || '',
+        vaga_titulo: cand?.vaga_titulo || ''
+      }),
+      signal: AbortSignal.timeout(8000)
+    });
+    if (!r.ok) throw new Error();
+    if (cand) cand.etapa_atual = 'reprovado';
+    fecharSlideover();
+    calcularRankings();
+    renderCandidatos();
+    showToast('Candidato reprovado.', 'error');
+  } catch { showToast('Erro ao rejeitar candidato.', 'error'); }
+}
+
+function abrirModalAgendamento(candidaturaId) {
+  agendamentoCandidaturaId = candidaturaId;
+  const cand = candidatos.find(x => (x.candidatura_id || x.candidato_id) === candidaturaId);
+  const info = document.getElementById('agend-candidato-info');
+  if (info && cand) {
+    info.textContent = `${cand.nome || '—'}  ·  ${cand.vaga_titulo || '—'}`;
+  }
+  const hoje = new Date().toISOString().split('T')[0];
+  document.getElementById('agend-data').value = hoje;
+  document.getElementById('agend-hora').value = '10:00';
+  document.getElementById('agend-tipo').value = 'remoto';
+  document.getElementById('agend-link').value = '';
+  document.getElementById('agend-endereco').value = '';
+  toggleCampoLocal();
   fecharSlideover();
-  const msgs  = { Aprovado: 'Candidato aprovado!', Reprovado: 'Candidato reprovado.', Entrevista: 'Entrevista agendada!' };
-  const tipos = { Aprovado: 'success', Reprovado: 'error', Entrevista: 'info' };
-  showToast(msgs[novoStatus] || 'Status atualizado.', tipos[novoStatus] || 'info');
+  document.getElementById('modal-agendamento').classList.add('open');
+}
+
+function fecharModalAgendamento() {
+  document.getElementById('modal-agendamento').classList.remove('open');
+  agendamentoCandidaturaId = null;
+}
+
+function toggleCampoLocal() {
+  const tipo = document.getElementById('agend-tipo').value;
+  document.getElementById('agend-campo-remoto').style.display    = tipo === 'remoto'     ? '' : 'none';
+  document.getElementById('agend-campo-presencial').style.display = tipo === 'presencial' ? '' : 'none';
+}
+
+async function confirmarAgendamento() {
+  const candidaturaId = agendamentoCandidaturaId;
+  if (!candidaturaId) return;
+  const data  = document.getElementById('agend-data').value;
+  const hora  = document.getElementById('agend-hora').value;
+  const tipo  = document.getElementById('agend-tipo').value;
+  const local = tipo === 'remoto'
+    ? document.getElementById('agend-link').value.trim()
+    : document.getElementById('agend-endereco').value.trim();
+  if (!data || !hora) { showToast('Preencha data e hora.', 'error'); return; }
+  const cand = candidatos.find(x => (x.candidatura_id || x.candidato_id) === candidaturaId);
+  const [y, m, d] = data.split('-');
+  const dataFormatada = `${d}/${m}/${y}`;
+  const idx = ETAPAS.indexOf((cand?.etapa_atual || '').toLowerCase().replace(/ /g, '_'));
+  const proximaEtapa = ETAPAS[idx + 1] || 'entrevista_rh';
+  try {
+    const r = await fetch(BASE_URL + '/ats-atualizar-etapa', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        candidatura_id: candidaturaId,
+        nova_etapa: proximaEtapa,
+        candidato_nome: cand?.nome || '',
+        candidato_telefone: cand?.telefone || '',
+        vaga_titulo: cand?.vaga_titulo || '',
+        data_entrevista: dataFormatada,
+        hora_entrevista: hora,
+        tipo_entrevista: tipo,
+        local_entrevista: local
+      }),
+      signal: AbortSignal.timeout(10000)
+    });
+    if (!r.ok) throw new Error();
+    if (cand) cand.etapa_atual = proximaEtapa;
+    fecharModalAgendamento();
+    calcularRankings();
+    renderCandidatos();
+    showToast('Entrevista agendada!', 'success');
+  } catch { showToast('Erro ao agendar entrevista.', 'error'); }
 }
 
 async function aprovarCandidato(candidaturaId) {
