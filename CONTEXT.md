@@ -23,6 +23,19 @@ Chaves importantes para atualizar:
 - pendente_fase1
 - workflows_ativos
 
+## STATUS ATUAL (atualizado 2026-05-19)
+
+### Concluído
+- Ciclo principal do ATS funcionando (triagem → entrevistas → aprovação → admissão)
+- Correção do vaga_id em candidatura.html
+- Admin: abas de status (Em processo / Reprovados / Arquivados) + botão Arquivar/Restaurar implementados
+- Deploy pendente: aguardando `git push` para confirmar subida do admin.html
+
+### Próximos passos
+1. Confirmar deploy do admin.html (git push + verificar produção)
+2. Adicionar mensagem WhatsApp de confirmação no WF01
+3. Corrigir WF16 — retornando 404
+
 ## REGRAS PARA O CLAUDE
 1. Sempre usar MCP n8n para workflows
 2. Sempre usar Claude Code para arquivos no servidor

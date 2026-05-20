@@ -1488,7 +1488,7 @@ function renderCandidatos() {
     const isAprovado = etapaLow === 'aprovado';
     const candId = c.candidatura_id || c.candidato_id;
     return `
-    <tr onclick="abrirCandidato('${c.candidato_id}')">
+    <tr onclick="abrirCandidato('${candId}')">
       <td style="text-align:center;font-size:18px;line-height:1">${rankMedal(c.rank_posicao || 99)}</td>
       <td>
         <div style="font-weight:600">${c.nome || '—'}</div>
@@ -1502,9 +1502,9 @@ function renderCandidatos() {
       <td><span class="badge ${fitColor(c.nivel_fit || c.fit || c.nivel_fit_cultural || c.score_fit)}">${fitLabel(c.nivel_fit || c.fit || c.nivel_fit_cultural || c.score_fit || '')}</span></td>
       <td><span class="badge badge-gray" style="font-size:10px">${c.etapa_atual || '—'}</span></td>
       <td onclick="event.stopPropagation()" style="white-space:nowrap">
-        <button class="btn btn-ghost btn-sm" onclick="abrirCandidato('${c.candidato_id}')">Ver</button>
+        <button class="btn btn-ghost btn-sm" onclick="abrirCandidato('${candId}')">Ver</button>
         ${!isArquivado && !isAprovado ? `<button class="btn btn-primary btn-sm" onclick="avancarCandidato('${candId}','${c.etapa_atual||''}')">Avançar</button>` : ''}
-        ${!isArquivado ? `<button class="btn btn-danger btn-sm" onclick="mudarStatusCandidatoTabela('${c.candidato_id}','Reprovado')">Rejeitar</button>` : ''}
+        ${!isArquivado ? `<button class="btn btn-danger btn-sm" onclick="mudarStatusCandidatoTabela('${candId}','Reprovado')">Rejeitar</button>` : ''}
         ${!isArquivado ? `<button class="btn btn-outline btn-sm" style="border-color:var(--muted);color:var(--muted)" onclick="arquivarCandidato('${candId}','${c.candidato_id}')">&#128230; Arquivar</button>` : ''}
         ${isArquivado ? `<button class="btn btn-outline btn-sm" onclick="restaurarCandidato('${candId}','${c.candidato_id}')">&#8617; Restaurar</button>` : ''}
         ${isAprovado ? `<button class="btn btn-outline btn-sm" style="border-color:var(--success);color:var(--success)" onclick="liberarAdmissao('${candId}')">&#128203; Admissão</button>` : ''}
@@ -1567,8 +1567,10 @@ document.getElementById('cand-search').oninput = renderCandidatos;
 document.getElementById('filtro-vaga-ranking').onchange = renderCandidatos;
 document.getElementById('ordenar-candidatos').onchange = renderCandidatos;
 
-function mudarStatusCandidatoTabela(id, novoStatus) {
-  currentCandidatoId = id;
+function mudarStatusCandidatoTabela(candidaturaId, novoStatus) {
+  currentCandidaturaId = candidaturaId;
+  const c = candidatos.find(x => (x.candidatura_id || x.candidato_id) === candidaturaId);
+  currentCandidatoId = c ? c.candidato_id : candidaturaId;
   mudarStatusCandidato(novoStatus);
 }
 
@@ -1822,11 +1824,11 @@ function scoreColor(n) {
   return n >= 80 ? 'var(--success)' : n >= 60 ? 'var(--warn)' : 'var(--danger)';
 }
 
-function abrirCandidato(id) {
-  const c = candidatos.find(x => x.candidato_id === id);
+function abrirCandidato(candidaturaId) {
+  const c = candidatos.find(x => (x.candidatura_id || x.candidato_id) === candidaturaId);
   if (!c) return;
-  currentCandidatoId = id;
-  currentCandidaturaId = c.candidatura_id || c.id || id;
+  currentCandidatoId = c.candidato_id;
+  currentCandidaturaId = candidaturaId;
 
   // ── DEBUG: inspecionar o objeto completo do candidato ──
   console.log('[abrirCandidato] ID:', id);
@@ -2039,8 +2041,8 @@ document.getElementById('so-btn-entrevista').onclick = () => {
 };
 
 function mudarStatusCandidato(novoStatus) {
-  if (!currentCandidatoId) return;
-  const c = candidatos.find(x => x.candidato_id === currentCandidatoId);
+  if (!currentCandidaturaId) return;
+  const c = candidatos.find(x => (x.candidatura_id || x.candidato_id) === currentCandidaturaId);
   if (!c) return;
   c.status_candidatura = novoStatus;
   renderCandidatos();
