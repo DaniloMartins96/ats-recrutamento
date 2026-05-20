@@ -1528,7 +1528,8 @@ function renderCandidatos() {
     const score = parseFloat(c.score_total) || 0;
     const etapaLow = (c.etapa_atual || '').toLowerCase();
     const isArquivado = etapaLow === 'arquivado';
-    const isAprovado = etapaLow === 'aprovado';
+    const isAprovado  = etapaLow === 'aprovado';
+    const isReprovado = etapaLow === 'reprovado';
     const candId = c.candidatura_id || c.candidato_id;
     return `
     <tr onclick="abrirCandidato('${candId}')">
@@ -1546,7 +1547,7 @@ function renderCandidatos() {
       <td><span class="badge badge-gray" style="font-size:10px">${c.etapa_atual || '—'}</span></td>
       <td onclick="event.stopPropagation()" style="white-space:nowrap">
         <button class="btn btn-ghost btn-sm" onclick="abrirCandidato('${candId}')">Ver</button>
-        ${!isArquivado && !isAprovado ? `<button class="btn btn-primary btn-sm" onclick="abrirModalAgendamento('${candId}')">Agendar</button>` : ''}
+        ${!isArquivado && !isAprovado && !isReprovado ? `<button class="btn btn-primary btn-sm" onclick="abrirModalAgendamento('${candId}')">Agendar</button>` : ''}
         ${!isArquivado ? `<button class="btn btn-danger btn-sm" onclick="rejeitarCandidato('${candId}')">Rejeitar</button>` : ''}
         ${!isArquivado ? `<button class="btn btn-outline btn-sm" style="border-color:var(--muted);color:var(--muted)" onclick="arquivarCandidato('${candId}','${c.candidato_id}')">&#128230; Arquivar</button>` : ''}
         ${isArquivado ? `<button class="btn btn-outline btn-sm" onclick="restaurarCandidato('${candId}','${c.candidato_id}')">&#8617; Restaurar</button>` : ''}
@@ -2140,8 +2141,11 @@ async function confirmarAgendamento() {
   const cand = candidatos.find(x => (x.candidatura_id || x.candidato_id) === candidaturaId);
   const [y, m, d] = data.split('-');
   const dataFormatada = `${d}/${m}/${y}`;
-  const idx = ETAPAS.indexOf((cand?.etapa_atual || '').toLowerCase().replace(/ /g, '_'));
-  const proximaEtapa = ETAPAS[idx + 1] || 'entrevista_rh';
+  const etapaAtual = (cand?.etapa_atual || '').toLowerCase().replace(/ /g, '_');
+  const proximaEtapa = etapaAtual === 'triagem'          ? 'entrevista_rh'
+                     : etapaAtual === 'entrevista_rh'    ? 'entrevista_tecnica'
+                     : etapaAtual === 'entrevista_tecnica' ? 'entrevista_tecnica'
+                     : 'entrevista_rh';
   try {
     const r = await fetch(BASE_URL + '/ats-atualizar-etapa', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
