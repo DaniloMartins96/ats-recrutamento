@@ -2367,7 +2367,8 @@ function abrirModalDP(a) {
       : '<div style="color:var(--muted);font-size:13px;padding:12px 0">Aguardando preenchimento do formulário.</div>';
   }
 
-  const docs = a.documentos || [];
+  const docsRaw = a.documentos || [];
+  const docs = docsRaw.filter((d, i, arr) => arr.findIndex(x => x.id === d.id) === i);
   document.getElementById('dp-docs-content').innerHTML = docs.length
     ? docs.map(d => {
         const [cls, lbl] = d.status === 'aprovado' ? ['badge-green','Aprovado'] : d.status === 'reprovado' ? ['badge-red','Reprovado'] : ['badge-gray','Pendente'];
@@ -2375,14 +2376,14 @@ function abrirModalDP(a) {
           <div style="border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin-bottom:8px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
             <div style="flex:1;min-width:140px">
               <div style="font-weight:600;font-size:13px">${d.nome_documento||d.nome||d.tipo||'—'}</div>
-              ${d.obs?`<div style="font-size:11px;color:var(--muted);margin-top:2px">${d.obs}</div>`:''}
+              ${d.observacao?`<div style="font-size:11px;color:var(--muted);margin-top:2px">${d.observacao}</div>`:''}
             </div>
             ${d.url?`<a href="${d.url}" target="_blank" class="btn btn-ghost btn-sm">Ver arquivo</a>`:''}
             <span class="badge ${cls}">${lbl}</span>
-            ${d.status!=='aprovado'?`<button class="btn btn-primary btn-sm" onclick="aprovarDoc('${d.doc_id}')">✅ Aprovar</button>`:''}
+            ${d.status!=='aprovado'?`<button class="btn btn-primary btn-sm" onclick="aprovarDoc('${d.id}')">✅ Aprovar</button>`:''}
             ${d.status!=='reprovado'?`<div style="display:flex;gap:6px;align-items:center">
-              <input class="form-input" type="text" id="obs-${d.doc_id}" placeholder="Motivo" style="width:120px;padding:5px 8px;font-size:11px">
-              <button class="btn btn-danger btn-sm" onclick="reprovarDoc('${d.doc_id}')">❌ Reprovar</button>
+              <input class="form-input" type="text" id="obs-${d.id}" placeholder="Motivo" style="width:120px;padding:5px 8px;font-size:11px">
+              <button class="btn btn-danger btn-sm" onclick="reprovarDoc('${d.id}')">❌ Reprovar</button>
             </div>`:''}
           </div>`;
       }).join('')
