@@ -404,8 +404,14 @@ async function carregarVagas() {
     const res  = await fetch(VAGAS_URL + '?t=' + Date.now(), { signal: AbortSignal.timeout(12000) });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
-    _todasVagas = Array.isArray(data) ? data : (data.vagas || data.data || []);
-  } catch {
+    console.log('[vagas] resposta da API:', data);
+    _todasVagas = Array.isArray(data) ? data
+                : Array.isArray(data.vagas) ? data.vagas
+                : Array.isArray(data.data)  ? data.data
+                : [];
+    console.log('[vagas] total carregado:', _todasVagas.length);
+  } catch (err) {
+    console.error('[vagas] erro ao carregar:', err);
     _todasVagas = [];
   }
   inicializarFiltros();
