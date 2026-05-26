@@ -3026,7 +3026,7 @@ async function carregarMetricas() {
   document.getElementById('m-last-update').textContent = new Date().toLocaleTimeString('pt-BR');
 
   try {
-    const res = await fetch(BASE_URL + '/ats-metricas', { signal: AbortSignal.timeout(15000) });
+    const res = await fetch(BASE_URL + '/ats-metricas?t=' + Date.now(), { signal: AbortSignal.timeout(15000) });
     const d   = await res.json();
 
     // KPIs animados
