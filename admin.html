@@ -2538,12 +2538,8 @@ async function rejeitarCandidato(candidaturaId) {
     calcularRankings();
     renderCandidatos();
     showToast('Candidato reprovado.', 'error');
-    console.log('[whatsapp-reprovado] enviando para candidatura_id:', candidaturaId);
-    fetch('https://webhook.danns.com.br/webhook/ats-whatsapp-reprovado', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ candidatura_id: candidaturaId })
-    }).then(() => showToast('📱 Mensagem de feedback enviada ao candidato.', 'info'))
-      .catch(e => console.log('WhatsApp reprovado:', e));
+    console.log('Enviando WhatsApp reprovado para candidatura:', candidaturaId);
+    fetch('https://webhook.danns.com.br/webhook/ats-whatsapp-reprovado', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ candidatura_id: String(candidaturaId) }) });
   } catch { showToast('Erro ao rejeitar candidato.', 'error'); }
 }
 
