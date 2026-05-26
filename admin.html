@@ -2517,6 +2517,7 @@ document.getElementById('so-btn-rejeitar').onclick   = () => rejeitarCandidato(c
 document.getElementById('so-btn-entrevista').onclick = () => abrirModalAgendamento(currentCandidaturaId);
 
 async function rejeitarCandidato(candidaturaId) {
+  console.log('=== INICIANDO REJEIÇÃO ===', candidaturaId);
   if (!candidaturaId) return;
   if (!confirm('Rejeitar este candidato?')) return;
   const cand = candidatos.find(x => (x.candidatura_id || x.candidato_id) === candidaturaId);
