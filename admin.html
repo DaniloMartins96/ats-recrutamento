@@ -515,6 +515,7 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
         <button onclick="abrirAbaConfig('ia')"          id="cfg-tab-ia"          class="cfg-tab">🤖 IA &amp; Triagem</button>
         <button onclick="abrirAbaConfig('integracoes')" id="cfg-tab-integracoes" class="cfg-tab">🔗 Integrações</button>
         <button onclick="abrirAbaConfig('seguranca')"   id="cfg-tab-seguranca"   class="cfg-tab">🔒 Segurança</button>
+        <button onclick="abrirAbaConfig('planilhas')"   id="cfg-tab-planilhas"   class="cfg-tab">📊 Planilhas</button>
       </div>
 
       <!-- ABA EMPRESA -->
@@ -677,6 +678,61 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
               🔒 Alterar Senha
             </button>
             <span id="senha-status" style="font-size:0.875rem"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ABA PLANILHAS -->
+      <div id="cfg-painel-planilhas" class="cfg-painel" style="display:none">
+        <div style="max-width:800px">
+          <h3 style="margin-bottom:0.25rem">📊 Assistente de Planilhas</h3>
+          <p style="color:var(--muted); font-size:0.875rem; margin-bottom:1.5rem">
+            Selecione uma planilha Excel ou informe a URL do Google Sheets, depois escreva o que quer fazer com os dados.
+          </p>
+
+          <!-- Cards Excel + Google Sheets -->
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:1rem; margin-bottom:1.5rem">
+            <div class="card">
+              <h4 style="margin-bottom:0.75rem">📁 Excel (.xlsx)</h4>
+              <input type="file" id="input-planilha-excel" accept=".xlsx"
+                style="width:100%; padding:0.5rem; border:2px dashed var(--border); border-radius:8px; cursor:pointer; background:var(--surface2); color:var(--text); box-sizing:border-box">
+              <p id="planilha-excel-nome" style="color:var(--muted); font-size:0.8rem; margin-top:0.4rem"></p>
+            </div>
+            <div class="card">
+              <h4 style="margin-bottom:0.75rem">📊 Google Sheets</h4>
+              <input type="text" id="input-sheets-url"
+                placeholder="https://docs.google.com/spreadsheets/d/..."
+                style="width:100%; padding:0.6rem 0.75rem; border:1px solid var(--border); border-radius:8px; font-size:0.875rem; background:var(--surface2); color:var(--text); font-family:inherit; box-sizing:border-box">
+              <p style="color:var(--muted); font-size:0.75rem; margin-top:0.4rem">A planilha deve estar com acesso público de leitura.</p>
+            </div>
+          </div>
+
+          <!-- Área de comando -->
+          <div class="card" style="margin-bottom:1rem">
+            <label style="display:block; font-weight:600; margin-bottom:0.5rem; font-size:0.875rem">
+              O que você quer fazer com a planilha?
+            </label>
+            <textarea id="planilha-comando" rows="3"
+              placeholder="Ex: Liste todos os candidatos aprovados desta semana ordenados por score"
+              style="width:100%; padding:0.6rem 0.75rem; border:1px solid var(--border); border-radius:8px; font-size:0.875rem; background:var(--surface2); color:var(--text); font-family:inherit; resize:vertical; box-sizing:border-box"></textarea>
+            <div style="display:flex; align-items:center; gap:1rem; margin-top:1rem; flex-wrap:wrap">
+              <button id="btn-executar-planilha" onclick="executarComandoPlanilha()"
+                style="background:var(--accent); color:#fff; padding:0.6rem 1.5rem; border:none; border-radius:8px; cursor:pointer; font-weight:600; font-family:inherit">
+                ✨ Executar Comando
+              </button>
+              <span id="planilha-status" style="font-size:0.875rem"></span>
+            </div>
+          </div>
+
+          <!-- Resultado -->
+          <div id="planilha-resultado" style="display:none">
+            <div class="card">
+              <div id="planilha-resumo" style="font-size:0.9rem; line-height:1.6; margin-bottom:1rem"></div>
+              <button id="btn-download-planilha" style="display:none; background:var(--success); color:#fff; padding:0.5rem 1.25rem; border:none; border-radius:8px; cursor:pointer; font-weight:600; font-family:inherit; margin-bottom:1rem">
+                ⬇️ Baixar Excel
+              </button>
+              <div id="planilha-preview"></div>
+            </div>
           </div>
         </div>
       </div>
@@ -2835,6 +2891,121 @@ async function uploadContratoModelo() {
     btn.textContent = '📤 Fazer Upload do Modelo';
     btn.style.opacity = '1';
   }
+}
+
+// ─── PLANILHAS ────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  const inputExcel = document.getElementById('input-planilha-excel');
+  if (inputExcel) {
+    inputExcel.addEventListener('change', e => {
+      const file = e.target.files[0];
+      const nomeEl = document.getElementById('planilha-excel-nome');
+      if (nomeEl) nomeEl.textContent = file ? `📎 ${file.name} (${Math.round(file.size / 1024)} KB)` : '';
+    });
+  }
+});
+
+async function executarComandoPlanilha() {
+  const comando = (document.getElementById('planilha-comando')?.value || '').trim();
+  if (!comando) { showToast('Digite um comando primeiro.', 'error'); return; }
+
+  const inputExcel = document.getElementById('input-planilha-excel');
+  const sheetsUrl  = (document.getElementById('input-sheets-url')?.value || '').trim();
+  const arquivo    = inputExcel?.files[0];
+  const tipo       = sheetsUrl ? 'sheets' : 'excel';
+
+  if (tipo === 'excel' && !arquivo) { showToast('Selecione um arquivo Excel ou informe a URL do Google Sheets.', 'error'); return; }
+
+  const btn      = document.getElementById('btn-executar-planilha');
+  const statusEl = document.getElementById('planilha-status');
+  btn.disabled   = true;
+  btn.textContent = '⏳ Processando...';
+  statusEl.textContent = '';
+  document.getElementById('planilha-resultado').style.display = 'none';
+
+  try {
+    let arquivoBase64 = '';
+    if (arquivo) {
+      arquivoBase64 = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload  = () => resolve(reader.result.split(',')[1]);
+        reader.onerror = reject;
+        reader.readAsDataURL(arquivo);
+      });
+    }
+
+    const res = await fetch(BASE_URL + '/ats-assistente-planilha', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tipo, comando, arquivo_base64: arquivoBase64, sheets_url: sheetsUrl }),
+      signal: AbortSignal.timeout(60000)
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+      document.getElementById('planilha-resultado').style.display = 'block';
+      document.getElementById('planilha-resumo').innerHTML =
+        '<strong>' + (data.acao || '') + '</strong>' +
+        (data.resumo ? '<br>' + data.resumo : '');
+
+      const linhas = data.linhas || [];
+      const preview = document.getElementById('planilha-preview');
+      const btnDown = document.getElementById('btn-download-planilha');
+
+      if (linhas.length > 0) {
+        const cols = Object.keys(linhas[0]);
+        const dez  = linhas.slice(0, 10);
+        let html = '<div style="overflow-x:auto;margin-top:1rem"><table style="width:100%;border-collapse:collapse;font-size:0.8rem">';
+        html += '<thead><tr>' + cols.map(c =>
+          `<th style="padding:6px 8px;background:var(--surface3);border:1px solid var(--border);text-align:left;white-space:nowrap">${c}</th>`
+        ).join('') + '</tr></thead>';
+        html += '<tbody>' + dez.map(row =>
+          '<tr>' + cols.map(c =>
+            `<td style="padding:6px 8px;border:1px solid var(--border)">${row[c] ?? ''}</td>`
+          ).join('') + '</tr>'
+        ).join('') + '</tbody></table>';
+        if (linhas.length > 10)
+          html += `<p style="color:var(--muted);font-size:0.8rem;margin-top:0.5rem">Mostrando 10 de ${linhas.length} linhas</p>`;
+        html += '</div>';
+        preview.innerHTML = html;
+
+        btnDown.style.display = 'inline-block';
+        btnDown.onclick = () => baixarExcel(linhas, 'ats-planilha.xlsx');
+      } else {
+        preview.innerHTML = '';
+        btnDown.style.display = 'none';
+      }
+
+      statusEl.textContent = '✅ Comando executado com sucesso!';
+      statusEl.style.color = 'var(--success)';
+    } else {
+      throw new Error(data.erro || 'Falha');
+    }
+  } catch (err) {
+    statusEl.textContent = '❌ Erro ao executar comando. Tente novamente.';
+    statusEl.style.color = 'var(--danger)';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '✨ Executar Comando';
+  }
+}
+
+function baixarExcel(linhas, nomeArquivo) {
+  if (!linhas || linhas.length === 0) return;
+  const cols = Object.keys(linhas[0]);
+  const csvRows = [
+    cols.join(','),
+    ...linhas.map(r => cols.map(c => '"' + String(r[c] ?? '').replace(/"/g, '""') + '"').join(','))
+  ];
+  const csv  = '﻿' + csvRows.join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = nomeArquivo.replace('.xlsx', '.csv');
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 // ─── BOOT ─────────────────────────────────────────────────────────
