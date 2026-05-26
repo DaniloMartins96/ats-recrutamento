@@ -3284,12 +3284,12 @@ async function carregarTestes() {
   body.innerHTML = '<div class="empty-state"><p>Carregando...</p></div>';
   try {
     const r    = await fetch(BASE_URL + '/ats-testes-lista');
-    const data = await r.json();
+    const data = r.ok ? await r.json() : {};
     testes = Array.isArray(data) ? data : (data.testes_tecnicos || data.testes || []);
-    renderTestes();
   } catch {
-    body.innerHTML = '<div class="empty-state"><p>Erro ao carregar testes.</p></div>';
+    testes = [];
   }
+  renderTestes();
 }
 
 function renderTestes() {
