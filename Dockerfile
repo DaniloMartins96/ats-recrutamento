@@ -4,4 +4,5 @@ COPY candidatura.html /usr/share/nginx/html/candidatura.html
 COPY admin.html /usr/share/nginx/html/admin.html
 COPY admissao.html /usr/share/nginx/html/admissao.html
 COPY login.html /usr/share/nginx/html/login.html
+COPY vagas.html /usr/share/nginx/html/vagas.html
 EXPOSE 80

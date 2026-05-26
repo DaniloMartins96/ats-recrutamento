@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Vagas abertas — candidate-se agora.">
+<title>Vagas — TechRecruit AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0a0f;--surface:#13131a;--surface2:#1a1a24;--surface3:#22222f;
+  --border:#2a2a3a;--accent:#6c63ff;--accent2:#a78bfa;--accent-dim:#6c63ff1a;
+  --text:#e2e2f0;--muted:#6b6b8a;--danger:#ff4d6d;--success:#10b981;--warn:#f59e0b;
+  --remote:#10b981;--hybrid:#f59e0b;--onsite:#3b82f6;
+  --header-h:72px;--sidebar-w:260px;
+}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased;min-height:100vh}
+
+/* ── BG ── */
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(ellipse 80% 60% at 10% 0%,#6c63ff14 0%,transparent 55%),
+             radial-gradient(ellipse 60% 50% at 90% 100%,#a78bfa0e 0%,transparent 55%)}
+body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:radial-gradient(circle,#2a2a3a 1px,transparent 1px);
+  background-size:36px 36px;opacity:.25}
+
+/* ── HEADER ── */
+.site-header{
+  position:fixed;top:0;left:0;right:0;height:var(--header-h);z-index:100;
+  background:rgba(10,10,15,.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border-bottom:1px solid rgba(108,99,255,.18);
+  display:flex;align-items:center;padding:0 32px;gap:16px;
+}
+.header-brand{display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit;flex-shrink:0}
+.header-logo-img{height:36px;width:36px;object-fit:contain;border-radius:10px;display:none}
+.header-logo-icon{
+  width:36px;height:36px;border-radius:10px;flex-shrink:0;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 0 16px #6c63ff44;
+}
+.header-logo-icon svg{width:18px;height:18px;fill:#fff}
+.header-brand-text{}
+.header-brand-name{font-size:16px;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1.2}
+.header-brand-slogan{font-size:11px;color:var(--muted);line-height:1.2}
+.header-spacer{flex:1}
+.header-counter{
+  display:flex;align-items:center;gap:8px;padding:6px 14px;
+  background:var(--accent-dim);border:1px solid rgba(108,99,255,.3);border-radius:20px;
+  font-size:12px;font-weight:600;color:var(--accent2);white-space:nowrap;
+}
+.header-counter .dot{width:7px;height:7px;border-radius:50%;background:var(--success);animation:pulse-dot 2s infinite}
+@keyframes pulse-dot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.6;transform:scale(.8)}}
+.btn-candidato{
+  padding:9px 20px;background:linear-gradient(135deg,var(--accent),var(--accent2));
+  border:none;border-radius:10px;color:#fff;font-size:13px;font-weight:700;
+  cursor:pointer;font-family:inherit;text-decoration:none;display:flex;align-items:center;gap:6px;
+  white-space:nowrap;box-shadow:0 4px 16px #6c63ff33;transition:opacity .2s,transform .1s;
+}
+.btn-candidato:hover{opacity:.88}
+.btn-candidato:active{transform:scale(.97)}
+.mobile-filter-btn{display:none;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);cursor:pointer;font-family:inherit;font-size:13px;gap:6px;align-items:center}
+
+/* ── HERO ── */
+.hero{
+  position:relative;z-index:1;
+  padding:calc(var(--header-h) + 56px) 32px 48px;
+  text-align:center;max-width:760px;margin:0 auto;
+}
+.hero-tag{display:inline-flex;align-items:center;gap:6px;padding:5px 14px;background:var(--accent-dim);border:1px solid rgba(108,99,255,.3);border-radius:20px;font-size:12px;font-weight:600;color:var(--accent2);margin-bottom:20px}
+.hero h1{font-size:clamp(2rem,5vw,3.2rem);font-weight:900;line-height:1.1;letter-spacing:-.04em;margin-bottom:14px}
+.hero h1 .grad{background:linear-gradient(135deg,var(--accent),var(--accent2),#ec4899);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero-sub{font-size:16px;color:var(--muted);max-width:520px;margin:0 auto 32px;line-height:1.6}
+
+/* search */
+.search-wrap{position:relative;max-width:540px;margin:0 auto 20px}
+.search-wrap svg{position:absolute;left:16px;top:50%;transform:translateY(-50%);color:var(--muted);width:18px;height:18px;pointer-events:none}
+#search-input{
+  width:100%;padding:14px 16px 14px 46px;
+  background:rgba(26,26,36,.9);border:1px solid var(--border);border-radius:12px;
+  color:var(--text);font-size:15px;font-family:inherit;outline:none;
+  transition:border-color .2s,box-shadow .2s;
+}
+#search-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(108,99,255,.15)}
+#search-input::placeholder{color:var(--muted)}
+
+/* pills */
+.pills{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.pill{padding:7px 18px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s}
+.pill:hover{border-color:var(--accent2);color:var(--accent2)}
+.pill.active{background:var(--accent-dim);border-color:var(--accent);color:var(--accent2)}
+
+/* ── LAYOUT PRINCIPAL ── */
+.main-layout{
+  position:relative;z-index:1;
+  display:grid;grid-template-columns:var(--sidebar-w) 1fr;
+  gap:24px;max-width:1280px;margin:0 auto;padding:0 32px 64px;
+}
+
+/* ── SIDEBAR ── */
+.sidebar{position:sticky;top:calc(var(--header-h) + 16px);height:fit-content;align-self:start}
+.sidebar-card{background:rgba(19,19,26,.8);backdrop-filter:blur(12px);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:16px}
+.sidebar-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:14px}
+.filter-group{display:flex;flex-direction:column;gap:10px}
+.filter-check{display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px;color:var(--text);padding:4px 0;transition:color .15s}
+.filter-check:hover{color:var(--accent2)}
+.filter-check input[type=checkbox]{width:16px;height:16px;accent-color:var(--accent);cursor:pointer;flex-shrink:0}
+.filter-count{margin-left:auto;font-size:11px;color:var(--muted);background:var(--surface3);padding:1px 7px;border-radius:10px}
+.filter-clear{width:100%;padding:8px;background:transparent;border:1px solid var(--border);border-radius:8px;color:var(--muted);font-family:inherit;font-size:12px;cursor:pointer;margin-top:4px;transition:all .2s}
+.filter-clear:hover{border-color:var(--danger);color:var(--danger)}
+
+/* salary range */
+.salary-opts{display:flex;flex-direction:column;gap:8px}
+.salary-opt{display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px;color:var(--text);padding:4px 0;transition:color .15s}
+.salary-opt:hover{color:var(--accent2)}
+.salary-opt input[type=radio]{accent-color:var(--accent);cursor:pointer;flex-shrink:0}
+
+/* ── JOBS AREA ── */
+.jobs-area{}
+.jobs-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px}
+.jobs-count{font-size:13px;color:var(--muted)}
+.jobs-count strong{color:var(--text);font-weight:700}
+.sort-select{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 12px;color:var(--text);font-family:inherit;font-size:13px;cursor:pointer;outline:none}
+
+/* cards grid */
+.jobs-grid{display:grid;gap:16px}
+
+/* job card */
+.job-card{
+  background:rgba(19,19,26,.75);backdrop-filter:blur(10px);
+  border:1px solid var(--border);border-radius:16px;padding:22px 24px;
+  cursor:pointer;transition:border-color .2s,transform .2s,box-shadow .2s;
+  position:relative;overflow:hidden;
+}
+.job-card::before{content:'';position:absolute;inset:0;opacity:0;transition:opacity .3s;border-radius:16px;background:linear-gradient(135deg,rgba(108,99,255,.06),rgba(167,139,250,.04))}
+.job-card:hover{border-color:rgba(108,99,255,.5);transform:translateY(-2px);box-shadow:0 8px 32px rgba(108,99,255,.15)}
+.job-card:hover::before{opacity:1}
+
+.card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px}
+.card-badges{display:flex;gap:6px;flex-wrap:wrap}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:6px;font-size:11px;font-weight:700;letter-spacing:.03em}
+.badge-remote{background:rgba(16,185,129,.15);color:var(--remote);border:1px solid rgba(16,185,129,.3)}
+.badge-hybrid{background:rgba(245,158,11,.15);color:var(--hybrid);border:1px solid rgba(245,158,11,.3)}
+.badge-onsite{background:rgba(59,130,246,.15);color:var(--onsite);border:1px solid rgba(59,130,246,.3)}
+.badge-tipo{background:var(--surface3);color:var(--muted);border:1px solid var(--border);font-weight:600}
+.badge-new{background:rgba(236,72,153,.15);color:#ec4899;border:1px solid rgba(236,72,153,.3)}
+
+.card-date{font-size:11px;color:var(--muted);flex-shrink:0;white-space:nowrap;margin-top:2px}
+
+.card-title{font-size:17px;font-weight:700;color:var(--text);margin-bottom:6px;line-height:1.3;letter-spacing:-.02em}
+.card-meta{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:14px}
+.card-meta-item{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted)}
+.card-meta-item svg{width:13px;height:13px;flex-shrink:0}
+
+.card-bottom{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;padding-top:14px;border-top:1px solid var(--border)}
+.card-salary{font-size:14px;font-weight:700;color:var(--accent2)}
+.card-salary-label{font-size:11px;color:var(--muted);font-weight:400}
+.card-candidates{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:5px}
+.btn-apply{
+  padding:9px 20px;background:linear-gradient(135deg,var(--accent),var(--accent2));
+  border:none;border-radius:9px;color:#fff;font-size:13px;font-weight:700;
+  cursor:pointer;font-family:inherit;text-decoration:none;display:inline-flex;
+  align-items:center;gap:6px;transition:opacity .2s,transform .1s;flex-shrink:0;
+  box-shadow:0 4px 12px #6c63ff30;
+}
+.btn-apply:hover{opacity:.88}
+.btn-apply:active{transform:scale(.97)}
+
+/* ── EMPTY STATE ── */
+.empty-state{
+  grid-column:1/-1;text-align:center;padding:80px 24px;
+  display:flex;flex-direction:column;align-items:center;gap:16px;
+}
+.empty-icon{width:72px;height:72px;border-radius:50%;background:var(--surface2);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:28px}
+.empty-state h3{font-size:20px;font-weight:700;color:var(--text)}
+.empty-state p{color:var(--muted);max-width:340px;line-height:1.6}
+.btn-clear-filters{padding:9px 22px;background:var(--accent-dim);border:1px solid rgba(108,99,255,.4);border-radius:9px;color:var(--accent2);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s}
+.btn-clear-filters:hover{background:rgba(108,99,255,.2)}
+
+/* ── LOADING ── */
+.skeleton{background:linear-gradient(90deg,var(--surface) 25%,var(--surface2) 50%,var(--surface) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:8px}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.skeleton-card{background:rgba(19,19,26,.75);border:1px solid var(--border);border-radius:16px;padding:22px 24px;display:flex;flex-direction:column;gap:12px}
+
+/* ── FOOTER ── */
+.site-footer{
+  position:relative;z-index:1;border-top:1px solid var(--border);
+  padding:32px;text-align:center;margin-top:24px;
+}
+.footer-inner{max-width:1280px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px}
+.footer-brand{font-size:14px;font-weight:700;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.footer-links{display:flex;gap:20px;font-size:13px}
+.footer-links a{color:var(--muted);text-decoration:none;transition:color .2s}
+.footer-links a:hover{color:var(--accent2)}
+.footer-copy{font-size:12px;color:var(--muted)}
+
+/* ── SIDEBAR MOBILE OVERLAY ── */
+.sidebar-overlay{display:none;position:fixed;inset:0;background:#00000080;z-index:200;backdrop-filter:blur(4px)}
+.sidebar-overlay.open{display:block}
+
+/* ── COUNTER ANIMATION ── */
+@keyframes countUp{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.count-anim{animation:countUp .4s ease}
+
+/* ── RESPONSIVE ── */
+@media(max-width:900px){
+  .main-layout{grid-template-columns:1fr;padding:0 16px 48px}
+  .sidebar{
+    position:fixed;top:0;left:0;bottom:0;width:min(320px,85vw);
+    background:var(--surface);z-index:300;padding:80px 16px 24px;
+    overflow-y:auto;transform:translateX(-110%);transition:transform .3s ease;
+    border-right:1px solid var(--border);
+  }
+  .sidebar.open{transform:translateX(0)}
+  .mobile-filter-btn{display:flex}
+  .hero{padding:calc(var(--header-h) + 32px) 16px 32px}
+  .site-header{padding:0 16px}
+}
+@media(max-width:600px){
+  .hero h1{font-size:1.8rem}
+  .header-counter{display:none}
+  .footer-inner{flex-direction:column;text-align:center}
+}
+
+/* ── FADE IN ── */
+@keyframes fadeInUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.job-card{animation:fadeInUp .3s ease both}
+</style>
+</head>
+<body>
+
+<!-- ══ HEADER ══ -->
+<header class="site-header">
+  <a href="vagas.html" class="header-brand" id="header-brand">
+    <img class="header-logo-img" id="header-logo-img" src="" alt="">
+    <div class="header-logo-icon" id="header-logo-icon">
+      <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+    </div>
+    <div class="header-brand-text">
+      <div class="header-brand-name" id="header-brand-name">TechRecruit AI</div>
+      <div class="header-brand-slogan" id="header-brand-slogan">Plataforma de Recrutamento</div>
+    </div>
+  </a>
+  <div class="header-spacer"></div>
+  <div class="header-counter" id="header-counter" style="display:none">
+    <span class="dot"></span>
+    <span id="counter-num">0</span> vagas abertas
+  </div>
+  <button class="mobile-filter-btn" id="mobile-filter-btn" onclick="toggleSidebar()">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="14" y2="12"/><line x1="4" y1="18" x2="10" y2="18"/></svg>
+    Filtros
+  </button>
+  <a href="candidatura.html" class="btn-candidato">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    Área do Candidato
+  </a>
+</header>
+
+<!-- ══ HERO ══ -->
+<section class="hero">
+  <div class="hero-tag">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+    Oportunidades em aberto
+  </div>
+  <h1>Faça parte do<br><span class="grad">nosso time</span></h1>
+  <p class="hero-sub" id="hero-sub">Encontre a vaga ideal e candidate-se em minutos. Nossa IA analisa seu perfil automaticamente.</p>
+
+  <!-- busca -->
+  <div class="search-wrap">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" id="search-input" placeholder="Buscar por título, área ou habilidade..." oninput="filtrarVagas()">
+  </div>
+
+  <!-- pills modalidade -->
+  <div class="pills" id="pills-modalidade">
+    <button class="pill active" data-modal="" onclick="setPillModal(this,'')">Todos</button>
+    <button class="pill" data-modal="Remoto"     onclick="setPillModal(this,'Remoto')">🌐 Remoto</button>
+    <button class="pill" data-modal="Híbrido"    onclick="setPillModal(this,'Híbrido')">🔀 Híbrido</button>
+    <button class="pill" data-modal="Presencial" onclick="setPillModal(this,'Presencial')">🏢 Presencial</button>
+  </div>
+</section>
+
+<!-- ══ MAIN LAYOUT ══ -->
+<div class="main-layout">
+
+  <!-- SIDEBAR OVERLAY (mobile) -->
+  <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+  <!-- SIDEBAR FILTROS -->
+  <aside class="sidebar" id="sidebar">
+    <!-- Departamento -->
+    <div class="sidebar-card">
+      <div class="sidebar-title">Departamento</div>
+      <div class="filter-group" id="filter-dept"></div>
+    </div>
+
+    <!-- Senioridade -->
+    <div class="sidebar-card">
+      <div class="sidebar-title">Senioridade</div>
+      <div class="filter-group" id="filter-senior">
+        <label class="filter-check"><input type="checkbox" value="Júnior" onchange="filtrarVagas()"> Júnior <span class="filter-count" id="fc-junior"></span></label>
+        <label class="filter-check"><input type="checkbox" value="Pleno"  onchange="filtrarVagas()"> Pleno  <span class="filter-count" id="fc-pleno"></span></label>
+        <label class="filter-check"><input type="checkbox" value="Sênior" onchange="filtrarVagas()"> Sênior <span class="filter-count" id="fc-senior"></span></label>
+      </div>
+    </div>
+
+    <!-- Faixa salarial -->
+    <div class="sidebar-card">
+      <div class="sidebar-title">Faixa Salarial</div>
+      <div class="salary-opts" id="filter-salary">
+        <label class="salary-opt"><input type="radio" name="salary" value=""        onchange="filtrarVagas()" checked> Todos</label>
+        <label class="salary-opt"><input type="radio" name="salary" value="0-5000"  onchange="filtrarVagas()"> Até R$ 5.000</label>
+        <label class="salary-opt"><input type="radio" name="salary" value="5000-10000"  onchange="filtrarVagas()"> R$ 5.000 – R$ 10.000</label>
+        <label class="salary-opt"><input type="radio" name="salary" value="10000-20000" onchange="filtrarVagas()"> R$ 10.000 – R$ 20.000</label>
+        <label class="salary-opt"><input type="radio" name="salary" value="20000-9999999" onchange="filtrarVagas()"> Acima de R$ 20.000</label>
+        <label class="salary-opt"><input type="radio" name="salary" value="combinar"    onchange="filtrarVagas()"> A combinar</label>
+      </div>
+    </div>
+
+    <button class="filter-clear" onclick="limparFiltros()">✕ Limpar todos os filtros</button>
+  </aside>
+
+  <!-- JOBS AREA -->
+  <div class="jobs-area">
+    <div class="jobs-header">
+      <div class="jobs-count" id="jobs-count"><strong>—</strong> vagas encontradas</div>
+      <select class="sort-select" id="sort-select" onchange="filtrarVagas()">
+        <option value="recentes">Mais recentes</option>
+        <option value="titulo">Título A-Z</option>
+        <option value="candidatos">Mais candidatos</option>
+      </select>
+    </div>
+    <div class="jobs-grid" id="jobs-grid">
+      <!-- Skeleton loading -->
+      <div class="skeleton-card"><div class="skeleton" style="height:16px;width:60%"></div><div class="skeleton" style="height:22px;width:80%"></div><div class="skeleton" style="height:14px;width:50%"></div><div class="skeleton" style="height:40px"></div></div>
+      <div class="skeleton-card"><div class="skeleton" style="height:16px;width:55%"></div><div class="skeleton" style="height:22px;width:75%"></div><div class="skeleton" style="height:14px;width:45%"></div><div class="skeleton" style="height:40px"></div></div>
+      <div class="skeleton-card"><div class="skeleton" style="height:16px;width:65%"></div><div class="skeleton" style="height:22px;width:70%"></div><div class="skeleton" style="height:14px;width:55%"></div><div class="skeleton" style="height:40px"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ FOOTER ══ -->
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="footer-brand" id="footer-brand">TechRecruit AI</div>
+    <div class="footer-links">
+      <a href="mailto:" id="footer-email">contato@empresa.com</a>
+      <a href="#" id="footer-site" target="_blank" rel="noopener">Site da empresa</a>
+    </div>
+    <div class="footer-copy">© <span id="footer-year"></span> Todos os direitos reservados.</div>
+  </div>
+</footer>
+
+<script>
+const MARCA_URL  = 'https://webhook.danns.com.br/webhook/ats-marca';
+const VAGAS_URL  = 'https://webhook.danns.com.br/webhook/ats-vagas-publicas';
+
+let _todasVagas   = [];
+let _pillModal    = '';
+document.getElementById('footer-year').textContent = new Date().getFullYear();
+
+// ── MARCA ──────────────────────────────────────────────────────────
+async function carregarMarca() {
+  try {
+    const res  = await fetch(MARCA_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ action:'get' }) });
+    if (!res.ok) return;
+    const data = await res.json();
+    const m    = data.marca;
+    if (!m) return;
+    const nome = m.nome_empresa || 'TechRecruit AI';
+    // Header
+    document.getElementById('header-brand-name').textContent  = nome;
+    if (m.slogan) document.getElementById('header-brand-slogan').textContent = m.slogan;
+    if (m.slogan) document.getElementById('hero-sub').textContent = m.slogan;
+    document.title = 'Vagas — ' + nome;
+    // Footer
+    document.getElementById('footer-brand').textContent = nome;
+    if (m.email_contato) { const el = document.getElementById('footer-email'); el.textContent = m.email_contato; el.href = 'mailto:' + m.email_contato; }
+    if (m.site) { const el = document.getElementById('footer-site'); el.textContent = m.site.replace(/^https?:\/\//, ''); el.href = m.site; }
+    // Logo
+    if (m.logo_base64) {
+      const img  = document.getElementById('header-logo-img');
+      const icon = document.getElementById('header-logo-icon');
+      img.src = m.logo_base64; img.style.display = 'block'; icon.style.display = 'none';
+    }
+    // CSS vars
+    const r = document.documentElement.style;
+    if (m.cor_primaria)   r.setProperty('--accent',  m.cor_primaria);
+    if (m.cor_secundaria) r.setProperty('--accent2', m.cor_secundaria);
+    if (m.cor_acento)     r.setProperty('--success', m.cor_acento);
+  } catch {}
+}
+
+// ── VAGAS ──────────────────────────────────────────────────────────
+async function carregarVagas() {
+  try {
+    const res  = await fetch(VAGAS_URL + '?t=' + Date.now(), { signal: AbortSignal.timeout(12000) });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    _todasVagas = Array.isArray(data) ? data : (data.vagas || data.data || []);
+  } catch {
+    _todasVagas = [];
+  }
+  inicializarFiltros();
+  filtrarVagas();
+  // Contador animado no header
+  const n = _todasVagas.length;
+  const cEl = document.getElementById('header-counter');
+  if (n > 0) {
+    cEl.style.display = 'flex';
+    animarContador('counter-num', n);
+  }
+}
+
+function animarContador(id, alvo) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  let cur = 0;
+  const step = Math.max(1, Math.round(alvo / 20));
+  const iv = setInterval(() => {
+    cur = Math.min(cur + step, alvo);
+    el.textContent = cur;
+    el.classList.toggle('count-anim', true);
+    if (cur >= alvo) clearInterval(iv);
+  }, 40);
+}
+
+// ── FILTROS DINÂMICOS ──────────────────────────────────────────────
+function inicializarFiltros() {
+  // Departamentos únicos
+  const deptos = [...new Set(_todasVagas.map(v => v.departamento || v.area || '').filter(Boolean))].sort();
+  const deptEl = document.getElementById('filter-dept');
+  deptEl.innerHTML = deptos.map(d =>
+    `<label class="filter-check"><input type="checkbox" value="${d}" onchange="filtrarVagas()"> ${d} <span class="filter-count"></span></label>`
+  ).join('');
+  if (!deptos.length) deptEl.closest('.sidebar-card').style.display = 'none';
+
+  // Contagens iniciais de senioridade
+  atualizarContagensSenior(_todasVagas);
+}
+
+function atualizarContagensSenior(vagas) {
+  ['Júnior','Pleno','Sênior'].forEach(s => {
+    const id = 'fc-' + s.toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu,'').toLowerCase();
+    const el = document.getElementById(id);
+    const n  = vagas.filter(v => (v.senioridade||'').toLowerCase() === s.toLowerCase()).length;
+    if (el) el.textContent = n || '';
+  });
+}
+
+// ── FILTRAR ────────────────────────────────────────────────────────
+function filtrarVagas() {
+  const busca   = (document.getElementById('search-input').value || '').toLowerCase().trim();
+  const sort    = document.getElementById('sort-select').value;
+  const salary  = document.querySelector('input[name=salary]:checked')?.value || '';
+
+  // Checkboxes dept
+  const deptosSel = [...document.querySelectorAll('#filter-dept input:checked')].map(i => i.value);
+  // Checkboxes senior
+  const seniorSel = [...document.querySelectorAll('#filter-senior input:checked')].map(i => i.value);
+
+  let resultado = _todasVagas.filter(v => {
+    const modal = v.modalidade || '';
+    const dept  = v.departamento || v.area || '';
+    const sen   = v.senioridade  || '';
+    const texto = [v.titulo || '', dept, v.requisitos || '', v.descricao || '', v.localizacao || ''].join(' ').toLowerCase();
+
+    if (busca      && !texto.includes(busca))           return false;
+    if (_pillModal && modal !== _pillModal)              return false;
+    if (deptosSel.length && !deptosSel.includes(dept))  return false;
+    if (seniorSel.length && !seniorSel.some(s => sen.toLowerCase() === s.toLowerCase())) return false;
+    if (salary) {
+      if (salary === 'combinar') {
+        if (v.salario_min || v.salario_max) return false;
+      } else {
+        const [mn, mx] = salary.split('-').map(Number);
+        const vMin = v.salario_min || 0;
+        const vMax = v.salario_max || v.salario_min || 0;
+        if (!vMin && !vMax) return false;
+        if (vMax < mn || vMin > mx) return false;
+      }
+    }
+    return true;
+  });
+
+  // Ordenar
+  if (sort === 'titulo') resultado.sort((a,b) => (a.titulo||'').localeCompare(b.titulo||''));
+  else if (sort === 'candidatos') resultado.sort((a,b) => (b.candidatos_count||0) - (a.candidatos_count||0));
+  else resultado.sort((a,b) => new Date(b.criado_em||0) - new Date(a.criado_em||0));
+
+  renderizarCards(resultado);
+  document.getElementById('jobs-count').innerHTML = `<strong>${resultado.length}</strong> vaga${resultado.length !== 1 ? 's' : ''} encontrada${resultado.length !== 1 ? 's' : ''}`;
+  atualizarContagensSenior(resultado);
+}
+
+function setPillModal(btn, valor) {
+  _pillModal = valor;
+  document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  filtrarVagas();
+}
+
+function limparFiltros() {
+  document.getElementById('search-input').value = '';
+  document.querySelectorAll('#filter-dept input, #filter-senior input').forEach(i => i.checked = false);
+  document.querySelector('input[name=salary][value=""]').checked = true;
+  _pillModal = '';
+  document.querySelectorAll('.pill').forEach((p,i) => p.classList.toggle('active', i === 0));
+  filtrarVagas();
+}
+
+// ── RENDER CARDS ───────────────────────────────────────────────────
+function renderizarCards(vagas) {
+  const grid = document.getElementById('jobs-grid');
+  if (!vagas.length) {
+    grid.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">🔍</div>
+        <h3>Nenhuma vaga encontrada</h3>
+        <p>Tente ajustar os filtros ou a busca para encontrar oportunidades.</p>
+        <button class="btn-clear-filters" onclick="limparFiltros()">Limpar filtros</button>
+      </div>`;
+    return;
+  }
+  grid.innerHTML = vagas.map((v, i) => renderCard(v, i)).join('');
+}
+
+function renderCard(v, idx) {
+  const modal     = v.modalidade || '';
+  const dept      = v.departamento || v.area || '';
+  const senior    = v.senioridade  || '';
+  const local     = v.localizacao  || (modal === 'Remoto' ? 'Remoto' : '—');
+  const contrato  = v.tipo_contrato || v.contrato || '';
+  const cands     = v.candidatos_count || v.candidatos || 0;
+  const salMin    = v.salario_min;
+  const salMax    = v.salario_max;
+  const criado    = v.criado_em || v.data_publicacao || '';
+  const titulo    = v.titulo || 'Vaga';
+  const id        = v.id || v.vaga_id || '';
+  const isNew     = criado && (Date.now() - new Date(criado).getTime()) < 7 * 86400000;
+
+  const salarioTxt = salMin
+    ? 'R$ ' + Number(salMin).toLocaleString('pt-BR') + (salMax ? ' – R$ ' + Number(salMax).toLocaleString('pt-BR') : '+')
+    : 'A combinar';
+
+  const modalBadge = modal === 'Remoto'     ? 'badge-remote'
+                   : modal === 'Híbrido'    ? 'badge-hybrid'
+                   : modal === 'Presencial' ? 'badge-onsite'
+                   : 'badge-tipo';
+
+  const delay = Math.min(idx * 50, 400);
+  const candURL = `candidatura.html?vaga_id=${encodeURIComponent(id)}&titulo=${encodeURIComponent(titulo)}&departamento=${encodeURIComponent(dept)}&senioridade=${encodeURIComponent(senior)}&modalidade=${encodeURIComponent(modal)}`;
+
+  return `
+  <div class="job-card" style="animation-delay:${delay}ms" onclick="window.location='${candURL}'">
+    <div class="card-top">
+      <div class="card-badges">
+        ${modal ? `<span class="badge ${modalBadge}">${modal === 'Remoto' ? '🌐' : modal === 'Híbrido' ? '🔀' : '🏢'} ${modal}</span>` : ''}
+        ${contrato ? `<span class="badge badge-tipo">${contrato}</span>` : ''}
+        ${isNew    ? `<span class="badge badge-new">✨ Nova</span>` : ''}
+      </div>
+      <span class="card-date">${dataRelativa(criado)}</span>
+    </div>
+
+    <div class="card-title">${titulo}</div>
+    <div class="card-meta">
+      ${dept ? `<span class="card-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>${dept}</span>` : ''}
+      ${senior ? `<span class="card-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>${senior}</span>` : ''}
+      <span class="card-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>${local}</span>
+    </div>
+
+    <div class="card-bottom">
+      <div>
+        <div class="card-salary">${salarioTxt}</div>
+        ${salMin ? '<div class="card-salary-label">Faixa salarial</div>' : ''}
+      </div>
+      <div style="display:flex;align-items:center;gap:14px">
+        ${cands ? `<span class="card-candidates"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>${cands} candidato${cands !== 1 ? 's' : ''}</span>` : ''}
+        <a href="${candURL}" class="btn-apply" onclick="event.stopPropagation()">
+          Candidatar-se
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </a>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ── HELPERS ────────────────────────────────────────────────────────
+function dataRelativa(dateStr) {
+  if (!dateStr) return '';
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const dias = Math.floor(diff / 86400000);
+  if (isNaN(dias) || dias < 0) return '';
+  if (dias === 0) return 'Hoje';
+  if (dias === 1) return 'Ontem';
+  if (dias < 7)   return `Há ${dias} dias`;
+  if (dias < 30)  return `Há ${Math.floor(dias / 7)} sem.`;
+  if (dias < 365) return `Há ${Math.floor(dias / 30)} meses`;
+  return `Há ${Math.floor(dias / 365)} ano${Math.floor(dias / 365) > 1 ? 's' : ''}`;
+}
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebar-overlay').classList.toggle('open');
+}
+
+// ── INIT ───────────────────────────────────────────────────────────
+carregarMarca();
+carregarVagas();
+</script>
+</body>
+</html>
