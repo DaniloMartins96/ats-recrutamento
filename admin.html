@@ -431,8 +431,9 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
   <!-- header -->
   <header class="admin-header">
     <div class="header-logo">
-      <span class="dot"></span>
-      TechRecruit AI
+      <img id="brand-logo-img" src="" alt="" style="height:28px;width:28px;object-fit:contain;border-radius:6px;display:none">
+      <span class="dot" id="brand-logo-dot"></span>
+      <span id="brand-nome-header">TechRecruit AI</span>
     </div>
     <div class="header-spacer"></div>
     <div class="header-user">
@@ -669,7 +670,7 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
 
       <!-- Abas internas -->
       <div style="display:flex; gap:0.25rem; margin-bottom:1.5rem; border-bottom:2px solid var(--border); padding-bottom:0; flex-wrap:wrap">
-        <button onclick="abrirAbaConfig('empresa')"     id="cfg-tab-empresa"     class="cfg-tab cfg-tab-ativa">🏢 Empresa</button>
+        <button onclick="abrirAbaConfig('marca')"        id="cfg-tab-marca"        class="cfg-tab cfg-tab-ativa">🎨 Marca</button>
         <button onclick="abrirAbaConfig('contrato')"    id="cfg-tab-contrato"    class="cfg-tab">📄 Contrato</button>
         <button onclick="abrirAbaConfig('ia')"          id="cfg-tab-ia"          class="cfg-tab">🤖 IA &amp; Triagem</button>
         <button onclick="abrirAbaConfig('integracoes')" id="cfg-tab-integracoes" class="cfg-tab">🔗 Integrações</button>
@@ -677,38 +678,112 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
         <button onclick="abrirAbaConfig('planilhas')"   id="cfg-tab-planilhas"   class="cfg-tab">📊 Planilhas</button>
       </div>
 
-      <!-- ABA EMPRESA -->
-      <div id="cfg-painel-empresa" class="cfg-painel">
-        <div class="card" style="max-width:600px">
-          <h3 style="margin-bottom:0.5rem">🏢 Dados da Empresa</h3>
-          <p style="color:var(--muted); font-size:0.875rem; margin-bottom:1.5rem">Informações da empresa exibidas no sistema. Preparado para multi-tenant.</p>
-          <div style="display:grid; gap:1rem">
-            <div>
-              <label style="display:block; font-weight:600; margin-bottom:0.4rem; font-size:0.875rem">Nome da Empresa</label>
-              <input type="text" id="cfg-empresa-nome" placeholder="Ex: Acme Recursos Humanos"
-                style="width:100%; padding:0.6rem 0.75rem; border:1px solid var(--border); border-radius:8px; font-size:0.9rem; box-sizing:border-box; background:var(--surface2); color:var(--text); font-family:inherit">
+      <!-- ABA MARCA -->
+      <div id="cfg-painel-marca" class="cfg-painel">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1.25rem; max-width:860px">
+
+          <!-- Coluna 1: Logo + Identidade -->
+          <div style="display:flex; flex-direction:column; gap:1.25rem">
+            <!-- Logo -->
+            <div class="card">
+              <h3 style="margin-bottom:0.5rem">🖼️ Logo da Empresa</h3>
+              <p style="color:var(--muted); font-size:0.8rem; margin-bottom:1rem">PNG, JPG ou SVG. Aparecerá no menu e no formulário de candidatura.</p>
+              <div id="marca-logo-preview-wrap" style="width:80px;height:80px;border-radius:12px;background:var(--surface2);border:2px dashed var(--border);display:flex;align-items:center;justify-content:center;margin-bottom:1rem;overflow:hidden">
+                <img id="marca-logo-preview" src="" alt="" style="width:100%;height:100%;object-fit:contain;display:none">
+                <span id="marca-logo-placeholder" style="font-size:28px">🏢</span>
+              </div>
+              <input type="file" id="input-marca-logo" accept=".png,.jpg,.jpeg,.svg"
+                onchange="previewMarcaLogo(this)"
+                style="width:100%; padding:0.5rem; border:2px dashed var(--border); border-radius:8px; cursor:pointer; background:var(--surface2); color:var(--text); font-size:0.8rem; box-sizing:border-box">
             </div>
-            <div>
-              <label style="display:block; font-weight:600; margin-bottom:0.4rem; font-size:0.875rem">CNPJ</label>
-              <input type="text" id="cfg-empresa-cnpj" placeholder="00.000.000/0000-00"
-                style="width:100%; padding:0.6rem 0.75rem; border:1px solid var(--border); border-radius:8px; font-size:0.9rem; box-sizing:border-box; background:var(--surface2); color:var(--text); font-family:inherit">
-            </div>
-            <div>
-              <label style="display:block; font-weight:600; margin-bottom:0.4rem; font-size:0.875rem">Endereço</label>
-              <input type="text" id="cfg-empresa-endereco" placeholder="Rua, número, cidade - UF"
-                style="width:100%; padding:0.6rem 0.75rem; border:1px solid var(--border); border-radius:8px; font-size:0.9rem; box-sizing:border-box; background:var(--surface2); color:var(--text); font-family:inherit">
-            </div>
-            <div>
-              <label style="display:block; font-weight:600; margin-bottom:0.4rem; font-size:0.875rem">E-mail de contato</label>
-              <input type="email" id="cfg-empresa-email" placeholder="rh@empresa.com.br"
-                style="width:100%; padding:0.6rem 0.75rem; border:1px solid var(--border); border-radius:8px; font-size:0.9rem; box-sizing:border-box; background:var(--surface2); color:var(--text); font-family:inherit">
+
+            <!-- Identidade -->
+            <div class="card">
+              <h3 style="margin-bottom:1rem">🏢 Identidade</h3>
+              <div style="display:grid; gap:0.85rem">
+                <div>
+                  <label style="display:block; font-weight:600; margin-bottom:0.3rem; font-size:0.8rem">Nome da Empresa</label>
+                  <input type="text" id="marca-nome" placeholder="Ex: Acme Recursos Humanos"
+                    style="width:100%; padding:0.55rem 0.75rem; border:1px solid var(--border); border-radius:8px; font-size:0.875rem; box-sizing:border-box; background:var(--surface2); color:var(--text); font-family:inherit">
+                </div>
+                <div>
+                  <label style="display:block; font-weight:600; margin-bottom:0.3rem; font-size:0.8rem">Slogan</label>
+                  <input type="text" id="marca-slogan" placeholder="Ex: Conectando talentos"
+                    style="width:100%; padding:0.55rem 0.75rem; border:1px solid var(--border); border-radius:8px; font-size:0.875rem; box-sizing:border-box; background:var(--surface2); color:var(--text); font-family:inherit">
+                </div>
+                <div>
+                  <label style="display:block; font-weight:600; margin-bottom:0.3rem; font-size:0.8rem">Site</label>
+                  <input type="url" id="marca-site" placeholder="https://www.empresa.com.br"
+                    style="width:100%; padding:0.55rem 0.75rem; border:1px solid var(--border); border-radius:8px; font-size:0.875rem; box-sizing:border-box; background:var(--surface2); color:var(--text); font-family:inherit">
+                </div>
+                <div>
+                  <label style="display:block; font-weight:600; margin-bottom:0.3rem; font-size:0.8rem">E-mail de contato</label>
+                  <input type="email" id="marca-email" placeholder="rh@empresa.com.br"
+                    style="width:100%; padding:0.55rem 0.75rem; border:1px solid var(--border); border-radius:8px; font-size:0.875rem; box-sizing:border-box; background:var(--surface2); color:var(--text); font-family:inherit">
+                </div>
+              </div>
             </div>
           </div>
-          <div style="display:flex; align-items:center; gap:1rem; margin-top:1.25rem; flex-wrap:wrap">
-            <button onclick="salvarEmpresa()" style="background:var(--accent); color:#fff; padding:0.6rem 1.5rem; border:none; border-radius:8px; cursor:pointer; font-weight:600; font-family:inherit">
-              💾 Salvar Dados da Empresa
-            </button>
-            <span id="cfg-empresa-status" style="font-size:0.875rem"></span>
+
+          <!-- Coluna 2: Cores -->
+          <div style="display:flex; flex-direction:column; gap:1.25rem">
+            <div class="card">
+              <h3 style="margin-bottom:0.5rem">🎨 Cores da Marca</h3>
+              <p style="color:var(--muted); font-size:0.8rem; margin-bottom:1.25rem">Aplicadas em tempo real no sistema e no formulário de candidatura.</p>
+
+              <!-- Preview bolhas -->
+              <div style="display:flex; gap:0.75rem; margin-bottom:1.5rem; align-items:center">
+                <div id="marca-preview-primary"   style="width:48px;height:48px;border-radius:50%;background:#6c63ff;transition:background .2s;box-shadow:0 0 12px #6c63ff66;flex-shrink:0"></div>
+                <div id="marca-preview-secondary" style="width:40px;height:40px;border-radius:50%;background:#a78bfa;transition:background .2s;box-shadow:0 0 10px #a78bfa55;flex-shrink:0"></div>
+                <div id="marca-preview-accent"    style="width:32px;height:32px;border-radius:50%;background:#10b981;transition:background .2s;box-shadow:0 0 8px #10b98155;flex-shrink:0"></div>
+                <span style="font-size:0.75rem; color:var(--muted); margin-left:0.5rem">Cor Principal · Secundária · Destaque</span>
+              </div>
+
+              <div style="display:grid; gap:1rem">
+                <div style="display:flex; align-items:center; gap:1rem">
+                  <input type="color" id="marca-cor-primaria" value="#6c63ff"
+                    oninput="document.getElementById('marca-preview-primary').style.background=this.value; document.getElementById('marca-preview-primary').style.boxShadow='0 0 12px '+this.value+'66'"
+                    style="width:44px;height:44px;border:none;border-radius:8px;cursor:pointer;padding:2px;background:var(--surface2)">
+                  <div>
+                    <div style="font-weight:600; font-size:0.875rem">Cor Principal</div>
+                    <div style="font-size:0.75rem; color:var(--muted)">Botões, links, destaques</div>
+                  </div>
+                </div>
+                <div style="display:flex; align-items:center; gap:1rem">
+                  <input type="color" id="marca-cor-secundaria" value="#a78bfa"
+                    oninput="document.getElementById('marca-preview-secondary').style.background=this.value; document.getElementById('marca-preview-secondary').style.boxShadow='0 0 10px '+this.value+'55'"
+                    style="width:44px;height:44px;border:none;border-radius:8px;cursor:pointer;padding:2px;background:var(--surface2)">
+                  <div>
+                    <div style="font-weight:600; font-size:0.875rem">Cor Secundária</div>
+                    <div style="font-size:0.75rem; color:var(--muted)">Gradientes, badges</div>
+                  </div>
+                </div>
+                <div style="display:flex; align-items:center; gap:1rem">
+                  <input type="color" id="marca-cor-acento" value="#10b981"
+                    oninput="document.getElementById('marca-preview-accent').style.background=this.value; document.getElementById('marca-preview-accent').style.boxShadow='0 0 8px '+this.value+'55'"
+                    style="width:44px;height:44px;border:none;border-radius:8px;cursor:pointer;padding:2px;background:var(--surface2)">
+                  <div>
+                    <div style="font-weight:600; font-size:0.875rem">Cor de Destaque</div>
+                    <div style="font-size:0.75rem; color:var(--muted)">Sucesso, aprovações</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Botões de ação -->
+            <div class="card">
+              <div style="display:flex; flex-direction:column; gap:0.75rem">
+                <button onclick="salvarMarca()"
+                  style="background:linear-gradient(135deg,var(--accent),var(--accent2)); color:#fff; padding:0.7rem 1.5rem; border:none; border-radius:8px; cursor:pointer; font-weight:700; font-family:inherit; font-size:0.9rem; display:flex; align-items:center; justify-content:center; gap:0.5rem">
+                  💾 Salvar Marca
+                </button>
+                <button onclick="abrirPreviewMarca()"
+                  style="background:transparent; color:var(--accent2); border:1px solid var(--accent2); padding:0.65rem 1.5rem; border-radius:8px; cursor:pointer; font-weight:600; font-family:inherit; font-size:0.875rem">
+                  👁️ Preview
+                </button>
+                <span id="marca-status" style="font-size:0.8rem; text-align:center"></span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -1233,6 +1308,30 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
   </div>
 </div>
 
+<!-- ══════════════ MODAL PREVIEW MARCA ══════════════ -->
+<div id="modal-preview-marca" style="display:none;position:fixed;inset:0;background:#00000090;z-index:2000;display:none;align-items:center;justify-content:center">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:32px;max-width:480px;width:90%;position:relative">
+    <button onclick="document.getElementById('modal-preview-marca').style.display='none'"
+      style="position:absolute;top:12px;right:14px;background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;line-height:1">✕</button>
+    <div id="prev-header" style="display:flex;align-items:center;gap:12px;margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid var(--border)">
+      <img id="prev-logo" src="" alt="" style="height:36px;width:36px;object-fit:contain;border-radius:8px;display:none">
+      <div id="prev-dot" style="width:10px;height:10px;border-radius:50%;flex-shrink:0"></div>
+      <div>
+        <div id="prev-nome" style="font-weight:700;font-size:16px"></div>
+        <div id="prev-slogan" style="font-size:12px;color:var(--muted)"></div>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;margin-bottom:20px">
+      <div id="prev-btn-primary" style="flex:1;padding:10px;border-radius:8px;text-align:center;font-weight:600;font-size:13px;color:#fff">Botão Principal</div>
+      <div id="prev-btn-secondary" style="flex:1;padding:10px;border-radius:8px;text-align:center;font-weight:600;font-size:13px;color:#fff">Botão Secundário</div>
+      <div id="prev-btn-accent" style="flex:1;padding:10px;border-radius:8px;text-align:center;font-weight:600;font-size:13px;color:#fff">Destaque</div>
+    </div>
+    <div style="background:var(--surface2);border-radius:10px;padding:14px;font-size:13px;color:var(--muted)">
+      As cores acima serão aplicadas em botões, badges, links e destaques em todo o sistema. O logo aparecerá no menu lateral e no formulário de candidatura.
+    </div>
+  </div>
+</div>
+
 <!-- ══════════════ TOASTS ══════════════ -->
 <div class="toast-container" id="toasts"></div>
 
@@ -1294,7 +1393,7 @@ function mostrarSecao(nav) {
   document.getElementById('sec-' + nav).classList.add('active');
   if (window.location.hash.replace('#', '') !== nav) window.location.hash = nav;
   if (nav === 'dp' && !admissoes.length) carregarDP();
-  if (nav === 'config') abrirAbaConfig('empresa');
+  if (nav === 'config') abrirAbaConfig('marca');
   if (nav === 'metricas') carregarMetricas();
 }
 
@@ -1309,6 +1408,7 @@ window.addEventListener('hashchange', () => {
 // ─── INIT ─────────────────────────────────────────────────────────
 async function init() {
   loadConfig();
+  carregarMarca().catch(() => {});
   await Promise.all([carregarVagas(), carregarCandidatos()]);
   initTagInputs();
   mostrarSecao(window.location.hash.replace('#', '') || 'vagas');
@@ -2926,16 +3026,125 @@ function abrirAbaConfig(aba) {
   if (painel) painel.style.display = 'block';
   if (tab)    tab.classList.add('cfg-tab-ativa');
   if (aba === 'contrato') carregarInfoContrato();
+  if (aba === 'marca')    carregarMarca();
 }
 
-function salvarEmpresa() {
-  const nome     = (document.getElementById('cfg-empresa-nome')?.value     || '').trim();
-  const cnpj     = (document.getElementById('cfg-empresa-cnpj')?.value     || '').trim();
-  const endereco = (document.getElementById('cfg-empresa-endereco')?.value || '').trim();
-  const email    = (document.getElementById('cfg-empresa-email')?.value    || '').trim();
-  localStorage.setItem('cfg_empresa', JSON.stringify({ nome, cnpj, endereco, email }));
-  const st = document.getElementById('cfg-empresa-status');
-  if (st) { st.textContent = '✅ Salvo!'; st.style.color = 'var(--success)'; setTimeout(() => st.textContent = '', 3000); }
+// ─── MARCA ────────────────────────────────────────────────────────
+let _marcaLogoBase64 = null;
+
+function previewMarcaLogo(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    _marcaLogoBase64 = e.target.result;
+    const img = document.getElementById('marca-logo-preview');
+    const ph  = document.getElementById('marca-logo-placeholder');
+    img.src = _marcaLogoBase64;
+    img.style.display = 'block';
+    if (ph) ph.style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+
+async function carregarMarca() {
+  try {
+    const res  = await fetch(BASE_URL + '/ats-marca', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ action:'get' }) });
+    if (!res.ok) return;
+    const data = await res.json();
+    const m = data.marca;
+    if (!m) return;
+    if (m.nome_empresa)   document.getElementById('marca-nome').value          = m.nome_empresa;
+    if (m.slogan)         document.getElementById('marca-slogan').value        = m.slogan;
+    if (m.site)           document.getElementById('marca-site').value          = m.site;
+    if (m.email_contato)  document.getElementById('marca-email').value         = m.email_contato;
+    if (m.cor_primaria)   { document.getElementById('marca-cor-primaria').value   = m.cor_primaria;   document.getElementById('marca-preview-primary').style.background   = m.cor_primaria; }
+    if (m.cor_secundaria) { document.getElementById('marca-cor-secundaria').value = m.cor_secundaria; document.getElementById('marca-preview-secondary').style.background = m.cor_secundaria; }
+    if (m.cor_acento)     { document.getElementById('marca-cor-acento').value     = m.cor_acento;     document.getElementById('marca-preview-accent').style.background    = m.cor_acento; }
+    if (m.logo_base64) {
+      _marcaLogoBase64 = m.logo_base64;
+      const img = document.getElementById('marca-logo-preview');
+      const ph  = document.getElementById('marca-logo-placeholder');
+      img.src = m.logo_base64;
+      img.style.display = 'block';
+      if (ph) ph.style.display = 'none';
+    }
+    aplicarMarca(m);
+  } catch {}
+}
+
+async function salvarMarca() {
+  const st = document.getElementById('marca-status');
+  st.textContent = 'Salvando...'; st.style.color = 'var(--muted)';
+  const payload = {
+    action:        'save',
+    nome_empresa:  (document.getElementById('marca-nome').value          || '').trim(),
+    slogan:        (document.getElementById('marca-slogan').value        || '').trim(),
+    site:          (document.getElementById('marca-site').value          || '').trim(),
+    email_contato: (document.getElementById('marca-email').value         || '').trim(),
+    cor_primaria:  document.getElementById('marca-cor-primaria').value,
+    cor_secundaria:document.getElementById('marca-cor-secundaria').value,
+    cor_acento:    document.getElementById('marca-cor-acento').value,
+    logo_base64:   _marcaLogoBase64 || null,
+  };
+  try {
+    const res  = await fetch(BASE_URL + '/ats-marca', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+    const data = await res.json();
+    if (res.ok && data.ok !== false) {
+      st.textContent = '✅ Marca salva!'; st.style.color = 'var(--success)';
+      aplicarMarca(payload);
+    } else {
+      st.textContent = '❌ Erro ao salvar.'; st.style.color = 'var(--danger)';
+    }
+  } catch {
+    st.textContent = '❌ Falha de conexão.'; st.style.color = 'var(--danger)';
+  }
+  setTimeout(() => { st.textContent = ''; }, 4000);
+}
+
+function aplicarMarca(marca) {
+  if (!marca) return;
+  const nome = marca.nome_empresa || marca.nome || '';
+  if (nome) {
+    document.title = nome + ' — Admin';
+    const el = document.getElementById('brand-nome-header');
+    if (el) el.textContent = nome;
+  }
+  if (marca.logo_base64) {
+    const img  = document.getElementById('brand-logo-img');
+    const dot  = document.getElementById('brand-logo-dot');
+    if (img) { img.src = marca.logo_base64; img.style.display = 'block'; }
+    if (dot) dot.style.display = 'none';
+  }
+  const r = document.documentElement.style;
+  if (marca.cor_primaria)   r.setProperty('--color-primary',   marca.cor_primaria);
+  if (marca.cor_secundaria) r.setProperty('--color-secondary', marca.cor_secundaria);
+  if (marca.cor_acento)     r.setProperty('--color-accent',    marca.cor_acento);
+}
+
+function abrirPreviewMarca() {
+  const nome        = (document.getElementById('marca-nome').value    || 'Minha Empresa').trim();
+  const slogan      = (document.getElementById('marca-slogan').value  || '').trim();
+  const corPrimaria   = document.getElementById('marca-cor-primaria').value;
+  const corSecundaria = document.getElementById('marca-cor-secundaria').value;
+  const corAcento     = document.getElementById('marca-cor-acento').value;
+  document.getElementById('prev-nome').textContent   = nome;
+  document.getElementById('prev-slogan').textContent = slogan;
+  document.getElementById('prev-dot').style.background = corPrimaria;
+  document.getElementById('prev-btn-primary').style.background   = corPrimaria;
+  document.getElementById('prev-btn-secondary').style.background = corSecundaria;
+  document.getElementById('prev-btn-accent').style.background    = corAcento;
+  const prevLogo = document.getElementById('prev-logo');
+  if (_marcaLogoBase64) {
+    prevLogo.src = _marcaLogoBase64;
+    prevLogo.style.display = 'block';
+    document.getElementById('prev-dot').style.display = 'none';
+  } else {
+    prevLogo.style.display = 'none';
+    document.getElementById('prev-dot').style.display = 'block';
+  }
+  const modal = document.getElementById('modal-preview-marca');
+  modal.style.display = 'flex';
 }
 
 // ─── CONTRATO MODELO ──────────────────────────────────────────────

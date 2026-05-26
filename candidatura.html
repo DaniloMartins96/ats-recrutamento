@@ -374,8 +374,9 @@
   <!-- =========================================================  NAV  ========================================================= -->
   <nav class="nav" aria-label="Barra de navegação">
     <div class="nav__inner">
-      <a href="index.html" class="logo" aria-label="TechRecruit AI — voltar para vagas">
-        <svg class="logo__icon" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <a href="index.html" class="logo" aria-label="voltar para vagas">
+        <img id="cand-brand-logo" src="" alt="" style="height:36px;width:36px;object-fit:contain;border-radius:10px;display:none">
+        <svg id="cand-default-icon" class="logo__icon" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <rect width="36" height="36" rx="10" fill="#6c63ff" fill-opacity=".15"/>
           <circle cx="18" cy="18" r="7.5" stroke="#6c63ff" stroke-width="1.8" fill="none"/>
           <circle cx="18" cy="18" r="3" fill="#6c63ff"/>
@@ -388,7 +389,7 @@
           <line x1="23.3" y1="12.7" x2="26" y2="10" stroke="#6c63ff" stroke-width="1.2" stroke-linecap="round" opacity=".6"/>
           <line x1="12.7" y1="23.3" x2="10" y2="26" stroke="#6c63ff" stroke-width="1.2" stroke-linecap="round" opacity=".6"/>
         </svg>
-        <span class="logo__text">TechRecruit<span> AI</span></span>
+        <span class="logo__text" id="cand-brand-nome">TechRecruit<span> AI</span></span>
       </a>
       <span class="badge-ai" aria-label="Powered by AI">Powered by AI</span>
     </div>
@@ -720,6 +721,40 @@
 
   <!-- =========================================================  JAVASCRIPT  ========================================================= -->
   <script>
+    /* ----------------------------------------------------------
+       Personalização de marca
+    ---------------------------------------------------------- */
+    (function carregarMarcaCandidatura() {
+      fetch('https://webhook.danns.com.br/webhook/ats-marca', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'get' })
+      })
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        const m = data && data.marca;
+        if (!m) return;
+        if (m.nome_empresa) {
+          const nomeEl = document.getElementById('cand-brand-nome');
+          if (nomeEl) nomeEl.textContent = m.nome_empresa;
+          const p = new URLSearchParams(window.location.search);
+          const titulo = p.get('titulo') || '';
+          document.title = m.nome_empresa + (titulo ? ' — ' + titulo : ' — Candidatura');
+        }
+        if (m.logo_base64) {
+          const img  = document.getElementById('cand-brand-logo');
+          const icon = document.getElementById('cand-default-icon');
+          if (img)  { img.src = m.logo_base64; img.style.display = 'block'; }
+          if (icon) icon.style.display = 'none';
+        }
+        const r = document.documentElement.style;
+        if (m.cor_primaria)   { r.setProperty('--accent', m.cor_primaria); r.setProperty('--border-focus', m.cor_primaria); r.setProperty('--accent-glow', m.cor_primaria + '59'); }
+        if (m.cor_secundaria) r.setProperty('--accent-light', m.cor_secundaria);
+        if (m.cor_acento)     r.setProperty('--success', m.cor_acento);
+      })
+      .catch(() => {});
+    })();
+
     /* ----------------------------------------------------------
        Parâmetros da vaga lidos da URL
     ---------------------------------------------------------- */
