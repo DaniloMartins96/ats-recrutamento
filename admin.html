@@ -486,7 +486,7 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
       <div class="stats-row" id="vagas-stats"></div>
       <div class="table-wrap">
         <div class="table-toolbar">
-          <input class="search-input" type="text" id="busca-vagas" name="busca-vagas" placeholder="Buscar vagas..." autocomplete="off" value="">
+          <input class="search-input" type="search" id="input-busca-vagas" placeholder="Buscar vagas..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" value="">
           <div style="margin-left:auto;display:flex;gap:8px" id="vagas-filters"></div>
         </div>
         <div id="vagas-table-body"></div>
@@ -1437,7 +1437,7 @@ async function carregarVagas() {
 }
 
 function renderVagas() {
-  const q = document.getElementById('busca-vagas').value.toLowerCase();
+  const q = document.getElementById('input-busca-vagas').value.toLowerCase();
   const filtered = vagas.filter(v =>
     (v.titulo || '').toLowerCase().includes(q) ||
     (v.departamento || '').toLowerCase().includes(q)
@@ -1505,7 +1505,7 @@ function renderVagas() {
   `;
 }
 
-document.getElementById('busca-vagas').oninput = renderVagas;
+document.getElementById('input-busca-vagas').oninput = renderVagas;
 
 // ─── PAUSAR / ATIVAR VAGA ─────────────────────────────────────────
 async function atualizarStatusVaga(id, novoStatus) {
