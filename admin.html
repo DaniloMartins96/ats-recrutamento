@@ -574,6 +574,10 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
               class="btn btn-primary btn-sm" style="opacity:0.5">
               📤 Fazer Upload do Modelo
             </button>
+            <button onclick="visualizarContratoModelo()" id="btn-visualizar-contrato"
+              class="btn btn-outline btn-sm" style="display:none">
+              👁️ Visualizar Modelo
+            </button>
             <span id="contrato-upload-status" style="font-size:0.875rem"></span>
           </div>
         </div>
@@ -2462,7 +2466,10 @@ function abrirModalDP(a) {
   window.dpAdmissaoAtual = a;
   document.getElementById('dp-modal-title').textContent = 'Admissão — ' + (a.candidato_nome || '');
 
-  if (!a.nome_completo) {
+  const ok = v => v != null && v !== '' && v !== 'undefined' && v !== 'null';
+  const nomeCompleto = ok(a.nome_completo) ? a.nome_completo : (ok(a.nome) ? a.nome : (ok(a.candidato_nome) ? a.candidato_nome : null));
+
+  if (!nomeCompleto) {
     document.getElementById('dp-dados-content').innerHTML = `
       <div style="text-align:center;padding:24px 0">
         <div style="font-size:32px;margin-bottom:12px">⚠️</div>
@@ -2472,13 +2479,13 @@ function abrirModalDP(a) {
       </div>`;
   } else {
     const campos = [
-      ['Nome Completo', a.nome_completo || a.nome || a.candidato_nome], ['CPF', a.cpf], ['RG', a.rg],
+      ['Nome Completo', nomeCompleto], ['CPF', a.cpf], ['RG', a.rg],
       ['Data Nascimento', a.data_nascimento], ['Estado Civil', a.estado_civil], ['Nacionalidade', a.nacionalidade],
       ['Naturalidade', a.naturalidade], ['Nome da Mãe', a.nome_mae], ['Nome do Pai', a.nome_pai],
       ['Endereço', a.endereco], ['CEP', a.cep], ['Cidade', a.cidade], ['Estado', a.estado],
       ['Banco', a.banco], ['Agência', a.agencia], ['Conta', a.conta], ['Tipo de Conta', a.tipo_conta], ['PIX', a.pix],
       ['Carga Horária', a.carga_horaria], ['Data de Início', a.data_inicio], ['Observações', a.observacoes],
-    ].filter(([, v]) => v);
+    ].filter(([, v]) => ok(v));
 
     document.getElementById('dp-dados-content').innerHTML = campos.length
       ? `<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
@@ -2719,18 +2726,21 @@ function salvarEmpresa() {
 let arquivoContratoSelecionado = null;
 
 async function carregarInfoContrato() {
-  const statusEl = document.getElementById('contrato-status-texto');
+  const statusEl  = document.getElementById('contrato-status-texto');
+  const btnVer    = document.getElementById('btn-visualizar-contrato');
   if (!statusEl) return;
   statusEl.textContent = 'Carregando...';
   statusEl.style.color = 'var(--muted)';
+  if (btnVer) btnVer.style.display = 'none';
   try {
-    const res = await fetch(BASE_URL + '/ats-get-contrato-modelo');
+    const res  = await fetch(BASE_URL + '/ats-get-contrato-modelo');
     const data = res.ok ? await res.json() : {};
     if (data.tem_template && data.template) {
       const t = data.template;
       const dataFmt = new Date(t.criado_em).toLocaleDateString('pt-BR');
       statusEl.innerHTML = `✅ <strong>Template atual:</strong> ${t.nome_arquivo} &nbsp;|&nbsp; ${t.tamanho_kb} KB &nbsp;|&nbsp; Enviado em ${dataFmt}`;
       statusEl.style.color = 'var(--success)';
+      if (btnVer) btnVer.style.display = 'inline-flex';
     } else {
       statusEl.textContent = '⚠️ Nenhum template cadastrado ainda.';
       statusEl.style.color = 'var(--warn)';
@@ -2740,6 +2750,34 @@ async function carregarInfoContrato() {
     statusEl.style.color = 'var(--danger)';
   }
   atualizarInfoContratoModal();
+}
+
+async function visualizarContratoModelo() {
+  const btn = document.getElementById('btn-visualizar-contrato');
+  const orig = btn?.textContent;
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Baixando...'; }
+  try {
+    const res  = await fetch(BASE_URL + '/ats-get-contrato-modelo-completo');
+    const data = res.ok ? await res.json() : {};
+    if (!data.tem_template || !data.template?.arquivo_base64) {
+      showToast('Nenhum template encontrado.', 'error'); return;
+    }
+    const t       = data.template;
+    const binary  = atob(t.arquivo_base64);
+    const bytes   = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    const blob    = new Blob([bytes], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+    const url     = URL.createObjectURL(blob);
+    const a       = document.createElement('a');
+    a.href        = url;
+    a.download    = t.nome_arquivo || 'modelo_contrato.docx';
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 10000);
+  } catch {
+    showToast('Erro ao baixar o template.', 'error');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = orig; }
+  }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
