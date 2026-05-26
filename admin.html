@@ -3314,6 +3314,7 @@ function renderTestes() {
             <td style="text-align:center">${t.concluidos ?? '—'}</td>
             <td style="white-space:nowrap">
               <button class="btn btn-ghost btn-sm" onclick="copiarLinkTeste('${t.id}')">🔗 Link</button>
+              <button class="btn btn-outline btn-sm" style="border-color:var(--danger);color:var(--danger)" onclick="apagarTeste('${t.id}')">🗑️ Apagar</button>
             </td>
           </tr>`).join('')}
       </tbody>
@@ -3327,6 +3328,22 @@ function renderTestes() {
 function copiarLinkTeste(testeId) {
   const url = `${window.location.origin}/teste?token=${testeId}`;
   navigator.clipboard.writeText(url).then(() => showToast('🔗 Link copiado!', 'success')).catch(() => showToast(url, 'info'));
+}
+
+async function apagarTeste(testeId) {
+  if (!confirm('Apagar este teste? Esta ação não pode ser desfeita.')) return;
+  try {
+    const r = await fetch(BASE_URL + '/ats-testes', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ action: 'deletar', teste_id: testeId })
+    });
+    if (!r.ok) throw new Error();
+    testes = testes.filter(t => t.id !== testeId);
+    renderTestes();
+    showToast('Teste apagado.', 'success');
+  } catch {
+    showToast('Erro ao apagar teste.', 'error');
+  }
 }
 
 async function enviarTeste(candidaturaId) {
