@@ -132,6 +132,10 @@ Etapas (`etapa_atual`): `triagem` → `entrevista_rh` → `entrevista_tecnica` �
 2. Planilhas: edição mais inteligente preservando formatação do .xlsx original
 3. Personalização de marca (logo, cores, nome da empresa)
 4. Multi-tenant (múltiplas empresas no mesmo ATS)
+5. Modal de editar vaga no admin: campos vazios ao abrir (responsabilidades, requisitos, salário, benefícios, stack, cidade, sobre_empresa não preenchem corretamente)
+6. Botão Sair vermelho no sidebar do admin não funciona (onclick sobrescrito pelo forEach de nav-item)
+7. Navegação: ao entrar em candidatos pelo admin, o botão Voltar do navegador não retorna para vagas (SPA sem histórico)
+8. Página vagas.html: salário exibindo "R$ 0 - R$ 0" quando deveria mostrar "A combinar" (campos salario_min/max zerados)
 
 ---
 
