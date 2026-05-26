@@ -353,7 +353,7 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
 ::-webkit-scrollbar-thumb:hover{background:var(--muted)}
 </style>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
 </head>
 <body>
 
@@ -2906,106 +2906,130 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 async function executarComandoPlanilha() {
-  const comando = (document.getElementById('planilha-comando')?.value || '').trim();
-  if (!comando) { showToast('Digite um comando primeiro.', 'error'); return; }
+  const comando   = (document.getElementById('planilha-comando')?.value || '').trim();
+  const inputXlsx = document.getElementById('input-planilha-excel');
+  const sheetsUrl = (document.getElementById('input-sheets-url')?.value || '').trim();
+  const arquivo   = inputXlsx?.files[0];
+  const tipo      = sheetsUrl ? 'sheets' : 'excel';
 
-  const inputExcel = document.getElementById('input-planilha-excel');
-  const sheetsUrl  = (document.getElementById('input-sheets-url')?.value || '').trim();
-  const arquivo    = inputExcel?.files[0];
-  const tipo       = sheetsUrl ? 'sheets' : 'excel';
-
-  if (tipo === 'excel' && !arquivo) { showToast('Selecione um arquivo Excel ou informe a URL do Google Sheets.', 'error'); return; }
+  if (!comando)                       { showToast('Digite um comando primeiro.', 'error'); return; }
+  if (tipo === 'excel' && !arquivo)   { showToast('Selecione um arquivo .xlsx ou informe a URL do Google Sheets.', 'error'); return; }
+  if (tipo === 'excel' && !window.XLSX) { showToast('SheetJS ainda não carregou. Aguarde e tente novamente.', 'error'); return; }
 
   const btn      = document.getElementById('btn-executar-planilha');
   const statusEl = document.getElementById('planilha-status');
-  btn.disabled   = true;
-  btn.textContent = '⏳ Processando...';
+  const btnDown  = document.getElementById('btn-download-planilha');
+
+  btn.disabled    = true;
+  btn.textContent = '⏳ Buscando dados do ATS...';
   statusEl.textContent = '';
+  statusEl.style.color = 'var(--muted)';
   document.getElementById('planilha-resultado').style.display = 'none';
+  if (btnDown) btnDown.style.display = 'none';
 
   try {
-    let arquivoBase64 = '';
-    if (arquivo) {
-      arquivoBase64 = await new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload  = () => resolve(reader.result.split(',')[1]);
-        reader.onerror = reject;
-        reader.readAsDataURL(arquivo);
-      });
-    }
-
+    // ── 1. Chamar n8n (sem base64) ──────────────────────────────────
     const res = await fetch(BASE_URL + '/ats-assistente-planilha', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ tipo, comando, arquivo_base64: arquivoBase64, sheets_url: sheetsUrl }),
+      body: JSON.stringify({ tipo, comando, sheets_url: sheetsUrl }),
       signal: AbortSignal.timeout(60000)
     });
-
     const data = await res.json();
+    if (!data.success) throw new Error(data.erro || 'Resposta inválida do servidor.');
 
-    if (data.success) {
-      document.getElementById('planilha-resultado').style.display = 'block';
-      document.getElementById('planilha-resumo').innerHTML =
-        '<strong>' + (data.acao || '') + '</strong>' +
-        (data.resumo ? '<br>' + data.resumo : '');
+    const linhas = data.linhas || [];
 
-      const linhas = data.linhas || [];
-      const preview = document.getElementById('planilha-preview');
-      const btnDown = document.getElementById('btn-download-planilha');
+    // ── 2. Editar planilha com SheetJS ──────────────────────────────
+    if (arquivo && linhas.length > 0) {
+      btn.textContent = '📊 Editando planilha...';
 
-      if (linhas.length > 0) {
-        const cols = Object.keys(linhas[0]);
-        const dez  = linhas.slice(0, 10);
-        let html = '<div style="overflow-x:auto;margin-top:1rem"><table style="width:100%;border-collapse:collapse;font-size:0.8rem">';
-        html += '<thead><tr>' + cols.map(c =>
-          `<th style="padding:6px 8px;background:var(--surface3);border:1px solid var(--border);text-align:left;white-space:nowrap">${c}</th>`
-        ).join('') + '</tr></thead>';
-        html += '<tbody>' + dez.map(row =>
-          '<tr>' + cols.map(c =>
-            `<td style="padding:6px 8px;border:1px solid var(--border)">${row[c] ?? ''}</td>`
-          ).join('') + '</tr>'
-        ).join('') + '</tbody></table>';
-        if (linhas.length > 10)
-          html += `<p style="color:var(--muted);font-size:0.8rem;margin-top:0.5rem">Mostrando 10 de ${linhas.length} linhas</p>`;
-        html += '</div>';
-        preview.innerHTML = html;
+      const arrayBuffer = await arquivo.arrayBuffer();
+      const wb          = XLSX.read(arrayBuffer, { type: 'array' });
 
-        btnDown.style.display = 'inline-block';
-        btnDown.onclick = () => baixarExcel(linhas, 'ats-planilha.xlsx');
-      } else {
-        preview.innerHTML = '';
-        btnDown.style.display = 'none';
+      // Identificar aba alvo pelo texto do GPT, fallback para primeira
+      const textoGPT = (data.acao || '') + ' ' + (data.resumo || '');
+      let sheetName  = wb.SheetNames[0];
+      const m = textoGPT.match(/aba\s+['"]?([A-Za-zÀ-ÿ0-9 _-]+?)['"]?(?:[,.\s]|$)/i);
+      if (m) {
+        const cand  = m[1].trim();
+        const found = wb.SheetNames.find(s => s.toLowerCase() === cand.toLowerCase());
+        if (found) sheetName = found;
       }
 
-      statusEl.textContent = '✅ Comando executado com sucesso!';
-      statusEl.style.color = 'var(--success)';
-    } else {
-      throw new Error(data.erro || 'Falha');
+      const sheet = wb.Sheets[sheetName];
+
+      // Última linha preenchida (0-based); inserir logo abaixo
+      const ref     = sheet['!ref'];
+      const lastRow = ref ? XLSX.utils.decode_range(ref).e.r + 1 : 0;
+
+      XLSX.utils.sheet_add_json(sheet, linhas, {
+        origin:     { r: lastRow, c: 0 },
+        skipHeader: true
+      });
+
+      // Gerar e baixar .xlsx
+      btn.textContent = '✅ Planilha atualizada! Baixando...';
+      const nomeBase = arquivo.name.replace(/\.xlsx$/i, '');
+      _dispararDownloadXlsx(wb, nomeBase + '_atualizada.xlsx');
+
+      statusEl.textContent = `✅ ${linhas.length} linha(s) inserida(s) na aba "${sheetName}".`;
+      statusEl.style.color  = 'var(--success)';
+    } else if (linhas.length === 0) {
+      statusEl.textContent = '⚠️ Nenhum dado encontrado para o comando informado.';
+      statusEl.style.color  = 'var(--warn)';
     }
+
+    // ── 3. Exibir resultado e preview ───────────────────────────────
+    document.getElementById('planilha-resultado').style.display = 'block';
+    document.getElementById('planilha-resumo').innerHTML =
+      (data.acao  ? `<strong>${data.acao}</strong><br>` : '') +
+      (data.resumo ? data.resumo : '');
+
+    _renderizarPreview(linhas);
+
   } catch (err) {
-    statusEl.textContent = '❌ Erro ao executar comando. Tente novamente.';
-    statusEl.style.color = 'var(--danger)';
+    statusEl.textContent = '❌ ' + (err.message || 'Erro ao executar comando. Tente novamente.');
+    statusEl.style.color  = 'var(--danger)';
   } finally {
-    btn.disabled = false;
+    btn.disabled    = false;
     btn.textContent = '✨ Executar Comando';
   }
 }
 
-function baixarExcel(linhas, nomeArquivo) {
-  if (!linhas || linhas.length === 0) return;
+function _renderizarPreview(linhas) {
+  const preview = document.getElementById('planilha-preview');
+  if (!preview) return;
+  if (!linhas || linhas.length === 0) { preview.innerHTML = ''; return; }
+
   const cols = Object.keys(linhas[0]);
-  const csvRows = [
-    cols.join(','),
-    ...linhas.map(r => cols.map(c => '"' + String(r[c] ?? '').replace(/"/g, '""') + '"').join(','))
-  ];
-  const csv  = '﻿' + csvRows.join('\n');
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement('a');
-  a.href     = url;
-  a.download = nomeArquivo.replace('.xlsx', '.csv');
+  const dez  = linhas.slice(0, 10);
+  let html = '<div style="overflow-x:auto;margin-top:1rem"><table style="width:100%;border-collapse:collapse;font-size:0.8rem">';
+  html += '<thead><tr>' + cols.map(c =>
+    `<th style="padding:6px 8px;background:var(--surface3);border:1px solid var(--border);text-align:left;white-space:nowrap">${c}</th>`
+  ).join('') + '</tr></thead>';
+  html += '<tbody>' + dez.map(row =>
+    '<tr>' + cols.map(c =>
+      `<td style="padding:6px 8px;border:1px solid var(--border)">${row[c] ?? ''}</td>`
+    ).join('') + '</tr>'
+  ).join('') + '</tbody></table>';
+  if (linhas.length > 10)
+    html += `<p style="color:var(--muted);font-size:0.8rem;margin-top:0.5rem">Mostrando 10 de ${linhas.length} linhas inseridas</p>`;
+  html += '</div>';
+  preview.innerHTML = html;
+}
+
+function _dispararDownloadXlsx(wb, nomeArquivo) {
+  const outData = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+  const blob    = new Blob([outData], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  const url     = URL.createObjectURL(blob);
+  const a       = document.createElement('a');
+  a.href        = url;
+  a.download    = nomeArquivo;
+  document.body.appendChild(a);
   a.click();
-  URL.revokeObjectURL(url);
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 10000);
 }
 
 // ─── BOOT ─────────────────────────────────────────────────────────
