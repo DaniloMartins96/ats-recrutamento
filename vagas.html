@@ -542,18 +542,19 @@ function renderCard(v, idx) {
   const modal     = v.modalidade || '';
   const dept      = v.departamento || v.area || '';
   const senior    = v.senioridade  || '';
-  const local     = v.localizacao  || (modal === 'Remoto' ? 'Remoto' : '—');
+  const localRaw  = v.localizacao || v.cidade || v.local || '';
+  const local     = (localRaw && localRaw !== '—') ? localRaw : (modal === 'Remoto' ? 'Remoto' : 'A definir');
   const contrato  = v.tipo_contrato || v.contrato || '';
   const cands     = v.candidatos_count || v.candidatos || 0;
-  const salMin    = v.salario_min;
-  const salMax    = v.salario_max;
+  const salMin    = Number(v.salario_min) || 0;
+  const salMax    = Number(v.salario_max) || 0;
   const criado    = v.criado_em || v.data_publicacao || '';
   const titulo    = v.titulo || 'Vaga';
   const id        = v.id || v.vaga_id || '';
   const isNew     = criado && (Date.now() - new Date(criado).getTime()) < 7 * 86400000;
 
-  const salarioTxt = salMin
-    ? 'R$ ' + Number(salMin).toLocaleString('pt-BR') + (salMax ? ' – R$ ' + Number(salMax).toLocaleString('pt-BR') : '+')
+  const salarioTxt = salMin > 0
+    ? 'R$ ' + salMin.toLocaleString('pt-BR') + (salMax > 0 ? ' – R$ ' + salMax.toLocaleString('pt-BR') : '+')
     : 'A combinar';
 
   const modalBadge = modal === 'Remoto'     ? 'badge-remote'
@@ -585,7 +586,7 @@ function renderCard(v, idx) {
     <div class="card-bottom">
       <div>
         <div class="card-salary">${salarioTxt}</div>
-        ${salMin ? '<div class="card-salary-label">Faixa salarial</div>' : ''}
+        ${salMin > 0 ? '<div class="card-salary-label">Faixa salarial</div>' : ''}
       </div>
       <div style="display:flex;align-items:center;gap:14px">
         ${cands ? `<span class="card-candidates"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>${cands} candidato${cands !== 1 ? 's' : ''}</span>` : ''}
