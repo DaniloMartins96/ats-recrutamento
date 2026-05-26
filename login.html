@@ -196,6 +196,13 @@ async function doLogin() {
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner"></span>Entrando...';
 
+  // Fallback local (master) — verificado antes da API para garantir acesso sempre
+  if (email === 'admin@techrecruit.ai' && senha === 'admin123') {
+    autenticar({ empresa_id: 1, nome: 'TechRecruit AI', plano: 'master', token: 'local-token', email });
+    return;
+  }
+
+  // Tentar autenticação via API
   try {
     const res  = await fetch(LOGIN_URL, {
       method: 'POST',
@@ -203,20 +210,14 @@ async function doLogin() {
       body: JSON.stringify({ email, senha }),
       signal: AbortSignal.timeout(8000)
     });
-    const data = await res.json();
+    const data = await res.json().catch(() => ({}));
     if (res.ok && data.token) {
       autenticar(data);
       return;
     }
-    // Resposta de erro da API
     errEl.textContent = data.mensagem || 'E-mail ou senha incorretos.';
   } catch {
-    // API não existe ainda ou erro de rede — usar autenticação local de fallback
-    if (email === 'admin@techrecruit.ai' && senha === 'admin123') {
-      autenticar({ empresa_id: 1, nome: 'TechRecruit AI', plano: 'master', token: 'local-token', email });
-      return;
-    }
-    errEl.textContent = 'E-mail ou senha incorretos.';
+    errEl.textContent = 'Não foi possível conectar ao servidor.';
   }
 
   btn.disabled = false;
