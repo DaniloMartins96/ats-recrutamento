@@ -324,6 +324,12 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
 .config-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:20px}
 .config-card h3{font-size:15px;font-weight:700;margin-bottom:4px}
 .config-card p{font-size:12px;color:var(--muted);margin-bottom:20px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px}
+.cfg-tab{background:transparent;border:none;padding:0.6rem 1rem;cursor:pointer;font-size:0.875rem;font-weight:600;color:var(--muted);border-bottom:3px solid transparent;margin-bottom:-2px;transition:all .15s;font-family:inherit}
+.cfg-tab:hover{color:var(--accent2)}
+.cfg-tab-ativa{color:var(--accent);border-bottom-color:var(--accent)}
+.cfg-painel{animation:fadeIn .2s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
 .config-row{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:end}
 
 /* empty state */
@@ -499,113 +505,175 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
 
     <!-- ── CONFIG ── -->
     <section class="section" id="sec-config">
-      <div class="page-header">
-        <div>
-          <div class="page-title">Configurações</div>
-          <div class="page-sub">Preferências e integrações do sistema</div>
-        </div>
+      <h2 style="margin-bottom:0.25rem">⚙️ Configurações</h2>
+      <p style="color:var(--muted); margin-bottom:1.5rem; font-size:0.9rem">Preferências e integrações do sistema</p>
+
+      <!-- Abas internas -->
+      <div style="display:flex; gap:0.25rem; margin-bottom:1.5rem; border-bottom:2px solid var(--border); padding-bottom:0; flex-wrap:wrap">
+        <button onclick="abrirAbaConfig('empresa')"     id="cfg-tab-empresa"     class="cfg-tab cfg-tab-ativa">🏢 Empresa</button>
+        <button onclick="abrirAbaConfig('contrato')"    id="cfg-tab-contrato"    class="cfg-tab">📄 Contrato</button>
+        <button onclick="abrirAbaConfig('ia')"          id="cfg-tab-ia"          class="cfg-tab">🤖 IA &amp; Triagem</button>
+        <button onclick="abrirAbaConfig('integracoes')" id="cfg-tab-integracoes" class="cfg-tab">🔗 Integrações</button>
+        <button onclick="abrirAbaConfig('seguranca')"   id="cfg-tab-seguranca"   class="cfg-tab">🔒 Segurança</button>
       </div>
 
-      <div class="config-card">
-        <h3>IA — Pesos de Avaliação</h3>
-        <p>Defina a importância de cada dimensão no score final dos candidatos. A soma deve ser 100%.</p>
-        <div class="slider-group">
-          <div class="slider-row">
-            <span class="slider-label">Habilidades Técnicas</span>
-            <input type="range" min="0" max="100" value="35" id="sl-tecnico" oninput="updatePeso()">
-            <span class="slider-val" id="sv-tecnico">35%</span>
+      <!-- ABA EMPRESA -->
+      <div id="cfg-painel-empresa" class="cfg-painel">
+        <div class="card" style="max-width:600px">
+          <h3 style="margin-bottom:0.5rem">🏢 Dados da Empresa</h3>
+          <p style="color:var(--muted); font-size:0.875rem; margin-bottom:1.5rem">Informações da empresa exibidas no sistema. Preparado para multi-tenant.</p>
+          <div style="display:grid; gap:1rem">
+            <div>
+              <label style="display:block; font-weight:600; margin-bottom:0.4rem; font-size:0.875rem">Nome da Empresa</label>
+              <input type="text" id="cfg-empresa-nome" placeholder="Ex: Acme Recursos Humanos"
+                style="width:100%; padding:0.6rem 0.75rem; border:1px solid var(--border); border-radius:8px; font-size:0.9rem; box-sizing:border-box; background:var(--surface2); color:var(--text); font-family:inherit">
+            </div>
+            <div>
+              <label style="display:block; font-weight:600; margin-bottom:0.4rem; font-size:0.875rem">CNPJ</label>
+              <input type="text" id="cfg-empresa-cnpj" placeholder="00.000.000/0000-00"
+                style="width:100%; padding:0.6rem 0.75rem; border:1px solid var(--border); border-radius:8px; font-size:0.9rem; box-sizing:border-box; background:var(--surface2); color:var(--text); font-family:inherit">
+            </div>
+            <div>
+              <label style="display:block; font-weight:600; margin-bottom:0.4rem; font-size:0.875rem">Endereço</label>
+              <input type="text" id="cfg-empresa-endereco" placeholder="Rua, número, cidade - UF"
+                style="width:100%; padding:0.6rem 0.75rem; border:1px solid var(--border); border-radius:8px; font-size:0.9rem; box-sizing:border-box; background:var(--surface2); color:var(--text); font-family:inherit">
+            </div>
+            <div>
+              <label style="display:block; font-weight:600; margin-bottom:0.4rem; font-size:0.875rem">E-mail de contato</label>
+              <input type="email" id="cfg-empresa-email" placeholder="rh@empresa.com.br"
+                style="width:100%; padding:0.6rem 0.75rem; border:1px solid var(--border); border-radius:8px; font-size:0.9rem; box-sizing:border-box; background:var(--surface2); color:var(--text); font-family:inherit">
+            </div>
           </div>
-        </div>
-        <div class="slider-group">
-          <div class="slider-row">
-            <span class="slider-label">Experiência Profissional</span>
-            <input type="range" min="0" max="100" value="25" id="sl-exp" oninput="updatePeso()">
-            <span class="slider-val" id="sv-exp">25%</span>
-          </div>
-        </div>
-        <div class="slider-group">
-          <div class="slider-row">
-            <span class="slider-label">Competências Comportamentais</span>
-            <input type="range" min="0" max="100" value="20" id="sl-comp" oninput="updatePeso()">
-            <span class="slider-val" id="sv-comp">20%</span>
-          </div>
-        </div>
-        <div class="slider-group">
-          <div class="slider-row">
-            <span class="slider-label">Fit Cultural</span>
-            <input type="range" min="0" max="100" value="20" id="sl-cult" oninput="updatePeso()">
-            <span class="slider-val" id="sv-cult">20%</span>
-          </div>
-        </div>
-        <div class="slider-sum ok" id="slider-sum-box">
-          <span>Soma dos pesos</span>
-          <span id="slider-sum-val">100%</span>
-        </div>
-        <button class="btn btn-primary btn-sm" style="margin-top:14px" onclick="salvarPesos()">Salvar Configuração</button>
-      </div>
-
-      <div class="config-card">
-        <h3>Integrações</h3>
-        <p>Configure as integrações com ferramentas externas.</p>
-        <div class="form-group">
-          <label class="form-label">WhatsApp Business (número)</label>
-          <div class="config-row">
-            <input class="form-input" type="text" id="cfg-whatsapp" placeholder="+55 11 99999-9999">
-            <button class="btn btn-outline btn-sm" onclick="salvarIntegracao('whatsapp')">Salvar</button>
-          </div>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Link Calendly (entrevistas)</label>
-          <div class="config-row">
-            <input class="form-input" type="url" id="cfg-calendly" placeholder="https://calendly.com/...">
-            <button class="btn btn-outline btn-sm" onclick="salvarIntegracao('calendly')">Salvar</button>
+          <div style="display:flex; align-items:center; gap:1rem; margin-top:1.25rem; flex-wrap:wrap">
+            <button onclick="salvarEmpresa()" style="background:var(--accent); color:#fff; padding:0.6rem 1.5rem; border:none; border-radius:8px; cursor:pointer; font-weight:600; font-family:inherit">
+              💾 Salvar Dados da Empresa
+            </button>
+            <span id="cfg-empresa-status" style="font-size:0.875rem"></span>
           </div>
         </div>
       </div>
 
-      <div class="config-card">
-        <h3>Segurança</h3>
-        <p>Altere a senha de acesso ao painel administrativo.</p>
-        <div class="form-row" style="margin-bottom:0">
-          <div class="form-group">
-            <label class="form-label">Nova Senha</label>
-            <input class="form-input" type="password" id="cfg-nova-senha" placeholder="••••••••">
+      <!-- ABA CONTRATO -->
+      <div id="cfg-painel-contrato" class="cfg-painel" style="display:none">
+        <div class="card" style="max-width:600px">
+          <h3 style="margin-bottom:0.5rem">📄 Modelo de Contrato</h3>
+          <p style="color:var(--muted); font-size:0.875rem; margin-bottom:1rem">
+            Faça upload do modelo de contrato da empresa (.docx). O GPT-4o preenche automaticamente com os dados do candidato ao gerar o contrato.
+          </p>
+          <div id="contrato-status" style="padding:0.75rem; background:var(--surface2); border-radius:8px; margin-bottom:1rem; border:1px solid var(--border)">
+            <span id="contrato-status-texto">Carregando...</span>
           </div>
-          <div class="form-group">
-            <label class="form-label">Confirmar Senha</label>
-            <input class="form-input" type="password" id="cfg-conf-senha" placeholder="••••••••">
+          <div style="margin-bottom:1rem">
+            <label style="display:block; font-weight:600; margin-bottom:0.5rem; font-size:0.875rem">Selecionar arquivo (.docx):</label>
+            <input type="file" id="input-contrato-modelo" accept=".docx"
+              style="width:100%; padding:0.6rem; border:2px dashed var(--border); border-radius:8px; cursor:pointer; box-sizing:border-box; background:var(--surface2); color:var(--text)">
+            <p id="contrato-arquivo-nome" style="color:var(--muted); font-size:0.85rem; margin-top:0.4rem"></p>
+          </div>
+          <div style="display:flex; align-items:center; gap:1rem; flex-wrap:wrap">
+            <button onclick="uploadContratoModelo()" id="btn-upload-contrato" disabled
+              class="btn btn-primary btn-sm" style="opacity:0.5">
+              📤 Fazer Upload do Modelo
+            </button>
+            <span id="contrato-upload-status" style="font-size:0.875rem"></span>
           </div>
         </div>
-        <button class="btn btn-outline btn-sm" style="margin-top:4px" onclick="alterarSenha()">Alterar Senha</button>
       </div>
 
-      <div class="config-card">
-        <h3>📄 Modelo de Contrato</h3>
-        <p>Faça upload do modelo de contrato da empresa (.docx). O GPT-4o irá preencher automaticamente com os dados do candidato.</p>
-        <div id="contrato-status" style="padding:0.75rem; background:var(--surface2); border-radius:8px; margin:1rem 0; border:1px solid var(--border)">
-          <span id="contrato-status-texto">Carregando...</span>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Selecionar arquivo (.docx):</label>
-          <input
-            type="file"
-            id="input-contrato-modelo"
-            accept=".docx"
-            style="width:100%; padding:0.5rem; border:2px dashed var(--border); border-radius:8px; cursor:pointer; background:var(--surface2); color:var(--text)"
-          />
-          <p id="contrato-arquivo-nome" style="color:var(--muted); font-size:0.85rem; margin-top:0.25rem"></p>
-        </div>
-        <div style="display:flex; align-items:center; gap:1rem; flex-wrap:wrap">
-          <button
-            onclick="uploadContratoModelo()"
-            id="btn-upload-contrato"
-            disabled
-            class="btn btn-primary btn-sm"
-            style="opacity:0.5"
-          >
-            📤 Fazer Upload do Modelo
+      <!-- ABA IA & TRIAGEM -->
+      <div id="cfg-painel-ia" class="cfg-painel" style="display:none">
+        <div class="card" style="max-width:700px">
+          <h3 style="margin-bottom:0.5rem">🤖 IA — Pesos de Avaliação</h3>
+          <p style="color:var(--muted); font-size:0.875rem; margin-bottom:1.5rem">Define a importância de cada dimensão no score final dos candidatos. A soma deve ser 100%.</p>
+          <div style="display:grid; gap:1.25rem">
+            <div>
+              <div style="display:flex; justify-content:space-between; margin-bottom:0.4rem">
+                <label style="font-weight:600; font-size:0.875rem">Habilidades Técnicas</label>
+                <span id="val-tecnico" style="font-weight:700; color:var(--accent2)">35%</span>
+              </div>
+              <input type="range" id="peso-tecnico" min="0" max="100" value="35" oninput="updatePeso()" style="width:100%">
+            </div>
+            <div>
+              <div style="display:flex; justify-content:space-between; margin-bottom:0.4rem">
+                <label style="font-weight:600; font-size:0.875rem">Experiência Profissional</label>
+                <span id="val-experiencia" style="font-weight:700; color:var(--accent2)">25%</span>
+              </div>
+              <input type="range" id="peso-experiencia" min="0" max="100" value="25" oninput="updatePeso()" style="width:100%">
+            </div>
+            <div>
+              <div style="display:flex; justify-content:space-between; margin-bottom:0.4rem">
+                <label style="font-weight:600; font-size:0.875rem">Competências Comportamentais</label>
+                <span id="val-comportamental" style="font-weight:700; color:var(--accent2)">20%</span>
+              </div>
+              <input type="range" id="peso-comportamental" min="0" max="100" value="20" oninput="updatePeso()" style="width:100%">
+            </div>
+            <div>
+              <div style="display:flex; justify-content:space-between; margin-bottom:0.4rem">
+                <label style="font-weight:600; font-size:0.875rem">Fit Cultural</label>
+                <span id="val-cultural" style="font-weight:700; color:var(--accent2)">20%</span>
+              </div>
+              <input type="range" id="peso-cultural" min="0" max="100" value="20" oninput="updatePeso()" style="width:100%">
+            </div>
+          </div>
+          <div style="margin-top:1.25rem; padding:0.75rem 1rem; background:var(--surface2); border-radius:8px; display:flex; justify-content:space-between; align-items:center; border:1px solid var(--border)">
+            <span style="font-weight:600; font-size:0.875rem">Soma dos pesos</span>
+            <span id="soma-pesos" style="font-weight:700; font-size:1.1rem; color:var(--accent2)">100%</span>
+          </div>
+          <button onclick="salvarPesos()" style="margin-top:1rem; background:var(--accent); color:#fff; padding:0.6rem 1.5rem; border:none; border-radius:8px; cursor:pointer; font-weight:600; font-family:inherit">
+            💾 Salvar Configuração
           </button>
-          <span id="contrato-upload-status" style="font-size:0.9rem"></span>
+        </div>
+      </div>
+
+      <!-- ABA INTEGRAÇÕES -->
+      <div id="cfg-painel-integracoes" class="cfg-painel" style="display:none">
+        <div style="display:grid; gap:1rem; max-width:600px">
+          <div class="card">
+            <h3 style="margin-bottom:0.5rem">💬 WhatsApp Business</h3>
+            <p style="color:var(--muted); font-size:0.875rem; margin-bottom:1rem">Número usado para envio de mensagens aos candidatos.</p>
+            <div style="display:flex; gap:0.75rem; align-items:center">
+              <input type="text" id="cfg-whatsapp" placeholder="+55 11 99999-9999"
+                style="flex:1; padding:0.6rem 0.75rem; border:1px solid var(--border); border-radius:8px; font-size:0.9rem; background:var(--surface2); color:var(--text); font-family:inherit">
+              <button onclick="salvarIntegracao('whatsapp')"
+                style="background:#22c55e; color:#fff; padding:0.6rem 1.25rem; border:none; border-radius:8px; cursor:pointer; font-weight:600; white-space:nowrap; font-family:inherit">Salvar</button>
+            </div>
+          </div>
+          <div class="card">
+            <h3 style="margin-bottom:0.5rem">📅 Calendly (Entrevistas)</h3>
+            <p style="color:var(--muted); font-size:0.875rem; margin-bottom:1rem">Link enviado ao candidato para agendar entrevista.</p>
+            <div style="display:flex; gap:0.75rem; align-items:center">
+              <input type="text" id="cfg-calendly" placeholder="https://calendly.com/..."
+                style="flex:1; padding:0.6rem 0.75rem; border:1px solid var(--border); border-radius:8px; font-size:0.9rem; background:var(--surface2); color:var(--text); font-family:inherit">
+              <button onclick="salvarIntegracao('calendly')"
+                style="background:#6366f1; color:#fff; padding:0.6rem 1.25rem; border:none; border-radius:8px; cursor:pointer; font-weight:600; white-space:nowrap; font-family:inherit">Salvar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ABA SEGURANÇA -->
+      <div id="cfg-painel-seguranca" class="cfg-painel" style="display:none">
+        <div class="card" style="max-width:500px">
+          <h3 style="margin-bottom:0.5rem">🔒 Alterar Senha</h3>
+          <p style="color:var(--muted); font-size:0.875rem; margin-bottom:1.25rem">Atualize a senha de acesso ao painel administrativo.</p>
+          <div style="display:grid; gap:1rem">
+            <div>
+              <label style="display:block; font-weight:600; margin-bottom:0.4rem; font-size:0.875rem">Nova Senha</label>
+              <input type="password" id="nova-senha" placeholder="Mínimo 6 caracteres"
+                style="width:100%; padding:0.6rem 0.75rem; border:1px solid var(--border); border-radius:8px; font-size:0.9rem; box-sizing:border-box; background:var(--surface2); color:var(--text); font-family:inherit">
+            </div>
+            <div>
+              <label style="display:block; font-weight:600; margin-bottom:0.4rem; font-size:0.875rem">Confirmar Senha</label>
+              <input type="password" id="confirmar-senha" placeholder="Repita a nova senha"
+                style="width:100%; padding:0.6rem 0.75rem; border:1px solid var(--border); border-radius:8px; font-size:0.9rem; box-sizing:border-box; background:var(--surface2); color:var(--text); font-family:inherit">
+            </div>
+          </div>
+          <div style="display:flex; align-items:center; gap:1rem; margin-top:1.25rem; flex-wrap:wrap">
+            <button onclick="alterarSenha()"
+              style="background:#ef4444; color:#fff; padding:0.6rem 1.5rem; border:none; border-radius:8px; cursor:pointer; font-weight:600; font-family:inherit">
+              🔒 Alterar Senha
+            </button>
+            <span id="senha-status" style="font-size:0.875rem"></span>
+          </div>
         </div>
       </div>
     </section>
@@ -1004,7 +1072,7 @@ function mostrarSecao(nav) {
   document.getElementById('sec-' + nav).classList.add('active');
   if (window.location.hash.replace('#', '') !== nav) window.location.hash = nav;
   if (nav === 'dp' && !admissoes.length) carregarDP();
-  if (nav === 'config') carregarInfoContrato();
+  if (nav === 'config') abrirAbaConfig('empresa');
 }
 
 document.querySelectorAll('.nav-item').forEach(el => {
@@ -2225,23 +2293,34 @@ async function aprovarCandidato(candidaturaId) {
 
 // ─── SLIDERS CONFIG ───────────────────────────────────────────────
 function updatePeso() {
-  const ids = ['tecnico', 'exp', 'comp', 'cult'];
+  const map = { tecnico: 'peso-tecnico', experiencia: 'peso-experiencia', comportamental: 'peso-comportamental', cultural: 'peso-cultural' };
   let sum = 0;
-  ids.forEach(id => {
-    const val = parseInt(document.getElementById('sl-' + id).value);
-    document.getElementById('sv-' + id).textContent = val + '%';
+  Object.entries(map).forEach(([key, slId]) => {
+    const el = document.getElementById(slId);
+    if (!el) return;
+    const val = parseInt(el.value);
+    const valEl = document.getElementById('val-' + key);
+    if (valEl) valEl.textContent = val + '%';
     sum += val;
   });
-  document.getElementById('slider-sum-val').textContent = sum + '%';
-  document.getElementById('slider-sum-box').className = 'slider-sum ' + (sum === 100 ? 'ok' : 'warn');
+  const somaEl = document.getElementById('soma-pesos');
+  if (somaEl) {
+    somaEl.textContent = sum + '%';
+    somaEl.style.color = sum === 100 ? 'var(--success)' : 'var(--danger)';
+  }
 }
 
 function salvarPesos() {
-  const ids = ['tecnico', 'exp', 'comp', 'cult'];
-  const sum = ids.reduce((s, id) => s + parseInt(document.getElementById('sl-' + id).value), 0);
-  if (sum !== 100) { showToast('A soma dos pesos deve ser 100%. Atual: ' + sum + '%.', 'error'); return; }
+  const map = { tecnico: 'peso-tecnico', experiencia: 'peso-experiencia', comportamental: 'peso-comportamental', cultural: 'peso-cultural' };
   const pesos = {};
-  ids.forEach(id => pesos[id] = parseInt(document.getElementById('sl-' + id).value));
+  let sum = 0;
+  Object.entries(map).forEach(([key, slId]) => {
+    const el = document.getElementById(slId);
+    const val = el ? parseInt(el.value) : 0;
+    pesos[key] = val;
+    sum += val;
+  });
+  if (sum !== 100) { showToast('A soma dos pesos deve ser 100%. Atual: ' + sum + '%.', 'error'); return; }
   localStorage.setItem('cfg_pesos', JSON.stringify(pesos));
   showToast('Pesos salvos com sucesso!', 'success');
 }
@@ -2250,13 +2329,22 @@ function salvarPesos() {
 function loadConfig() {
   const pesos = JSON.parse(localStorage.getItem('cfg_pesos') || 'null');
   if (pesos) {
-    ['tecnico', 'exp', 'comp', 'cult'].forEach(id => {
-      if (pesos[id] !== undefined) document.getElementById('sl-' + id).value = pesos[id];
+    const map = { tecnico: 'peso-tecnico', experiencia: 'peso-experiencia', comportamental: 'peso-comportamental', cultural: 'peso-cultural' };
+    Object.entries(map).forEach(([key, slId]) => {
+      const el = document.getElementById(slId);
+      if (el && pesos[key] !== undefined) el.value = pesos[key];
     });
     updatePeso();
   }
-  document.getElementById('cfg-whatsapp').value = localStorage.getItem('cfg_whatsapp') || '';
-  document.getElementById('cfg-calendly').value = localStorage.getItem('cfg_calendly') || '';
+  const wha = document.getElementById('cfg-whatsapp');
+  const cal = document.getElementById('cfg-calendly');
+  if (wha) wha.value = localStorage.getItem('cfg_whatsapp') || '';
+  if (cal) cal.value = localStorage.getItem('cfg_calendly') || '';
+  const emp = JSON.parse(localStorage.getItem('cfg_empresa') || '{}');
+  if (emp.nome)     { const el = document.getElementById('cfg-empresa-nome');     if (el) el.value = emp.nome; }
+  if (emp.cnpj)     { const el = document.getElementById('cfg-empresa-cnpj');     if (el) el.value = emp.cnpj; }
+  if (emp.endereco) { const el = document.getElementById('cfg-empresa-endereco'); if (el) el.value = emp.endereco; }
+  if (emp.email)    { const el = document.getElementById('cfg-empresa-email');    if (el) el.value = emp.email; }
 }
 
 function salvarIntegracao(tipo) {
@@ -2266,14 +2354,16 @@ function salvarIntegracao(tipo) {
 }
 
 function alterarSenha() {
-  const nova = document.getElementById('cfg-nova-senha').value;
-  const conf = document.getElementById('cfg-conf-senha').value;
+  const nova = document.getElementById('nova-senha').value;
+  const conf = document.getElementById('confirmar-senha').value;
+  const statusEl = document.getElementById('senha-status');
   if (!nova || nova.length < 6) { showToast('A senha deve ter ao menos 6 caracteres.', 'error'); return; }
   if (nova !== conf) { showToast('As senhas não coincidem.', 'error'); return; }
   adminPassword = nova;
   sessionStorage.setItem('admin_pwd', nova);
-  document.getElementById('cfg-nova-senha').value = '';
-  document.getElementById('cfg-conf-senha').value = '';
+  document.getElementById('nova-senha').value = '';
+  document.getElementById('confirmar-senha').value = '';
+  if (statusEl) { statusEl.textContent = '✅ Senha alterada!'; statusEl.style.color = 'var(--success)'; setTimeout(() => statusEl.textContent = '', 3000); }
   showToast('Senha alterada com sucesso!', 'success');
 }
 
@@ -2379,7 +2469,7 @@ function abrirModalDP(a) {
       </div>`;
   } else {
     const campos = [
-      ['Nome Completo', a.nome_completo], ['CPF', a.cpf], ['RG', a.rg],
+      ['Nome Completo', a.nome_completo || a.nome || a.candidato_nome], ['CPF', a.cpf], ['RG', a.rg],
       ['Data Nascimento', a.data_nascimento], ['Estado Civil', a.estado_civil], ['Nacionalidade', a.nacionalidade],
       ['Naturalidade', a.naturalidade], ['Nome da Mãe', a.nome_mae], ['Nome do Pai', a.nome_pai],
       ['Endereço', a.endereco], ['CEP', a.cep], ['Cidade', a.cidade], ['Estado', a.estado],
@@ -2577,6 +2667,27 @@ function showToast(msg, type = 'info') {
     t.classList.add('removing');
     setTimeout(() => t.remove(), 300);
   }, 3500);
+}
+
+// ─── ABAS CONFIGURAÇÕES ───────────────────────────────────────────
+function abrirAbaConfig(aba) {
+  document.querySelectorAll('.cfg-painel').forEach(p => p.style.display = 'none');
+  document.querySelectorAll('.cfg-tab').forEach(t => t.classList.remove('cfg-tab-ativa'));
+  const painel = document.getElementById('cfg-painel-' + aba);
+  const tab    = document.getElementById('cfg-tab-' + aba);
+  if (painel) painel.style.display = 'block';
+  if (tab)    tab.classList.add('cfg-tab-ativa');
+  if (aba === 'contrato') carregarInfoContrato();
+}
+
+function salvarEmpresa() {
+  const nome     = (document.getElementById('cfg-empresa-nome')?.value     || '').trim();
+  const cnpj     = (document.getElementById('cfg-empresa-cnpj')?.value     || '').trim();
+  const endereco = (document.getElementById('cfg-empresa-endereco')?.value || '').trim();
+  const email    = (document.getElementById('cfg-empresa-email')?.value    || '').trim();
+  localStorage.setItem('cfg_empresa', JSON.stringify({ nome, cnpj, endereco, email }));
+  const st = document.getElementById('cfg-empresa-status');
+  if (st) { st.textContent = '✅ Salvo!'; st.style.color = 'var(--success)'; setTimeout(() => st.textContent = '', 3000); }
 }
 
 // ─── CONTRATO MODELO ──────────────────────────────────────────────
