@@ -578,6 +578,36 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
         </div>
         <button class="btn btn-outline btn-sm" style="margin-top:4px" onclick="alterarSenha()">Alterar Senha</button>
       </div>
+
+      <div class="config-card">
+        <h3>📄 Modelo de Contrato</h3>
+        <p>Faça upload do modelo de contrato da empresa (.docx). O GPT-4o irá preencher automaticamente com os dados do candidato.</p>
+        <div id="contrato-status" style="padding:0.75rem; background:var(--surface2); border-radius:8px; margin:1rem 0; border:1px solid var(--border)">
+          <span id="contrato-status-texto">Carregando...</span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Selecionar arquivo (.docx):</label>
+          <input
+            type="file"
+            id="input-contrato-modelo"
+            accept=".docx"
+            style="width:100%; padding:0.5rem; border:2px dashed var(--border); border-radius:8px; cursor:pointer; background:var(--surface2); color:var(--text)"
+          />
+          <p id="contrato-arquivo-nome" style="color:var(--muted); font-size:0.85rem; margin-top:0.25rem"></p>
+        </div>
+        <div style="display:flex; align-items:center; gap:1rem; flex-wrap:wrap">
+          <button
+            onclick="uploadContratoModelo()"
+            id="btn-upload-contrato"
+            disabled
+            class="btn btn-primary btn-sm"
+            style="opacity:0.5"
+          >
+            📤 Fazer Upload do Modelo
+          </button>
+          <span id="contrato-upload-status" style="font-size:0.9rem"></span>
+        </div>
+      </div>
     </section>
 
   </main>
@@ -974,6 +1004,7 @@ function mostrarSecao(nav) {
   document.getElementById('sec-' + nav).classList.add('active');
   if (window.location.hash.replace('#', '') !== nav) window.location.hash = nav;
   if (nav === 'dp' && !admissoes.length) carregarDP();
+  if (nav === 'config') carregarInfoContrato();
 }
 
 document.querySelectorAll('.nav-item').forEach(el => {
@@ -2546,6 +2577,89 @@ function showToast(msg, type = 'info') {
     t.classList.add('removing');
     setTimeout(() => t.remove(), 300);
   }, 3500);
+}
+
+// ─── CONTRATO MODELO ──────────────────────────────────────────────
+let arquivoContratoSelecionado = null;
+
+async function carregarInfoContrato() {
+  const statusEl = document.getElementById('contrato-status-texto');
+  if (!statusEl) return;
+  statusEl.textContent = 'Carregando...';
+  statusEl.style.color = 'var(--muted)';
+  try {
+    const res = await fetch(BASE_URL + '/ats-get-contrato-modelo');
+    const data = await res.json();
+    if (data.tem_template && data.template) {
+      const t = data.template;
+      const dataFmt = new Date(t.criado_em).toLocaleDateString('pt-BR');
+      statusEl.innerHTML = `✅ <strong>Template atual:</strong> ${t.nome_arquivo} &nbsp;|&nbsp; ${t.tamanho_kb} KB &nbsp;|&nbsp; Enviado em ${dataFmt}`;
+      statusEl.style.color = 'var(--success)';
+    } else {
+      statusEl.textContent = '⚠️ Nenhum template cadastrado. Faça o upload abaixo.';
+      statusEl.style.color = 'var(--warn)';
+    }
+  } catch {
+    statusEl.textContent = 'Erro ao carregar informações do template.';
+    statusEl.style.color = 'var(--danger)';
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const inputContrato = document.getElementById('input-contrato-modelo');
+  if (!inputContrato) return;
+  inputContrato.addEventListener('change', e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    arquivoContratoSelecionado = file;
+    document.getElementById('contrato-arquivo-nome').textContent = `📎 ${file.name} (${Math.round(file.size / 1024)} KB)`;
+    const btn = document.getElementById('btn-upload-contrato');
+    btn.disabled = false;
+    btn.style.opacity = '1';
+  });
+});
+
+async function uploadContratoModelo() {
+  if (!arquivoContratoSelecionado) return;
+  const btn = document.getElementById('btn-upload-contrato');
+  const statusEl = document.getElementById('contrato-upload-status');
+  btn.disabled = true;
+  btn.textContent = '⏳ Enviando...';
+  statusEl.textContent = '';
+  try {
+    const base64 = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result.split(',')[1]);
+      reader.onerror = reject;
+      reader.readAsDataURL(arquivoContratoSelecionado);
+    });
+    const res = await fetch(BASE_URL + '/ats-upload-contrato-modelo', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        nome_arquivo: arquivoContratoSelecionado.name,
+        arquivo_base64: base64
+      })
+    });
+    const data = await res.json();
+    if (data.success) {
+      statusEl.textContent = '✅ Template salvo com sucesso!';
+      statusEl.style.color = 'var(--success)';
+      await carregarInfoContrato();
+      document.getElementById('input-contrato-modelo').value = '';
+      document.getElementById('contrato-arquivo-nome').textContent = '';
+      arquivoContratoSelecionado = null;
+    } else {
+      throw new Error('Resposta inesperada');
+    }
+  } catch {
+    statusEl.textContent = '❌ Erro ao enviar. Tente novamente.';
+    statusEl.style.color = 'var(--danger)';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '📤 Fazer Upload do Modelo';
+    btn.style.opacity = '1';
+  }
 }
 
 // ─── BOOT ─────────────────────────────────────────────────────────
