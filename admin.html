@@ -3028,14 +3028,17 @@ async function carregarMetricas() {
   try {
     const res = await fetch(BASE_URL + '/ats-metricas?t=' + Date.now(), { signal: AbortSignal.timeout(15000) });
     const d   = await res.json();
+    console.log('[Métricas] resposta da API:', d);
+
+    const g = d.geral || {};
 
     // KPIs animados
-    _mContador('m-kpi-total',     d.total_candidatos   || 0, 0, '');
-    _mContador('m-kpi-aprovacao', d.taxa_aprovacao      || 0, 1, '%');
-    _mContador('m-kpi-score',     d.score_medio         || 0, 1, '');
-    _mContador('m-kpi-tempo',     d.tempo_medio_dias    || 0, 0, 'd');
-    _mContador('m-kpi-vagas',     d.vagas_ativas        || 0, 0, '');
-    _mContador('m-kpi-semana',    d.candidatos_semana   || 0, 0, '');
+    _mContador('m-kpi-total',     g.total_candidatos   || 0, 0, '');
+    _mContador('m-kpi-aprovacao', g.taxa_aprovacao      || 0, 1, '%');
+    _mContador('m-kpi-score',     g.score_medio         || 0, 1, '');
+    _mContador('m-kpi-tempo',     g.tempo_medio_dias    || 0, 0, 'd');
+    _mContador('m-kpi-vagas',     g.vagas_ativas        || 0, 0, '');
+    _mContador('m-kpi-semana',    g.candidatos_semana   || 0, 0, '');
 
     // Funil
     const funil = d.funil || {};
@@ -3043,7 +3046,7 @@ async function carregarMetricas() {
 
     // Charts
     _mChartLinha(d.evolucao_mensal || []);
-    _mChartDonut1(d.total_candidatos || 0, d.taxa_aprovacao || 0);
+    _mChartDonut1(g.total_candidatos || 0, g.taxa_aprovacao || 0);
     _mChartDonut2(funil);
 
     // Tabela vagas
