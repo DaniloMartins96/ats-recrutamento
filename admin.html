@@ -352,8 +352,44 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
 ::-webkit-scrollbar-thumb:hover{background:var(--muted)}
+
+/* ── MÉTRICAS ─────────────────────────────────────────────────────── */
+.m-kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:12px;margin-bottom:20px}
+.m-kpi{position:relative;background:rgba(255,255,255,.025);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:18px 16px;overflow:hidden;transition:transform .2s,box-shadow .2s;cursor:default}
+.m-kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:14px 14px 0 0}
+.m-kpi::after{content:'';position:absolute;inset:0;border-radius:14px;opacity:0;transition:opacity .2s;pointer-events:none}
+.m-kpi:hover{transform:translateY(-3px)}
+.m-kpi-val{font-size:2.1rem;font-weight:800;line-height:1.1;margin-bottom:4px;letter-spacing:-.02em}
+.m-kpi-label{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}
+.m-kpi.blue  ::before,.m-kpi.blue  :before{background:linear-gradient(90deg,#3b82f6,#60a5fa);box-shadow:0 0 20px #3b82f650}
+.m-kpi.blue  .m-kpi-val{color:#60a5fa;text-shadow:0 0 20px #3b82f640}
+.m-kpi.green ::before,.m-kpi.green :before{background:linear-gradient(90deg,#10b981,#34d399);box-shadow:0 0 20px #10b98150}
+.m-kpi.green .m-kpi-val{color:#34d399;text-shadow:0 0 20px #10b98140}
+.m-kpi.purple::before,.m-kpi.purple:before{background:linear-gradient(90deg,#8b5cf6,#a78bfa);box-shadow:0 0 20px #8b5cf650}
+.m-kpi.purple .m-kpi-val{color:#a78bfa;text-shadow:0 0 20px #8b5cf640}
+.m-kpi.orange::before,.m-kpi.orange:before{background:linear-gradient(90deg,#f59e0b,#fbbf24);box-shadow:0 0 20px #f59e0b50}
+.m-kpi.orange .m-kpi-val{color:#fbbf24;text-shadow:0 0 20px #f59e0b40}
+.m-kpi.cyan  ::before,.m-kpi.cyan  :before{background:linear-gradient(90deg,#06b6d4,#22d3ee);box-shadow:0 0 20px #06b6d450}
+.m-kpi.cyan  .m-kpi-val{color:#22d3ee;text-shadow:0 0 20px #06b6d440}
+.m-kpi.pink  ::before,.m-kpi.pink  :before{background:linear-gradient(90deg,#ec4899,#f472b6);box-shadow:0 0 20px #ec489950}
+.m-kpi.pink  .m-kpi-val{color:#f472b6;text-shadow:0 0 20px #ec489940}
+.m-card{background:rgba(255,255,255,.02);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:20px;margin-bottom:16px}
+.m-card-title{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:16px;display:flex;align-items:center;gap:6px}
+.m-funil-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.m-funil-label{width:138px;font-size:.8rem;font-weight:600;color:var(--text);flex-shrink:0}
+.m-funil-track{flex:1;height:26px;border-radius:6px;background:var(--surface2);overflow:hidden}
+.m-funil-fill{height:100%;border-radius:6px;display:flex;align-items:center;padding:0 10px;font-size:.74rem;font-weight:700;color:rgba(255,255,255,.9);white-space:nowrap;width:0;transition:width .9s cubic-bezier(.4,0,.2,1)}
+.m-funil-num{width:52px;text-align:right;font-size:.78rem;font-weight:700;color:var(--muted);flex-shrink:0}
+.m-vtable{width:100%;border-collapse:collapse}
+.m-vtable th{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);padding:6px 10px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap}
+.m-vtable td{padding:10px;border-bottom:1px solid rgba(255,255,255,.03);font-size:.84rem;vertical-align:middle}
+.m-vtable tbody tr:hover td{background:rgba(108,99,255,.07);cursor:default}
+.m-vtable .score-badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:.75rem;font-weight:700}
+.m-empty{text-align:center;padding:32px 0;color:var(--muted);font-size:.85rem}
+@media(max-width:860px){.m-mid-grid,.m-donut-grid{grid-template-columns:1fr!important}}
 </style>
 <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 </head>
 <body>
 
@@ -409,6 +445,10 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
       Candidatos
       <span class="nav-badge" id="nav-badge-cand">3</span>
+    </div>
+    <div class="nav-item" data-nav="metricas">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      Métricas
     </div>
     <div class="nav-item" data-nav="dp">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
@@ -479,6 +519,89 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
           </select>
         </div>
         <div id="cand-table-body"></div>
+      </div>
+    </section>
+
+    <!-- ── MÉTRICAS ── -->
+    <section class="section" id="sec-metricas">
+      <div class="page-header">
+        <div>
+          <div class="page-title">📊 Central de Métricas</div>
+          <div class="page-sub">Visão geral do pipeline de recrutamento em tempo real</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+          <span style="font-size:11px;color:var(--muted)">Atualizado: <span id="m-last-update">—</span></span>
+          <button class="btn btn-outline btn-sm" id="btn-atualizar-metricas" onclick="carregarMetricas()">🔄 Atualizar</button>
+        </div>
+      </div>
+
+      <!-- KPIs -->
+      <div class="m-kpi-grid">
+        <div class="m-kpi blue">
+          <div class="m-kpi-val" id="m-kpi-total">—</div>
+          <div class="m-kpi-label">Total de Candidatos</div>
+        </div>
+        <div class="m-kpi green">
+          <div class="m-kpi-val" id="m-kpi-aprovacao">—</div>
+          <div class="m-kpi-label">Taxa de Aprovação</div>
+        </div>
+        <div class="m-kpi purple">
+          <div class="m-kpi-val" id="m-kpi-score">—</div>
+          <div class="m-kpi-label">Score Médio</div>
+        </div>
+        <div class="m-kpi orange">
+          <div class="m-kpi-val" id="m-kpi-tempo">—</div>
+          <div class="m-kpi-label">Tempo Médio (dias)</div>
+        </div>
+        <div class="m-kpi cyan">
+          <div class="m-kpi-val" id="m-kpi-vagas">—</div>
+          <div class="m-kpi-label">Vagas Ativas</div>
+        </div>
+        <div class="m-kpi pink">
+          <div class="m-kpi-val" id="m-kpi-semana">—</div>
+          <div class="m-kpi-label">Esta Semana</div>
+        </div>
+      </div>
+
+      <!-- Funil + Linha -->
+      <div class="m-mid-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+        <div class="m-card">
+          <div class="m-card-title">🔻 Funil de Candidatos</div>
+          <div id="m-funil"><div class="m-empty">Carregando...</div></div>
+        </div>
+        <div class="m-card">
+          <div class="m-card-title">📈 Evolução Mensal</div>
+          <canvas id="chart-evolucao" style="max-height:220px"></canvas>
+        </div>
+      </div>
+
+      <!-- Tabela por vaga -->
+      <div class="m-card">
+        <div class="m-card-title">🏆 Ranking por Vaga</div>
+        <div style="overflow-x:auto">
+          <table class="m-vtable">
+            <thead>
+              <tr>
+                <th>Vaga</th><th>Depto</th><th>Total</th><th>Aprovados</th><th>Reprovados</th><th>Score Médio</th>
+              </tr>
+            </thead>
+            <tbody id="m-tbody-vagas">
+              <tr><td colspan="6" class="m-empty">Carregando...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Donuts -->
+      <div class="m-donut-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div class="m-card" style="margin-bottom:0">
+          <div class="m-card-title">✅ Aprovação vs Reprovação</div>
+          <canvas id="chart-donut-status" style="max-height:220px"></canvas>
+        </div>
+        <div class="m-card" style="margin-bottom:0">
+          <div class="m-card-title">🔀 Distribuição por Etapa</div>
+          <canvas id="chart-donut-etapa" style="max-height:220px"></canvas>
+        </div>
       </div>
     </section>
 
@@ -1128,7 +1251,7 @@ document.getElementById('logout-btn').onclick = () => {
 
 // ─── NAV ──────────────────────────────────────────────────────────
 function mostrarSecao(nav) {
-  const valid = ['vagas', 'candidatos', 'config', 'dp'];
+  const valid = ['vagas', 'candidatos', 'metricas', 'config', 'dp'];
   if (!valid.includes(nav)) nav = 'vagas';
   document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.nav === nav));
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
@@ -1136,6 +1259,7 @@ function mostrarSecao(nav) {
   if (window.location.hash.replace('#', '') !== nav) window.location.hash = nav;
   if (nav === 'dp' && !admissoes.length) carregarDP();
   if (nav === 'config') abrirAbaConfig('empresa');
+  if (nav === 'metricas') carregarMetricas();
 }
 
 document.querySelectorAll('.nav-item').forEach(el => {
@@ -2891,6 +3015,208 @@ async function uploadContratoModelo() {
     btn.textContent = '📤 Fazer Upload do Modelo';
     btn.style.opacity = '1';
   }
+}
+
+// ─── MÉTRICAS ─────────────────────────────────────────────────────
+let _chartEvolucao = null, _chartDonut1 = null, _chartDonut2 = null;
+
+async function carregarMetricas() {
+  const btn = document.getElementById('btn-atualizar-metricas');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Carregando...'; }
+  document.getElementById('m-last-update').textContent = new Date().toLocaleTimeString('pt-BR');
+
+  try {
+    const res = await fetch(BASE_URL + '/ats-metricas', { signal: AbortSignal.timeout(15000) });
+    const d   = await res.json();
+
+    // KPIs animados
+    _mContador('m-kpi-total',     d.total_candidatos   || 0, 0, '');
+    _mContador('m-kpi-aprovacao', d.taxa_aprovacao      || 0, 1, '%');
+    _mContador('m-kpi-score',     d.score_medio         || 0, 1, '');
+    _mContador('m-kpi-tempo',     d.tempo_medio_dias    || 0, 0, 'd');
+    _mContador('m-kpi-vagas',     d.vagas_ativas        || 0, 0, '');
+    _mContador('m-kpi-semana',    d.candidatos_semana   || 0, 0, '');
+
+    // Funil
+    const funil = d.funil || {};
+    _mFunil(funil);
+
+    // Charts
+    _mChartLinha(d.evolucao_mensal || []);
+    _mChartDonut1(d.total_candidatos || 0, d.taxa_aprovacao || 0);
+    _mChartDonut2(funil);
+
+    // Tabela vagas
+    _mTabelaVagas(d.por_vaga || []);
+
+  } catch {
+    showToast('Erro ao carregar métricas. Verifique a conexão.', 'error');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '🔄 Atualizar'; }
+  }
+}
+
+function _mContador(id, fim, dec, suf) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const dur = 1500, t0 = Date.now();
+  const tick = () => {
+    const p = Math.min((Date.now() - t0) / dur, 1);
+    const e = 1 - Math.pow(1 - p, 3);
+    el.textContent = (fim * e).toFixed(dec) + suf;
+    if (p < 1) requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+}
+
+function _mFunil(funil) {
+  const etapas = [
+    { label: 'Triagem',           key: 'triagem',            color: '#6c63ff' },
+    { label: 'Entrevista RH',     key: 'entrevista_rh',      color: '#3b82f6' },
+    { label: 'Entrev. Técnica',   key: 'entrevista_tecnica', color: '#06b6d4' },
+    { label: 'Admissão',          key: 'admissao',           color: '#8b5cf6' },
+    { label: 'Aprovado',          key: 'aprovado',           color: '#10b981' },
+  ];
+  const total = funil['triagem'] || funil['total'] || 1;
+  const el = document.getElementById('m-funil');
+  if (!el) return;
+
+  el.innerHTML = etapas.map(e => {
+    const n   = funil[e.key] || 0;
+    const pct = total > 0 ? Math.round(n / total * 100) : 0;
+    return `<div class="m-funil-row">
+      <div class="m-funil-label">${e.label}</div>
+      <div class="m-funil-track">
+        <div class="m-funil-fill" style="background:${e.color};width:0%" data-pct="${pct}">
+          ${pct > 8 ? n : ''}
+        </div>
+      </div>
+      <div class="m-funil-num">${pct}%</div>
+    </div>`;
+  }).join('');
+
+  // Animar barras
+  requestAnimationFrame(() => {
+    el.querySelectorAll('.m-funil-fill').forEach(bar => {
+      bar.style.width = bar.dataset.pct + '%';
+    });
+  });
+}
+
+function _mChartLinha(dados) {
+  const canvas = document.getElementById('chart-evolucao');
+  if (!canvas || !window.Chart) return;
+  if (_chartEvolucao) { _chartEvolucao.destroy(); _chartEvolucao = null; }
+
+  const ctx  = canvas.getContext('2d');
+  const grad = ctx.createLinearGradient(0, 0, 0, 220);
+  grad.addColorStop(0, 'rgba(108,99,255,.45)');
+  grad.addColorStop(1, 'rgba(108,99,255,.01)');
+
+  _chartEvolucao = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels:   dados.map(d => d.mes || d.label || ''),
+      datasets: [{
+        label: 'Candidatos',
+        data:  dados.map(d => d.total ?? d.valor ?? 0),
+        borderColor:     '#6c63ff',
+        backgroundColor: grad,
+        borderWidth: 2.5,
+        pointBackgroundColor: '#a78bfa',
+        pointBorderColor:     '#a78bfa',
+        pointRadius: 4,
+        pointHoverRadius: 6,
+        tension: 0.4,
+        fill: true,
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: false },
+        tooltip: { backgroundColor: '#1a1a24', titleColor: '#e2e2f0', bodyColor: '#a78bfa', borderColor: '#2a2a3a', borderWidth: 1 }
+      },
+      scales: {
+        x: { grid: { color: 'rgba(255,255,255,.04)' }, ticks: { color: '#6b6b8a', font: { size: 11 } } },
+        y: { grid: { color: 'rgba(255,255,255,.04)' }, ticks: { color: '#6b6b8a', font: { size: 11 } }, beginAtZero: true }
+      }
+    }
+  });
+}
+
+function _mChartDonut1(total, taxaAprovacao) {
+  const canvas = document.getElementById('chart-donut-status');
+  if (!canvas || !window.Chart) return;
+  if (_chartDonut1) { _chartDonut1.destroy(); _chartDonut1 = null; }
+
+  const aprovados   = Math.round(taxaAprovacao / 100 * total);
+  const reprovados  = total - aprovados;
+
+  _chartDonut1 = new Chart(canvas.getContext('2d'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Aprovados', 'Não aprovados'],
+      datasets: [{ data: [aprovados, reprovados], backgroundColor: ['#10b981', '#ff4d6d'], borderColor: '#13131a', borderWidth: 3, hoverOffset: 6 }]
+    },
+    options: {
+      responsive: true, cutout: '68%',
+      plugins: {
+        legend: { position: 'bottom', labels: { color: '#6b6b8a', font: { size: 11 }, padding: 12, usePointStyle: true } },
+        tooltip: { backgroundColor: '#1a1a24', titleColor: '#e2e2f0', bodyColor: '#a78bfa', borderColor: '#2a2a3a', borderWidth: 1 }
+      }
+    }
+  });
+}
+
+function _mChartDonut2(funil) {
+  const canvas = document.getElementById('chart-donut-etapa');
+  if (!canvas || !window.Chart) return;
+  if (_chartDonut2) { _chartDonut2.destroy(); _chartDonut2 = null; }
+
+  const etapas = [
+    { label: 'Triagem',          key: 'triagem',            color: '#6c63ff' },
+    { label: 'Entrevista RH',    key: 'entrevista_rh',      color: '#3b82f6' },
+    { label: 'Entrev. Técnica',  key: 'entrevista_tecnica', color: '#06b6d4' },
+    { label: 'Admissão',         key: 'admissao',           color: '#8b5cf6' },
+    { label: 'Aprovado',         key: 'aprovado',           color: '#10b981' },
+  ];
+
+  _chartDonut2 = new Chart(canvas.getContext('2d'), {
+    type: 'doughnut',
+    data: {
+      labels:   etapas.map(e => e.label),
+      datasets: [{ data: etapas.map(e => funil[e.key] || 0), backgroundColor: etapas.map(e => e.color), borderColor: '#13131a', borderWidth: 3, hoverOffset: 6 }]
+    },
+    options: {
+      responsive: true, cutout: '62%',
+      plugins: {
+        legend: { position: 'bottom', labels: { color: '#6b6b8a', font: { size: 11 }, padding: 10, usePointStyle: true } },
+        tooltip: { backgroundColor: '#1a1a24', titleColor: '#e2e2f0', bodyColor: '#a78bfa', borderColor: '#2a2a3a', borderWidth: 1 }
+      }
+    }
+  });
+}
+
+function _mTabelaVagas(vagas) {
+  const tbody = document.getElementById('m-tbody-vagas');
+  if (!tbody) return;
+  if (!vagas.length) {
+    tbody.innerHTML = '<tr><td colspan="6" class="m-empty">Nenhuma vaga com dados.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = vagas.map(v => {
+    const score = Number(v.score_medio || 0);
+    const cls   = score >= 70 ? '#10b981' : score >= 50 ? '#f59e0b' : '#ff4d6d';
+    return `<tr>
+      <td style="font-weight:600">${v.vaga || '—'}</td>
+      <td style="color:var(--muted)">${v.depto || '—'}</td>
+      <td style="text-align:center;font-weight:700">${v.total || 0}</td>
+      <td style="text-align:center;color:#34d399;font-weight:700">${v.aprovados || 0}</td>
+      <td style="text-align:center;color:#f87171;font-weight:700">${v.reprovados || 0}</td>
+      <td><span class="score-badge" style="background:${cls}22;color:${cls}">${score.toFixed(1)}</span></td>
+    </tr>`;
+  }).join('');
 }
 
 // ─── PLANILHAS ────────────────────────────────────────────────────
