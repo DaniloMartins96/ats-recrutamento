@@ -234,7 +234,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 
 <!-- ══ HEADER ══ -->
 <header class="site-header">
-  <a href="vagas.html" class="header-brand" id="header-brand">
+  <a href="/" class="header-brand" id="header-brand">
     <img class="header-logo-img" id="header-logo-img" src="" alt="">
     <div class="header-logo-icon" id="header-logo-icon">
       <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
@@ -249,11 +249,15 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
     <span class="dot"></span>
     <span id="counter-num">0</span> vagas abertas
   </div>
+  <a href="/" style="display:flex;align-items:center;gap:5px;font-size:13px;font-weight:600;color:var(--muted);text-decoration:none;padding:8px 12px;border-radius:8px;transition:color .2s,background .2s;white-space:nowrap" onmouseover="this.style.color='var(--accent2)';this.style.background='var(--accent-dim)'" onmouseout="this.style.color='var(--muted)';this.style.background='transparent'">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+    Início
+  </a>
   <button class="mobile-filter-btn" id="mobile-filter-btn" onclick="toggleSidebar()">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="14" y2="12"/><line x1="4" y1="18" x2="10" y2="18"/></svg>
     Filtros
   </button>
-  <a href="candidatura.html" class="btn-candidato">
+  <a href="/candidatura" class="btn-candidato">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
     Área do Candidato
   </a>

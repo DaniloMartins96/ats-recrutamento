@@ -1,682 +1,181 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <meta name="description" content="TechRecruit AI — Encontre sua próxima oportunidade. Vagas para todos os níveis de carreira."/>
-  <title>TechRecruit AI — Vagas Abertas</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
-  <style>
-    /* =========================================================  RESET & VARIÁVEIS  ========================================================= */
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root {
-      --bg:          #0a0a0f;
-      --bg-card:     #13131a;
-      --bg-input:    #1a1a24;
-      --border:      #2a2a3a;
-      --accent:      #6c63ff;
-      --accent-glow: rgba(108,99,255,.35);
-      --accent-light:#8b85ff;
-      --success:     #22c55e;
-      --text:        #f0f0f8;
-      --text-muted:  #8888aa;
-      --text-sub:    #5a5a7a;
-      --radius:      14px;
-      --radius-sm:   8px;
-      --shadow:      0 8px 32px rgba(0,0,0,.55);
-    }
-    html { scroll-behavior: smooth; }
-    body {
-      font-family: 'Inter', system-ui, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      line-height: 1.6;
-      -webkit-font-smoothing: antialiased;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="TechRecruit AI — Plataforma de recrutamento inteligente.">
+<title>TechRecruit AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0a0f;--surface:#13131a;--surface2:#1a1a24;--border:#2a2a3a;
+  --accent:#6c63ff;--accent2:#a78bfa;--text:#e2e2f0;--muted:#6b6b8a;
+}
+html,body{height:100%;font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased}
 
-    /* =========================================================  ANIMAÇÕES  ========================================================= */
-    @keyframes fadeInUp  { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:translateY(0); } }
-    @keyframes fadeIn    { from { opacity:0; } to { opacity:1; } }
-    @keyframes pulse-ring { 0%,100%{ transform:scale(.9); opacity:.8; } 50%{ transform:scale(1.05); opacity:1; } }
-    @keyframes badge-glow { 0%,100%{ box-shadow:0 0 8px 0 var(--accent-glow); } 50%{ box-shadow:0 0 18px 4px var(--accent-glow); } }
-    @keyframes float     { 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-7px); } }
-    @keyframes shimmer   { 0%{ background-position:-600px 0; } 100%{ background-position:600px 0; } }
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 80% 70% at 15% 10%,#6c63ff18 0%,transparent 55%),
+    radial-gradient(ellipse 60% 55% at 85% 90%,#a78bfa12 0%,transparent 55%),
+    radial-gradient(ellipse 50% 40% at 50% 50%,#6c63ff08 0%,transparent 60%);
+}
+body::after{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:radial-gradient(circle,#2a2a3a 1px,transparent 1px);
+  background-size:36px 36px;opacity:.22;
+}
 
-    /* =========================================================  LAYOUT  ========================================================= */
-    .container { width:100%; max-width:700px; margin:0 auto; padding:0 20px; }
-    .container--wide { max-width:1120px; margin:0 auto; padding:0 24px; }
+/* ── HEADER ── */
+.hdr{
+  position:fixed;top:0;left:0;right:0;z-index:10;height:64px;
+  display:flex;align-items:center;padding:0 32px;gap:12px;
+  background:rgba(10,10,15,.7);backdrop-filter:blur(16px);border-bottom:1px solid rgba(108,99,255,.14);
+}
+.hdr-logo-img{height:32px;width:32px;object-fit:contain;border-radius:8px;display:none}
+.hdr-icon{
+  width:32px;height:32px;border-radius:8px;flex-shrink:0;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 0 14px #6c63ff44;
+}
+.hdr-icon svg{width:16px;height:16px;fill:#fff}
+.hdr-name{font-size:15px;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 
-    /* =========================================================  NAV  ========================================================= */
-    .nav {
-      position:sticky; top:0; z-index:100;
-      background:rgba(10,10,15,.88); backdrop-filter:blur(16px);
-      border-bottom:1px solid var(--border); padding:14px 0;
-    }
-    .nav__inner {
-      max-width:1120px; margin:0 auto; padding:0 24px;
-      display:flex; align-items:center; justify-content:space-between; gap:16px;
-    }
-    .logo { display:flex; align-items:center; gap:10px; text-decoration:none; }
-    .logo__icon { width:36px; height:36px; flex-shrink:0; }
-    .logo__text { font-size:1.1rem; font-weight:700; color:var(--text); letter-spacing:-.3px; }
-    .logo__text span { color:var(--accent); }
-    .badge-ai {
-      display:inline-flex; align-items:center; gap:6px;
-      background:rgba(108,99,255,.15); border:1px solid rgba(108,99,255,.4);
-      color:var(--accent-light); font-size:.72rem; font-weight:600;
-      letter-spacing:.06em; text-transform:uppercase;
-      padding:5px 12px; border-radius:100px;
-      animation:badge-glow 2.4s ease-in-out infinite; white-space:nowrap;
-    }
-    .badge-ai::before {
-      content:''; width:7px; height:7px; background:var(--accent);
-      border-radius:50%; display:block; animation:pulse-ring 1.8s ease-in-out infinite;
-    }
+/* ── HERO ── */
+.hero{
+  position:relative;z-index:1;min-height:100vh;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:80px 24px 48px;
+}
 
-    /* =========================================================  HERO  ========================================================= */
-    .hero {
-      padding:80px 0 64px; text-align:center;
-      animation:fadeInUp .7s ease both;
-    }
-    .hero__eyebrow {
-      display:inline-flex; align-items:center; gap:8px;
-      font-size:.8rem; font-weight:600; color:var(--text-muted);
-      letter-spacing:.08em; text-transform:uppercase; margin-bottom:22px;
-    }
-    .hero__eyebrow-dot {
-      width:6px; height:6px; background:var(--success);
-      border-radius:50%; display:inline-block;
-    }
-    .hero__title {
-      font-size:clamp(2rem,6vw,3.4rem); font-weight:900;
-      letter-spacing:-1.5px; line-height:1.12; margin-bottom:20px;
-    }
-    .hero__title .highlight {
-      background:linear-gradient(135deg,var(--accent) 0%,#a78bfa 100%);
-      -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
-    }
-    .hero__sub {
-      font-size:1.05rem; color:var(--text-muted); max-width:540px;
-      margin:0 auto 36px; font-weight:400;
-    }
-    .hero__badges {
-      display:flex; justify-content:center; flex-wrap:wrap; gap:12px;
-    }
-    .hero__badge {
-      background:var(--bg-card); border:1px solid var(--border);
-      border-radius:100px; padding:8px 18px;
-      font-size:.82rem; font-weight:500; color:var(--text-muted);
-      display:inline-flex; align-items:center; gap:8px;
-    }
+.hero-tag{
+  display:inline-flex;align-items:center;gap:7px;
+  padding:6px 16px;border-radius:20px;margin-bottom:28px;
+  background:rgba(108,99,255,.12);border:1px solid rgba(108,99,255,.28);
+  font-size:12px;font-weight:600;color:var(--accent2);
+  animation:fadeInUp .5s ease both;
+}
+.hero-tag .dot{width:7px;height:7px;border-radius:50%;background:#10b981;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.75)}}
 
-    /* =========================================================  FILTROS  ========================================================= */
-    .filters-section {
-      background:var(--bg-card); border-top:1px solid var(--border);
-      border-bottom:1px solid var(--border); padding:20px 0;
-      animation:fadeInUp .6s .1s ease both;
-    }
-    .filters-inner {
-      max-width:1120px; margin:0 auto; padding:0 24px;
-      display:flex; flex-direction:column; gap:12px;
-    }
-    .filter-row { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
-    .filter-label {
-      font-size:.75rem; font-weight:600; color:var(--text-sub);
-      letter-spacing:.06em; text-transform:uppercase;
-      flex-shrink:0; min-width:56px;
-    }
-    .filter-pills {
-      display:flex; gap:7px; flex-wrap:nowrap; overflow-x:auto;
-      scrollbar-width:none; -webkit-overflow-scrolling:touch;
-    }
-    .filter-pills::-webkit-scrollbar { display:none; }
-    .filter-pill {
-      padding:6px 14px; border-radius:100px;
-      border:1.5px solid var(--border); background:transparent;
-      color:var(--text-muted); font-family:inherit; font-size:.79rem;
-      font-weight:500; cursor:pointer; white-space:nowrap;
-      transition:all .2s ease;
-    }
-    .filter-pill:hover { border-color:rgba(108,99,255,.5); color:var(--text); }
-    .filter-pill.active {
-      background:var(--accent); border-color:var(--accent);
-      color:#fff; box-shadow:0 2px 10px var(--accent-glow);
-    }
+.hero h1{
+  font-size:clamp(2.4rem,6vw,4rem);font-weight:900;line-height:1.08;
+  letter-spacing:-.04em;margin-bottom:18px;
+  animation:fadeInUp .5s .1s ease both;
+}
+.grad{background:linear-gradient(135deg,var(--accent),var(--accent2),#ec4899);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 
-    /* =========================================================  SEÇÃO VAGAS  ========================================================= */
-    .section-vagas { padding:56px 0; animation:fadeIn .5s .2s ease both; }
-    .section-vagas__header {
-      display:flex; align-items:center; justify-content:space-between;
-      margin-bottom:28px; flex-wrap:wrap; gap:10px;
-    }
-    .vagas-count {
-      font-size:.85rem; color:var(--text-muted); font-weight:500;
-    }
-    .vagas-count strong { color:var(--text); }
-    .vagas-grid {
-      display:grid;
-      grid-template-columns:repeat(auto-fill, minmax(300px,1fr));
-      gap:20px;
-    }
+.hero-sub{
+  font-size:clamp(15px,2vw,18px);color:var(--muted);max-width:480px;line-height:1.65;
+  margin-bottom:52px;
+  animation:fadeInUp .5s .2s ease both;
+}
 
-    /* =========================================================  CARD DE VAGA  ========================================================= */
-    .vaga-card {
-      background:var(--bg-card); border:1px solid var(--border);
-      border-radius:var(--radius); padding:22px;
-      display:flex; flex-direction:column; gap:14px;
-      transition:transform .25s, border-color .25s, box-shadow .25s;
-    }
-    .vaga-card:hover {
-      transform:translateY(-3px);
-      border-color:rgba(108,99,255,.4);
-      box-shadow:0 10px 28px rgba(0,0,0,.45);
-    }
-    .vaga-card__top-badges {
-      display:flex; align-items:center; gap:7px; flex-wrap:wrap;
-    }
-    .badge-nivel {
-      font-size:.69rem; font-weight:700; letter-spacing:.05em;
-      text-transform:uppercase; padding:3px 10px; border-radius:100px; border:1px solid;
-    }
-    .badge-nivel[data-nivel="Primeiro emprego"] { background:rgba(20,184,166,.12); border-color:rgba(20,184,166,.35); color:#2dd4bf; }
-    .badge-nivel[data-nivel="Estágio"]          { background:rgba(59,130,246,.12);  border-color:rgba(59,130,246,.35);  color:#60a5fa; }
-    .badge-nivel[data-nivel="Júnior"]           { background:rgba(34,197,94,.12);   border-color:rgba(34,197,94,.35);   color:#4ade80; }
-    .badge-nivel[data-nivel="Pleno"]            { background:rgba(234,179,8,.12);   border-color:rgba(234,179,8,.35);   color:#facc15; }
-    .badge-nivel[data-nivel="Sênior"]           { background:rgba(249,115,22,.12);  border-color:rgba(249,115,22,.35);  color:#fb923c; }
-    .badge-nivel[data-nivel="Especialista"]     { background:rgba(168,85,247,.12);  border-color:rgba(168,85,247,.35);  color:#c084fc; }
-    .badge-nivel[data-nivel="Especialista/Lead"]{ background:rgba(168,85,247,.12);  border-color:rgba(168,85,247,.35);  color:#c084fc; }
-    .badge-nova {
-      background:rgba(239,68,68,.12); border:1px solid rgba(239,68,68,.3);
-      color:#f87171; font-size:.68rem; font-weight:700;
-      letter-spacing:.05em; text-transform:uppercase; padding:3px 9px; border-radius:100px;
-    }
-    .vaga-card__title {
-      font-size:1.05rem; font-weight:700; color:var(--text);
-      line-height:1.3; margin-bottom:2px;
-    }
-    .vaga-card__dept { font-size:.82rem; color:var(--text-muted); }
-    .vaga-card__meta { display:flex; flex-wrap:wrap; gap:10px; }
-    .vaga-card__meta-item {
-      display:inline-flex; align-items:center; gap:5px;
-      font-size:.8rem; color:var(--text-muted);
-    }
-    .vaga-card__meta-item svg { flex-shrink:0; }
-    .vaga-card__stack { display:flex; flex-wrap:wrap; gap:6px; }
-    .stack-tag {
-      background:rgba(108,99,255,.1); border:1px solid rgba(108,99,255,.2);
-      color:var(--text-muted); font-size:.72rem; font-weight:500;
-      padding:3px 9px; border-radius:100px;
-    }
-    .stack-tag--more {
-      background:var(--bg-input); border-color:var(--border); color:var(--text-sub);
-    }
-    .vaga-card__salary {
-      font-size:.88rem; font-weight:600; color:var(--success);
-      display:inline-flex; align-items:center; gap:6px;
-    }
-    .vaga-card__cta {
-      display:flex; align-items:center; justify-content:center; gap:8px;
-      margin-top:auto; background:var(--accent); color:#fff;
-      text-decoration:none; font-family:inherit; font-size:.88rem; font-weight:600;
-      border:none; border-radius:var(--radius-sm); padding:11px 20px;
-      cursor:pointer; transition:all .22s ease; letter-spacing:.01em;
-    }
-    .vaga-card__cta:hover {
-      background:var(--accent-light); transform:translateY(-1px);
-      box-shadow:0 6px 20px var(--accent-glow);
-    }
+/* ── BUTTONS ── */
+.btns{
+  display:flex;gap:16px;flex-wrap:wrap;justify-content:center;
+  animation:fadeInUp .5s .3s ease both;
+}
 
-    /* =========================================================  SKELETON  ========================================================= */
-    .skeleton-card {
-      background:var(--bg-card); border:1px solid var(--border);
-      border-radius:var(--radius); padding:22px;
-      display:flex; flex-direction:column; gap:14px;
-    }
-    .skel {
-      border-radius:6px;
-      background:linear-gradient(90deg,var(--bg-input) 25%,#1e1e2e 50%,var(--bg-input) 75%);
-      background-size:600px 100%;
-      animation:shimmer 1.6s infinite;
-    }
-    .skel--badge  { height:22px; width:72px; border-radius:100px; }
-    .skel--title  { height:20px; width:75%; }
-    .skel--dept   { height:14px; width:40%; }
-    .skel--meta   { height:14px; width:60%; }
-    .skel--tags   { height:14px; width:85%; }
-    .skel--btn    { height:40px; width:100%; border-radius:var(--radius-sm); margin-top:6px; }
+.btn{
+  display:inline-flex;align-items:center;gap:10px;
+  padding:16px 32px;border-radius:14px;font-size:16px;font-weight:700;
+  font-family:inherit;cursor:pointer;text-decoration:none;
+  transition:opacity .2s,transform .15s,box-shadow .2s;
+  letter-spacing:-.01em;
+}
+.btn:active{transform:scale(.97)}
 
-    /* =========================================================  SEM RESULTADOS  ========================================================= */
-    .no-results {
-      grid-column:1/-1; text-align:center;
-      padding:60px 20px; color:var(--text-muted);
-    }
-    .no-results__icon { font-size:2.5rem; margin-bottom:16px; }
-    .no-results h3 { font-size:1.1rem; font-weight:700; color:var(--text); margin-bottom:8px; }
-    .no-results p { font-size:.88rem; }
+.btn-primary{
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  color:#fff;border:none;
+  box-shadow:0 6px 28px rgba(108,99,255,.4);
+}
+.btn-primary:hover{opacity:.88;box-shadow:0 8px 36px rgba(108,99,255,.55)}
 
-    /* =========================================================  SEÇÃO CARREIRA  ========================================================= */
-    .section { padding:72px 0; }
-    .section__title { text-align:center; font-size:1.6rem; font-weight:800; letter-spacing:-.5px; margin-bottom:8px; }
-    .section__sub { text-align:center; color:var(--text-muted); font-size:.9rem; margin-bottom:44px; }
-    .career-grid {
-      display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:16px;
-    }
-    .career-card {
-      background:var(--bg-card); border:1px solid var(--border);
-      border-radius:var(--radius); padding:26px 22px; text-align:center;
-      transition:transform .25s, border-color .25s, box-shadow .25s;
-    }
-    .career-card:hover {
-      transform:translateY(-4px);
-      border-color:rgba(108,99,255,.45);
-      box-shadow:0 10px 28px rgba(0,0,0,.4);
-    }
-    .career-card__icon {
-      font-size:2rem; margin-bottom:14px; display:block;
-      animation:float 3s ease-in-out infinite;
-    }
-    .career-card:nth-child(2) .career-card__icon { animation-delay:.5s; }
-    .career-card:nth-child(3) .career-card__icon { animation-delay:1s; }
-    .career-card:nth-child(4) .career-card__icon { animation-delay:1.5s; }
-    .career-card h3 { font-size:.95rem; font-weight:700; margin-bottom:7px; }
-    .career-card p  { font-size:.82rem; color:var(--text-muted); line-height:1.5; }
+.btn-ghost{
+  background:rgba(255,255,255,.04);color:var(--text);
+  border:1px solid rgba(255,255,255,.14);
+  backdrop-filter:blur(8px);
+}
+.btn-ghost:hover{background:rgba(255,255,255,.08);border-color:rgba(108,99,255,.4);color:var(--accent2)}
 
-    /* =========================================================  DIFERENCIAIS  ========================================================= */
-    .diferenciais {
-      background:var(--bg-card); border:1px solid var(--border);
-      border-radius:var(--radius); padding:32px 28px;
-      display:flex; flex-wrap:wrap; justify-content:center;
-      gap:22px 48px; margin-bottom:72px;
-    }
-    .diferencial { display:flex; align-items:center; gap:10px; font-size:.93rem; font-weight:500; }
-    .diferencial .check { color:var(--success); font-size:1.1rem; flex-shrink:0; }
+.btn svg{width:18px;height:18px;flex-shrink:0}
 
-    /* =========================================================  FOOTER  ========================================================= */
-    .footer { border-top:1px solid var(--border); padding:24px 0; text-align:center; }
-    .footer p { font-size:.82rem; color:var(--text-sub); }
+/* ── BOTTOM INFO ── */
+.powered{
+  position:fixed;bottom:24px;left:0;right:0;text-align:center;z-index:1;
+  font-size:12px;color:var(--muted);animation:fadeInUp .5s .5s ease both;
+}
+.powered a{color:var(--muted);text-decoration:none;transition:color .2s}
+.powered a:hover{color:var(--accent2)}
 
-    /* =========================================================  SCROLL REVEAL  ========================================================= */
-    .reveal { opacity:0; transform:translateY(22px); transition:opacity .6s ease, transform .6s ease; }
-    .reveal.visible { opacity:1; transform:translateY(0); }
-
-    /* =========================================================  RESPONSIVE  ========================================================= */
-    @media (max-width:640px) {
-      .hero { padding:56px 0 44px; }
-      .nav__inner, .container--wide { padding:0 16px; }
-      .filter-row { gap:8px; }
-      .filter-label { display:none; }
-      .section__title { font-size:1.3rem; }
-      .diferenciais { padding:22px 16px; gap:16px 24px; }
-    }
-  </style>
+@keyframes fadeInUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+</style>
 </head>
 <body>
 
-  <!-- =========================================================  NAV  ========================================================= -->
-  <nav class="nav" aria-label="Barra de navegação">
-    <div class="nav__inner">
-      <a href="index.html" class="logo" aria-label="TechRecruit AI — página inicial">
-        <svg class="logo__icon" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <rect width="36" height="36" rx="10" fill="#6c63ff" fill-opacity=".15"/>
-          <circle cx="18" cy="18" r="7.5" stroke="#6c63ff" stroke-width="1.8" fill="none"/>
-          <circle cx="18" cy="18" r="3" fill="#6c63ff"/>
-          <line x1="18" y1="10.5" x2="18" y2="7"  stroke="#a78bfa" stroke-width="1.6" stroke-linecap="round"/>
-          <line x1="18" y1="25.5" x2="18" y2="29" stroke="#a78bfa" stroke-width="1.6" stroke-linecap="round"/>
-          <line x1="10.5" y1="18" x2="7"  y2="18" stroke="#a78bfa" stroke-width="1.6" stroke-linecap="round"/>
-          <line x1="25.5" y1="18" x2="29" y2="18" stroke="#a78bfa" stroke-width="1.6" stroke-linecap="round"/>
-          <line x1="12.7" y1="12.7" x2="10" y2="10" stroke="#6c63ff" stroke-width="1.2" stroke-linecap="round" opacity=".6"/>
-          <line x1="23.3" y1="23.3" x2="26" y2="26" stroke="#6c63ff" stroke-width="1.2" stroke-linecap="round" opacity=".6"/>
-          <line x1="23.3" y1="12.7" x2="26" y2="10" stroke="#6c63ff" stroke-width="1.2" stroke-linecap="round" opacity=".6"/>
-          <line x1="12.7" y1="23.3" x2="10" y2="26" stroke="#6c63ff" stroke-width="1.2" stroke-linecap="round" opacity=".6"/>
-        </svg>
-        <span class="logo__text">TechRecruit<span> AI</span></span>
-      </a>
-      <span class="badge-ai" aria-label="Powered by AI">Powered by AI</span>
-    </div>
-  </nav>
+<header class="hdr">
+  <img class="hdr-logo-img" id="hdr-logo-img" src="" alt="">
+  <div class="hdr-icon" id="hdr-icon">
+    <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+  </div>
+  <span class="hdr-name" id="hdr-name">TechRecruit AI</span>
+</header>
 
-  <!-- =========================================================  HERO  ========================================================= -->
-  <section class="hero" aria-labelledby="hero-title">
-    <div class="container">
-      <div class="hero__eyebrow" aria-hidden="true">
-        <span class="hero__eyebrow-dot"></span>
-        Vagas abertas · Retorno em até 24h
-      </div>
-      <h1 class="hero__title" id="hero-title">
-        Encontre sua<br><span class="highlight">próxima oportunidade</span>
-      </h1>
-      <p class="hero__sub">
-        Do primeiro emprego ao próximo grande passo na carreira.
-        Candidate-se em minutos e receba retorno em até 24h.
-      </p>
-      <div class="hero__badges" role="list" aria-label="Destaques">
-        <span class="hero__badge" role="listitem">🎯 Vagas para todos os níveis</span>
-        <span class="hero__badge" role="listitem">🤖 Análise por IA</span>
-        <span class="hero__badge" role="listitem">✅ Retorno garantido</span>
-      </div>
-    </div>
-  </section>
-
-  <!-- =========================================================  FILTROS  ========================================================= -->
-  <div class="filters-section" aria-label="Filtros de vagas">
-    <div class="filters-inner">
-      <!-- Filtro de nível -->
-      <div class="filter-row">
-        <span class="filter-label" aria-hidden="true">Nível</span>
-        <div class="filter-pills" role="group" aria-label="Filtrar por nível" id="filter-nivel">
-          <button class="filter-pill active" data-group="nivel" data-value="Todos">Todos</button>
-          <button class="filter-pill" data-group="nivel" data-value="Primeiro emprego">Primeiro emprego</button>
-          <button class="filter-pill" data-group="nivel" data-value="Estágio">Estágio</button>
-          <button class="filter-pill" data-group="nivel" data-value="Júnior">Júnior</button>
-          <button class="filter-pill" data-group="nivel" data-value="Pleno">Pleno</button>
-          <button class="filter-pill" data-group="nivel" data-value="Sênior">Sênior</button>
-          <button class="filter-pill" data-group="nivel" data-value="Especialista">Especialista</button>
-        </div>
-      </div>
-      <!-- Filtro de modalidade -->
-      <div class="filter-row">
-        <span class="filter-label" aria-hidden="true">Modo</span>
-        <div class="filter-pills" role="group" aria-label="Filtrar por modalidade" id="filter-modalidade">
-          <button class="filter-pill active" data-group="modalidade" data-value="Todos">Todos</button>
-          <button class="filter-pill" data-group="modalidade" data-value="Remoto">🏠 Remoto</button>
-          <button class="filter-pill" data-group="modalidade" data-value="Híbrido">🔄 Híbrido</button>
-          <button class="filter-pill" data-group="modalidade" data-value="Presencial">🏢 Presencial</button>
-        </div>
-      </div>
-      <!-- Filtro de área -->
-      <div class="filter-row">
-        <span class="filter-label" aria-hidden="true">Área</span>
-        <div class="filter-pills" role="group" aria-label="Filtrar por área" id="filter-area">
-          <button class="filter-pill active" data-group="area" data-value="Todos">Todos</button>
-          <button class="filter-pill" data-group="area" data-value="Tecnologia">Tecnologia</button>
-          <button class="filter-pill" data-group="area" data-value="Design">Design</button>
-          <button class="filter-pill" data-group="area" data-value="Marketing">Marketing</button>
-          <button class="filter-pill" data-group="area" data-value="Comercial/Vendas">Comercial</button>
-          <button class="filter-pill" data-group="area" data-value="RH">RH</button>
-          <button class="filter-pill" data-group="area" data-value="Financeiro">Financeiro</button>
-          <button class="filter-pill" data-group="area" data-value="Operações">Operações</button>
-        </div>
-      </div>
-    </div>
+<main class="hero">
+  <div class="hero-tag">
+    <span class="dot"></span>
+    Plataforma de Recrutamento Inteligente
   </div>
 
-  <!-- =========================================================  SEÇÃO DE VAGAS  ========================================================= -->
-  <main id="vagas-section">
-    <div class="section-vagas">
-      <div class="container--wide">
-        <div class="section-vagas__header">
-          <div>
-            <h2 style="font-size:1.3rem;font-weight:800;letter-spacing:-.4px;">Vagas Abertas</h2>
-            <p class="vagas-count" id="vagas-count" aria-live="polite">Carregando...</p>
-          </div>
-        </div>
-        <div class="vagas-grid" id="vagas-grid" aria-label="Lista de vagas">
-          <!-- Skeletons iniciais -->
-          <div class="skeleton-card" aria-hidden="true"><div class="skel skel--badge"></div><div class="skel skel--title"></div><div class="skel skel--dept"></div><div class="skel skel--meta"></div><div class="skel skel--tags"></div><div class="skel skel--btn"></div></div>
-          <div class="skeleton-card" aria-hidden="true"><div class="skel skel--badge"></div><div class="skel skel--title"></div><div class="skel skel--dept"></div><div class="skel skel--meta"></div><div class="skel skel--tags"></div><div class="skel skel--btn"></div></div>
-          <div class="skeleton-card" aria-hidden="true"><div class="skel skel--badge"></div><div class="skel skel--title"></div><div class="skel skel--dept"></div><div class="skel skel--meta"></div><div class="skel skel--tags"></div><div class="skel skel--btn"></div></div>
-        </div>
-      </div>
-    </div>
+  <h1 id="hero-title">Conectando<br><span class="grad">talentos</span> ao futuro</h1>
+  <p class="hero-sub" id="hero-sub">Candidate-se a vagas em segundos ou acesse o painel administrativo para gerenciar seu processo seletivo.</p>
 
-    <!-- =========================================================  SEÇÃO CARREIRA  ========================================================= -->
-    <section class="section reveal" aria-labelledby="career-title">
-      <div class="container--wide">
-        <h2 class="section__title" id="career-title">Para todos os momentos da carreira</h2>
-        <p class="section__sub">Independente do seu nível, há uma oportunidade esperando por você.</p>
-        <div class="career-grid">
-          <div class="career-card">
-            <span class="career-card__icon" aria-hidden="true">🎓</span>
-            <h3>Primeiro emprego</h3>
-            <p>Sem experiência prévia necessária. Valorizamos potencial e vontade de aprender.</p>
-          </div>
-          <div class="career-card">
-            <span class="career-card__icon" aria-hidden="true">🚀</span>
-            <h3>Júnior</h3>
-            <p>Até 2 anos de experiência. Ambiente de aprendizado acelerado.</p>
-          </div>
-          <div class="career-card">
-            <span class="career-card__icon" aria-hidden="true">💼</span>
-            <h3>Pleno / Sênior</h3>
-            <p>Pronto para novos desafios e responsabilidades maiores.</p>
-          </div>
-          <div class="career-card">
-            <span class="career-card__icon" aria-hidden="true">🏆</span>
-            <h3>Especialista</h3>
-            <p>Liderança técnica e impacto estratégico.</p>
-          </div>
-        </div>
-      </div>
-    </section>
+  <div class="btns">
+    <a href="/vagas" class="btn btn-primary">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      🔍 Ver Vagas Abertas
+    </a>
+    <a href="/login" class="btn btn-ghost">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      🔐 Área Administrativa
+    </a>
+  </div>
+</main>
 
-    <!-- Diferenciais -->
-    <div class="container--wide">
-      <div class="diferenciais reveal" role="list" aria-label="Nossos diferenciais">
-        <div class="diferencial" role="listitem"><span class="check" aria-hidden="true">✅</span>Processo 100% digital</div>
-        <div class="diferencial" role="listitem"><span class="check" aria-hidden="true">✅</span>Resposta garantida em 24h</div>
-        <div class="diferencial" role="listitem"><span class="check" aria-hidden="true">✅</span>Análise imparcial por IA</div>
-      </div>
-    </div>
-  </main>
+<div class="powered">Powered by <a href="#">TechRecruit AI</a></div>
 
-  <!-- =========================================================  FOOTER  ========================================================= -->
-  <footer class="footer">
-    <p>© 2025 TechRecruit AI — Processo seletivo inteligente</p>
-  </footer>
-
-  <!-- =========================================================  JAVASCRIPT  ========================================================= -->
-  <script>
-    /* ----------------------------------------------------------
-       Estado global
-    ---------------------------------------------------------- */
-    let todasVagas = [];
-    const filtros = { nivel: 'Todos', modalidade: 'Todos', area: 'Todos' };
-
-    /* ----------------------------------------------------------
-       Normaliza o objeto retornado pela API para formato interno
-    ---------------------------------------------------------- */
-    function normalizar(v) {
-      const rawStack = v.stack || v.tecnologias || v.skills || [];
-      let stack = Array.isArray(rawStack)
-        ? rawStack
-        : String(rawStack).split(',').map(s => s.trim()).filter(Boolean);
-
-      return {
-        id:            v.id || v._id || v.vaga_id || String(Math.random()),
-        titulo:        v.titulo || v.title || v.nome_vaga || 'Vaga',
-        departamento:  v.departamento || v.area || v.department || '',
-        senioridade:   v.senioridade || v.nivel || v.level || '',
-        modalidade:    v.modalidade || v.remote_type || '',
-        cidade:        v.cidade || v.city || v.location || 'Remoto',
-        tipo_contrato: v.tipo_contrato || v.contract_type || 'CLT',
-        stack,
-        faixa_salarial:v.faixa_salarial || v.salario || v.salary || '',
-        criado_em:     v.criado_em || v.created_at || v.data_criacao || null
-      };
-    }
-
-    /* ----------------------------------------------------------
-       Busca vagas da API
-    ---------------------------------------------------------- */
-    async function carregarVagas() {
-      try {
-        const res = await fetch('https://webhook.danns.com.br/webhook/ats-vagas-publicas');
-        if (!res.ok) throw new Error('HTTP ' + res.status);
-        const data = await res.json();
-        const raw = Array.isArray(data) ? data : (data.vagas || data.data || []);
-        todasVagas = raw.map(normalizar);
-      } catch {
-        todasVagas = [];
-      }
-      renderizarVagas();
-    }
-
-    /* ----------------------------------------------------------
-       Aplica filtros ativos sobre o array completo
-    ---------------------------------------------------------- */
-    function filtrarVagas() {
-      return todasVagas.filter(v => {
-        const matchNivel = filtros.nivel === 'Todos' ||
-          v.senioridade === filtros.nivel ||
-          /* "Especialista" filtra tanto "Especialista" quanto "Especialista/Lead" */
-          (filtros.nivel === 'Especialista' && v.senioridade.startsWith('Especialista'));
-
-        const matchModal = filtros.modalidade === 'Todos' || v.modalidade === filtros.modalidade;
-
-        const matchArea  = filtros.area === 'Todos' ||
-          v.departamento === filtros.area ||
-          /* "Comercial" pode corresponder a "Comercial/Vendas" */
-          (filtros.area === 'Comercial/Vendas' && (v.departamento.includes('Comercial') || v.departamento.includes('Vendas')));
-
-        return matchNivel && matchModal && matchArea;
-      });
-    }
-
-    /* ----------------------------------------------------------
-       Helper para escapar HTML e evitar XSS
-    ---------------------------------------------------------- */
-    function esc(str) {
-      const d = document.createElement('div');
-      d.textContent = String(str || '');
-      return d.innerHTML;
-    }
-
-    /* ----------------------------------------------------------
-       Cria o elemento HTML de um card de vaga
-    ---------------------------------------------------------- */
-    function criarCard(vaga) {
-      const isNova = vaga.criado_em &&
-        (Date.now() - new Date(vaga.criado_em).getTime()) < 7 * 86400000;
-
-      const stackVis = vaga.stack.slice(0, 5);
-      const stackExtra = vaga.stack.length > 5 ? vaga.stack.length - 5 : 0;
-
-      const params = new URLSearchParams({
-        vaga_id:      vaga.id,
-        titulo:       vaga.titulo,
-        departamento: vaga.departamento,
-        senioridade:  vaga.senioridade,
-        modalidade:   vaga.modalidade
-      });
-
-      const div = document.createElement('article');
-      div.className = 'vaga-card';
-      div.setAttribute('aria-label', 'Vaga: ' + vaga.titulo);
-
-      div.innerHTML = `
-        <div class="vaga-card__top-badges">
-          <span class="badge-nivel" data-nivel="${esc(vaga.senioridade)}">${esc(vaga.senioridade)}</span>
-          ${isNova ? '<span class="badge-nova">Nova</span>' : ''}
-        </div>
-        <div>
-          <h3 class="vaga-card__title">${esc(vaga.titulo)}</h3>
-          <p class="vaga-card__dept">${esc(vaga.departamento)}</p>
-        </div>
-        <div class="vaga-card__meta">
-          <span class="vaga-card__meta-item">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg>
-            ${esc(vaga.modalidade)}${vaga.cidade && vaga.cidade !== 'Remoto' ? ' · ' + esc(vaga.cidade) : ''}
-          </span>
-          <span class="vaga-card__meta-item">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
-            ${esc(vaga.tipo_contrato)}
-          </span>
-        </div>
-        ${stackVis.length ? `
-        <div class="vaga-card__stack">
-          ${stackVis.map(t => `<span class="stack-tag">${esc(t)}</span>`).join('')}
-          ${stackExtra ? `<span class="stack-tag stack-tag--more">+${stackExtra}</span>` : ''}
-        </div>` : ''}
-        ${vaga.faixa_salarial ? `
-        <div class="vaga-card__salary">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-          ${esc(vaga.faixa_salarial)}
-        </div>` : ''}
-        <a href="candidatura.html?${params}" class="vaga-card__cta">
-          Candidatar-se agora
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
-        </a>
-      `;
-
-      return div;
-    }
-
-    /* ----------------------------------------------------------
-       Renderiza os cards filtrados na grid
-    ---------------------------------------------------------- */
-    function renderizarVagas() {
-      const grid    = document.getElementById('vagas-grid');
-      const countEl = document.getElementById('vagas-count');
-      const filtradas = filtrarVagas();
-
-      grid.innerHTML = '';
-
-      if (!todasVagas.length) {
-        grid.innerHTML = `
-          <div class="no-results">
-            <div class="no-results__icon" aria-hidden="true">🔍</div>
-            <h3 style="color:#ccc">Nenhuma vaga disponível no momento</h3>
-            <p>Novas oportunidades em breve. Fique de olho!</p>
-          </div>`;
-        countEl.innerHTML = '';
-        return;
-      }
-
-      if (!filtradas.length) {
-        grid.innerHTML = `
-          <div class="no-results">
-            <div class="no-results__icon" aria-hidden="true">🔍</div>
-            <h3>Nenhuma vaga encontrada</h3>
-            <p>Tente ajustar os filtros para ver mais oportunidades.</p>
-          </div>`;
-        countEl.innerHTML = '0 vagas encontradas';
-        return;
-      }
-
-      filtradas.forEach(v => grid.appendChild(criarCard(v)));
-      const n = filtradas.length;
-      countEl.innerHTML = `<strong>${n}</strong> vaga${n !== 1 ? 's' : ''} encontrada${n !== 1 ? 's' : ''}`;
-    }
-
-    /* ----------------------------------------------------------
-       Lógica dos botões de filtro (single-select por grupo)
-    ---------------------------------------------------------- */
-    document.querySelectorAll('.filter-pill').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const group = btn.dataset.group;
-        const value = btn.dataset.value;
-
-        /* Remove .active de todos os pills do mesmo grupo */
-        document.querySelectorAll(`.filter-pill[data-group="${group}"]`).forEach(b => {
-          b.classList.remove('active');
-          b.setAttribute('aria-pressed', 'false');
-        });
-
-        btn.classList.add('active');
-        btn.setAttribute('aria-pressed', 'true');
-        filtros[group] = value;
-        renderizarVagas();
-      });
-      btn.setAttribute('aria-pressed', btn.classList.contains('active') ? 'true' : 'false');
+<script>
+(async function carregarMarca() {
+  try {
+    const res  = await fetch('https://webhook.danns.com.br/webhook/ats-marca', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ action: 'get' })
     });
-
-    /* ----------------------------------------------------------
-       Scroll reveal para as seções abaixo
-    ---------------------------------------------------------- */
-    document.addEventListener('DOMContentLoaded', () => {
-      const io = new IntersectionObserver(
-        entries => entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); } }),
-        { threshold: 0.1 }
-      );
-      document.querySelectorAll('.reveal').forEach(el => io.observe(el));
-
-      /* Inicia o carregamento */
-      carregarVagas();
-    });
-  </script>
-
+    if (!res.ok) return;
+    const data = await res.json();
+    const m    = data.marca;
+    if (!m) return;
+    const nome = m.nome_empresa || 'TechRecruit AI';
+    document.getElementById('hdr-name').textContent  = nome;
+    document.title = nome;
+    if (m.slogan) {
+      document.getElementById('hero-sub').textContent = m.slogan;
+    }
+    if (m.logo_base64) {
+      const img  = document.getElementById('hdr-logo-img');
+      const icon = document.getElementById('hdr-icon');
+      img.src = m.logo_base64; img.style.display = 'block'; icon.style.display = 'none';
+    }
+    const r = document.documentElement.style;
+    if (m.cor_primaria)   r.setProperty('--accent',  m.cor_primaria);
+    if (m.cor_secundaria) r.setProperty('--accent2', m.cor_secundaria);
+  } catch {}
+})();
+</script>
 </body>
 </html>
