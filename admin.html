@@ -446,6 +446,11 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
       Candidatos
       <span class="nav-badge" id="nav-badge-cand">3</span>
     </div>
+    <div class="nav-item" data-nav="testes">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      Testes
+      <span class="nav-badge" id="nav-badge-testes" style="display:none">0</span>
+    </div>
     <div class="nav-item" data-nav="metricas">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
       Métricas
@@ -531,6 +536,25 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
           </select>
         </div>
         <div id="cand-table-body"></div>
+      </div>
+    </section>
+
+    <!-- ── TESTES ── -->
+    <section class="section" id="sec-testes">
+      <div class="page-header">
+        <div>
+          <div class="page-title">🧪 Testes Técnicos</div>
+          <div class="page-sub">Crie e gerencie testes para candidatos</div>
+        </div>
+        <button class="btn btn-primary" onclick="abrirModalCriarTeste()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" width="14" height="14"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Criar Teste
+        </button>
+      </div>
+      <div class="table-wrap">
+        <div id="testes-table-body">
+          <div class="empty-state"><p>Nenhum teste criado ainda.</p></div>
+        </div>
       </div>
     </section>
 
@@ -1273,6 +1297,78 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
 </div>
 
 <!-- ══════════════ MODAL DEPTO. PESSOAL ══════════════ -->
+<!-- ══════════════ MODAL ENVIAR TESTE ══════════════ -->
+<div class="modal-overlay" id="modal-enviar-teste">
+  <div class="modal" role="dialog" aria-modal="true" style="max-width:480px">
+    <div class="modal-header">
+      <div class="modal-title">🧪 Enviar Teste Técnico</div>
+      <button class="modal-close" onclick="fecharModalEnviarTeste()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p style="color:var(--muted);font-size:13px;margin-bottom:16px">Selecione qual teste enviar ao candidato. O candidato receberá um link por e-mail/WhatsApp.</p>
+      <div class="form-group">
+        <label class="form-label">Teste</label>
+        <select class="form-select" id="enviar-teste-lista">
+          <option value="">Carregando...</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="fecharModalEnviarTeste()">Cancelar</button>
+      <button class="btn btn-primary" id="btn-confirmar-enviar-teste" onclick="confirmarEnviarTeste()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><polyline points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        Enviar Teste
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ MODAL CRIAR TESTE ══════════════ -->
+<div class="modal-overlay" id="modal-criar-teste">
+  <div class="modal" role="dialog" aria-modal="true" style="max-width:640px">
+    <div class="modal-header">
+      <div class="modal-title">+ Criar Teste</div>
+      <button class="modal-close" onclick="fecharModalCriarTeste()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group full">
+          <label class="form-label">Título do teste</label>
+          <input class="form-input" id="ct-titulo" type="text" placeholder="Ex: Teste técnico — Desenvolvedor React">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Vaga relacionada</label>
+          <select class="form-select" id="ct-vaga"></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tempo limite (min)</label>
+          <input class="form-input" id="ct-tempo" type="number" value="60" min="5" max="240">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Instruções / contexto para a IA <span style="color:var(--muted);font-weight:400;text-transform:none">(opcional)</span></label>
+        <textarea class="form-textarea" id="ct-contexto" rows="3" placeholder="Ex: Foque em React hooks, TypeScript e arquitetura de componentes. Nível pleno."></textarea>
+      </div>
+      <div style="display:flex;justify-content:flex-end;margin-bottom:16px">
+        <button class="btn btn-outline" id="btn-gerar-ia" onclick="gerarTesteIA()" style="border-color:var(--accent2);color:var(--accent2)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          ✨ Gerar com IA
+        </button>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Perguntas geradas <span style="color:var(--muted);font-weight:400;text-transform:none">(edite se desejar)</span></label>
+        <textarea class="form-textarea" id="ct-perguntas" rows="12" placeholder="As perguntas geradas pela IA aparecerão aqui em formato JSON. Você também pode colar diretamente."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="fecharModalCriarTeste()">Cancelar</button>
+      <button class="btn btn-primary" id="btn-salvar-teste" onclick="submeterCriarTeste()">Salvar Teste</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="modal-dp">
   <div class="modal" role="dialog" aria-modal="true" style="max-width:780px">
     <div class="modal-header">
@@ -1392,7 +1488,7 @@ document.getElementById('logout-btn').onclick = doLogout;
 
 // ─── NAV ──────────────────────────────────────────────────────────
 function mostrarSecao(nav) {
-  const valid = ['vagas', 'candidatos', 'metricas', 'config', 'dp'];
+  const valid = ['vagas', 'candidatos', 'metricas', 'config', 'dp', 'testes'];
   if (!valid.includes(nav)) nav = 'vagas';
   document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.nav === nav));
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
@@ -1401,6 +1497,7 @@ function mostrarSecao(nav) {
   if (nav === 'dp' && !admissoes.length) carregarDP();
   if (nav === 'config') abrirAbaConfig('marca');
   if (nav === 'metricas') carregarMetricas();
+  if (nav === 'testes') carregarTestes();
 }
 
 document.querySelectorAll('.nav-item').forEach(el => {
@@ -1990,6 +2087,7 @@ function renderCandidatos() {
       <td onclick="event.stopPropagation()" style="white-space:nowrap">
         <button class="btn btn-ghost btn-sm" onclick="abrirCandidato('${candId}')">Ver</button>
         ${!isArquivado && !isAprovado && !isReprovado ? `<button class="btn btn-primary btn-sm" onclick="abrirModalAgendamento('${candId}')">Agendar</button>` : ''}
+        ${!isArquivado && !isAprovado && !isReprovado ? `<button class="btn btn-outline btn-sm" style="border-color:#8b5cf6;color:#8b5cf6" onclick="enviarTeste('${candId}')">🧪 Teste</button>` : ''}
         ${!isArquivado ? `<button class="btn btn-danger btn-sm" onclick="rejeitarCandidato('${candId}')">Rejeitar</button>` : ''}
         ${!isArquivado ? `<button class="btn btn-outline btn-sm" style="border-color:var(--muted);color:var(--muted)" onclick="arquivarCandidato('${candId}','${c.candidato_id}')">&#128230; Arquivar</button>` : ''}
         ${isArquivado ? `<button class="btn btn-outline btn-sm" onclick="restaurarCandidato('${candId}','${c.candidato_id}')">&#8617; Restaurar</button>` : ''}
@@ -3038,6 +3136,169 @@ function showToast(msg, type = 'info') {
     t.classList.add('removing');
     setTimeout(() => t.remove(), 300);
   }, 3500);
+}
+
+// ─── TESTES TÉCNICOS ──────────────────────────────────────────────
+let testes = [];
+let _enviarTesteParaCandidatura = null;
+
+async function carregarTestes() {
+  const body = document.getElementById('testes-table-body');
+  body.innerHTML = '<div class="empty-state"><p>Carregando...</p></div>';
+  try {
+    const r    = await fetch(BASE_URL + '/ats-testes-lista');
+    const data = await r.json();
+    testes = Array.isArray(data) ? data : (data.testes || []);
+    renderTestes();
+  } catch {
+    body.innerHTML = '<div class="empty-state"><p>Erro ao carregar testes.</p></div>';
+  }
+}
+
+function renderTestes() {
+  const body = document.getElementById('testes-table-body');
+  if (!testes.length) {
+    body.innerHTML = '<div class="empty-state"><p>Nenhum teste criado ainda. Clique em <strong>Criar Teste</strong> para começar.</p></div>';
+    return;
+  }
+  body.innerHTML = `
+    <table class="table">
+      <thead><tr>
+        <th>Título</th><th>Vaga</th><th>Tempo</th><th>Perguntas</th><th>Candidatos</th><th></th>
+      </tr></thead>
+      <tbody>
+        ${testes.map(t => `
+          <tr>
+            <td><div style="font-weight:600">${t.titulo || '—'}</div></td>
+            <td style="color:var(--muted);font-size:12px">${t.vaga_titulo || '—'}</td>
+            <td style="color:var(--muted);font-size:12px">${t.tempo_limite_min || '—'} min</td>
+            <td style="text-align:center">${t.qtd_perguntas ?? (t.perguntas?.length ?? '—')}</td>
+            <td style="text-align:center">${t.candidatos_realizaram ?? '—'}</td>
+            <td style="white-space:nowrap">
+              <button class="btn btn-ghost btn-sm" onclick="copiarLinkTeste('${t.id}')">🔗 Link</button>
+            </td>
+          </tr>`).join('')}
+      </tbody>
+    </table>`;
+
+  const badge = document.getElementById('nav-badge-testes');
+  badge.textContent = testes.length;
+  badge.style.display = testes.length ? '' : 'none';
+}
+
+function copiarLinkTeste(testeId) {
+  const url = `${window.location.origin}/teste?token=${testeId}`;
+  navigator.clipboard.writeText(url).then(() => showToast('🔗 Link copiado!', 'success')).catch(() => showToast(url, 'info'));
+}
+
+async function enviarTeste(candidaturaId) {
+  _enviarTesteParaCandidatura = candidaturaId;
+  document.getElementById('modal-enviar-teste').classList.add('open');
+  const lista = document.getElementById('enviar-teste-lista');
+  lista.innerHTML = '<option value="">Carregando testes...</option>';
+  try {
+    const r    = await fetch(BASE_URL + '/ats-testes-lista');
+    const data = await r.json();
+    const arr  = Array.isArray(data) ? data : (data.testes || []);
+    lista.innerHTML = '<option value="">Selecione um teste...</option>' +
+      arr.map(t => `<option value="${t.id}">${t.titulo}</option>`).join('');
+  } catch {
+    lista.innerHTML = '<option value="">Erro ao carregar testes</option>';
+  }
+}
+
+function fecharModalEnviarTeste() {
+  document.getElementById('modal-enviar-teste').classList.remove('open');
+  _enviarTesteParaCandidatura = null;
+}
+
+async function confirmarEnviarTeste() {
+  const testeId = document.getElementById('enviar-teste-lista').value;
+  if (!testeId) { showToast('Selecione um teste.', 'warn'); return; }
+  if (!_enviarTesteParaCandidatura) return;
+  const btn = document.getElementById('btn-confirmar-enviar-teste');
+  btn.disabled = true; btn.textContent = 'Enviando...';
+  try {
+    const r = await fetch(BASE_URL + '/ats-enviar-teste', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ candidatura_id: _enviarTesteParaCandidatura, teste_id: testeId })
+    });
+    if (!r.ok) throw new Error();
+    fecharModalEnviarTeste();
+    showToast('🧪 Teste enviado ao candidato!', 'success');
+  } catch {
+    showToast('Erro ao enviar teste.', 'error');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Enviar Teste';
+  }
+}
+
+function abrirModalCriarTeste() {
+  const sel = document.getElementById('ct-vaga');
+  sel.innerHTML = '<option value="">Sem vaga específica</option>' +
+    vagas.map(v => `<option value="${v.id}">${v.titulo}</option>`).join('');
+  document.getElementById('ct-titulo').value    = '';
+  document.getElementById('ct-tempo').value     = '60';
+  document.getElementById('ct-contexto').value  = '';
+  document.getElementById('ct-perguntas').value = '';
+  document.getElementById('modal-criar-teste').classList.add('open');
+}
+
+function fecharModalCriarTeste() {
+  document.getElementById('modal-criar-teste').classList.remove('open');
+}
+
+async function gerarTesteIA() {
+  const titulo   = document.getElementById('ct-titulo').value.trim();
+  const contexto = document.getElementById('ct-contexto').value.trim();
+  const vagaId   = document.getElementById('ct-vaga').value;
+  const tempo    = document.getElementById('ct-tempo').value;
+  const btn      = document.getElementById('btn-gerar-ia');
+  btn.disabled = true; btn.textContent = '✨ Gerando...';
+  try {
+    const r    = await fetch(BASE_URL + '/ats-gerar-teste-ia', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ titulo, contexto, vaga_id: vagaId, tempo_limite_min: Number(tempo) }),
+      signal: AbortSignal.timeout(60000)
+    });
+    if (!r.ok) throw new Error();
+    const data = await r.json();
+    const perguntas = data.perguntas || data;
+    document.getElementById('ct-perguntas').value = JSON.stringify(perguntas, null, 2);
+    showToast('✨ Perguntas geradas com sucesso!', 'success');
+  } catch {
+    showToast('Erro ao gerar teste. Verifique o título e contexto.', 'error');
+  } finally {
+    btn.disabled = false; btn.textContent = '✨ Gerar com IA';
+  }
+}
+
+async function submeterCriarTeste() {
+  const titulo  = document.getElementById('ct-titulo').value.trim();
+  const vagaId  = document.getElementById('ct-vaga').value;
+  const tempo   = document.getElementById('ct-tempo').value;
+  const raw     = document.getElementById('ct-perguntas').value.trim();
+  if (!titulo) { showToast('Informe o título do teste.', 'warn'); return; }
+  let perguntas = [];
+  if (raw) {
+    try { perguntas = JSON.parse(raw); } catch { showToast('JSON de perguntas inválido.', 'error'); return; }
+  }
+  const btn = document.getElementById('btn-salvar-teste');
+  btn.disabled = true; btn.textContent = 'Salvando...';
+  try {
+    const r = await fetch(BASE_URL + '/ats-criar-teste', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ titulo, vaga_id: vagaId || null, tempo_limite_min: Number(tempo), perguntas })
+    });
+    if (!r.ok) throw new Error();
+    fecharModalCriarTeste();
+    showToast('Teste criado com sucesso!', 'success');
+    carregarTestes();
+  } catch {
+    showToast('Erro ao salvar teste.', 'error');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Salvar Teste';
+  }
 }
 
 // ─── ABAS CONFIGURAÇÕES ───────────────────────────────────────────

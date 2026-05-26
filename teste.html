@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Teste Técnico — TechRecruit AI</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0a0f;--surface:#13131a;--surface2:#1a1a24;--border:#2a2a3a;
+  --accent:#6c63ff;--accent2:#a78bfa;--text:#e2e2f0;--muted:#6b6b8a;
+  --danger:#ff4d6d;--success:#10b981;--warn:#f59e0b;
+}
+html,body{min-height:100%;font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased}
+
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(ellipse 80% 70% at 15% 10%,#6c63ff18 0%,transparent 55%),
+             radial-gradient(ellipse 60% 55% at 85% 90%,#a78bfa12 0%,transparent 55%);
+}
+body::after{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:radial-gradient(circle,#2a2a3a 1px,transparent 1px);
+  background-size:36px 36px;opacity:.22;
+}
+
+/* ── HEADER ── */
+.hdr{
+  position:fixed;top:0;left:0;right:0;z-index:10;height:60px;
+  display:flex;align-items:center;padding:0 24px;gap:12px;
+  background:rgba(10,10,15,.8);backdrop-filter:blur(16px);border-bottom:1px solid rgba(108,99,255,.14);
+}
+.hdr-icon{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.hdr-icon svg{width:15px;height:15px;fill:#fff}
+.hdr-name{font-size:14px;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hdr-spacer{flex:1}
+
+/* ── TIMER ── */
+.timer-wrap{
+  display:flex;align-items:center;gap:8px;padding:6px 14px;
+  border-radius:20px;background:rgba(108,99,255,.12);border:1px solid rgba(108,99,255,.28);
+}
+.timer-label{font-size:11px;color:var(--muted)}
+.timer-val{font-size:14px;font-weight:700;color:var(--accent2);font-variant-numeric:tabular-nums}
+.timer-val.danger{color:var(--danger)}
+
+/* ── MAIN ── */
+.container{
+  position:relative;z-index:1;max-width:760px;margin:0 auto;
+  padding:84px 20px 60px;
+}
+
+/* ── SCREENS ── */
+.screen{display:none}
+.screen.active{display:block}
+
+/* ── LOADER ── */
+.loader-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:50vh;gap:16px}
+.spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── STATUS CARDS ── */
+.status-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:20px;
+  padding:48px 40px;text-align:center;max-width:520px;margin:0 auto;
+}
+.status-icon{font-size:56px;margin-bottom:20px}
+.status-title{font-size:22px;font-weight:800;margin-bottom:10px}
+.status-sub{color:var(--muted);line-height:1.6}
+
+/* ── TESTE HEADER ── */
+.teste-header{
+  background:var(--surface);border:1px solid var(--border);border-radius:16px;
+  padding:24px 28px;margin-bottom:24px;
+}
+.teste-titulo{font-size:20px;font-weight:800;margin-bottom:6px}
+.teste-meta{display:flex;gap:16px;flex-wrap:wrap}
+.teste-meta-item{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:4px}
+.badge-pill{display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
+.badge-multipla{background:rgba(108,99,255,.15);color:var(--accent2)}
+.badge-dissertativa{background:rgba(16,185,129,.12);color:#10b981}
+
+/* ── PERGUNTAS ── */
+.pergunta-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:14px;
+  padding:24px;margin-bottom:16px;transition:border-color .2s;
+}
+.pergunta-card:focus-within{border-color:rgba(108,99,255,.4)}
+.pergunta-num{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
+.pergunta-enunciado{font-size:15px;font-weight:600;line-height:1.55;margin-bottom:16px}
+.opcoes{display:flex;flex-direction:column;gap:8px}
+.opcao{
+  display:flex;align-items:flex-start;gap:12px;padding:12px 14px;
+  border-radius:10px;border:1px solid var(--border);cursor:pointer;
+  transition:background .15s,border-color .15s;
+}
+.opcao:hover{background:rgba(108,99,255,.06);border-color:rgba(108,99,255,.3)}
+.opcao input[type=radio]{display:none}
+.opcao.selecionada{background:rgba(108,99,255,.12);border-color:rgba(108,99,255,.5)}
+.opcao-letra{
+  width:26px;height:26px;border-radius:6px;background:var(--surface2);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;
+  flex-shrink:0;color:var(--muted);transition:all .15s;
+}
+.opcao.selecionada .opcao-letra{background:var(--accent);border-color:var(--accent);color:#fff}
+.opcao-texto{font-size:13px;line-height:1.5;padding-top:4px}
+.dissertativa-area{
+  width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;
+  padding:12px 14px;color:var(--text);font-size:13px;font-family:inherit;
+  resize:vertical;min-height:120px;outline:none;transition:border-color .2s;line-height:1.6;
+}
+.dissertativa-area:focus{border-color:rgba(108,99,255,.5)}
+.char-count{font-size:11px;color:var(--muted);text-align:right;margin-top:4px}
+
+/* ── FOOTER BAR ── */
+.footer-bar{
+  position:fixed;bottom:0;left:0;right:0;z-index:10;
+  background:rgba(10,10,15,.9);backdrop-filter:blur(16px);border-top:1px solid var(--border);
+  padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;
+}
+.progress-wrap{flex:1;max-width:300px}
+.progress-label{font-size:11px;color:var(--muted);margin-bottom:5px}
+.progress-bar{height:4px;background:var(--border);border-radius:4px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:4px;transition:width .3s}
+
+.btn{
+  display:inline-flex;align-items:center;gap:8px;padding:12px 24px;border-radius:10px;
+  font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;transition:all .2s;border:none;
+}
+.btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;box-shadow:0 4px 20px rgba(108,99,255,.4)}
+.btn-primary:hover:not(:disabled){opacity:.88}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed}
+
+/* ── RESULTADO ── */
+.resultado-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:20px;
+  padding:40px;max-width:600px;margin:0 auto;
+}
+.score-circle{
+  width:120px;height:120px;border-radius:50%;margin:0 auto 24px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  border:3px solid var(--accent);background:rgba(108,99,255,.1);
+  box-shadow:0 0 30px rgba(108,99,255,.3);
+}
+.score-num{font-size:32px;font-weight:900;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.score-label{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.score-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:24px 0}
+.score-item{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center}
+.score-item-val{font-size:22px;font-weight:800;margin-bottom:4px}
+.score-item-lbl{font-size:11px;color:var(--muted)}
+.feedback-box{background:var(--surface2);border:1px solid rgba(108,99,255,.2);border-radius:10px;padding:16px;margin-top:16px}
+.feedback-titulo{font-size:11px;font-weight:600;color:var(--accent2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
+.feedback-texto{font-size:13px;color:var(--text);line-height:1.65}
+
+@keyframes fadeInUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.fade-in{animation:fadeInUp .4s ease both}
+</style>
+</head>
+<body>
+
+<header class="hdr">
+  <div class="hdr-icon">
+    <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+  </div>
+  <span class="hdr-name" id="hdr-name">TechRecruit AI</span>
+  <div class="hdr-spacer"></div>
+  <div class="timer-wrap" id="timer-wrap" style="display:none">
+    <span class="timer-label">Tempo restante</span>
+    <span class="timer-val" id="timer-val">--:--</span>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- LOADER -->
+  <div class="screen active" id="screen-loader">
+    <div class="loader-wrap">
+      <div class="spinner"></div>
+      <p style="color:var(--muted);font-size:13px">Carregando teste...</p>
+    </div>
+  </div>
+
+  <!-- EXPIRADO -->
+  <div class="screen" id="screen-expirado">
+    <div class="status-card fade-in">
+      <div class="status-icon">⏰</div>
+      <div class="status-title">Prazo Encerrado</div>
+      <p class="status-sub">O prazo para realização deste teste expirou.<br>Entre em contato com o recrutador se precisar de mais informações.</p>
+    </div>
+  </div>
+
+  <!-- ERRO -->
+  <div class="screen" id="screen-erro">
+    <div class="status-card fade-in">
+      <div class="status-icon">❌</div>
+      <div class="status-title">Teste não encontrado</div>
+      <p class="status-sub">O link deste teste é inválido ou já foi utilizado.<br>Verifique se o link está correto.</p>
+    </div>
+  </div>
+
+  <!-- TESTE -->
+  <div class="screen" id="screen-teste">
+    <div class="teste-header fade-in">
+      <div class="teste-titulo" id="teste-titulo">Carregando...</div>
+      <div class="teste-meta">
+        <span class="teste-meta-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+          <span id="teste-vaga">—</span>
+        </span>
+        <span class="teste-meta-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <span id="teste-tempo">—</span>
+        </span>
+        <span class="teste-meta-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span id="teste-qtd-perguntas">—</span>
+        </span>
+      </div>
+    </div>
+
+    <div id="perguntas-container"></div>
+  </div>
+
+  <!-- RESULTADO -->
+  <div class="screen" id="screen-resultado">
+    <div class="resultado-card fade-in">
+      <div style="text-align:center;margin-bottom:24px">
+        <div style="font-size:13px;color:var(--muted);margin-bottom:8px">Sua pontuação</div>
+        <div class="score-circle">
+          <div class="score-num" id="res-score-total">—</div>
+          <div class="score-label">pontos</div>
+        </div>
+        <div class="score-grid">
+          <div class="score-item">
+            <div class="score-item-val" id="res-score-multipla" style="color:var(--accent2)">—</div>
+            <div class="score-item-lbl">Múltipla escolha</div>
+          </div>
+          <div class="score-item">
+            <div class="score-item-val" id="res-score-dissertativa" style="color:#10b981">—</div>
+            <div class="score-item-lbl">Dissertativas</div>
+          </div>
+        </div>
+        <div class="feedback-box" id="res-feedback-wrap" style="display:none">
+          <div class="feedback-titulo">Feedback da IA</div>
+          <div class="feedback-texto" id="res-feedback-texto"></div>
+        </div>
+      </div>
+      <p style="text-align:center;color:var(--muted);font-size:13px;margin-top:16px">Suas respostas foram registradas. O recrutador entrará em contato em breve.</p>
+    </div>
+  </div>
+
+</div>
+
+<!-- FOOTER (apenas durante o teste) -->
+<div class="footer-bar" id="footer-bar" style="display:none">
+  <div class="progress-wrap">
+    <div class="progress-label"><span id="prog-respondidas">0</span> de <span id="prog-total">0</span> respondidas</div>
+    <div class="progress-bar"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
+  </div>
+  <button class="btn btn-primary" id="btn-enviar" onclick="submeterTeste()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><polyline points="22 2 15 22 11 13 2 9 22 2"/></svg>
+    Enviar Respostas
+  </button>
+</div>
+
+<script>
+const TOKEN = new URLSearchParams(window.location.search).get('token');
+const BASE  = 'https://webhook.danns.com.br/webhook';
+
+let testeData   = null;
+let timerSecs   = 0;
+let timerHandle = null;
+let respostas   = {};
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// ── INIT ────────────────────────────────────────────────────────────
+(async function init() {
+  if (!TOKEN) { showScreen('screen-erro'); return; }
+
+  try {
+    const r    = await fetch(`${BASE}/ats-get-teste?token=${encodeURIComponent(TOKEN)}`);
+    if (!r.ok) throw new Error('not_found');
+    const data = await r.json();
+    testeData  = data.teste || data;
+
+    if (testeData.status === 'concluido') {
+      mostrarResultado(testeData);
+      return;
+    }
+    if (testeData.status === 'expirado') {
+      showScreen('screen-expirado');
+      return;
+    }
+
+    renderTeste(testeData);
+  } catch {
+    showScreen('screen-erro');
+  }
+})();
+
+// ── RENDER TESTE ────────────────────────────────────────────────────
+function renderTeste(t) {
+  document.getElementById('teste-titulo').textContent    = t.titulo || 'Teste Técnico';
+  document.getElementById('teste-vaga').textContent      = t.vaga_titulo || '—';
+  document.getElementById('teste-tempo').textContent     = `${t.tempo_limite_min || 60} min`;
+  const perguntas = t.perguntas || [];
+  document.getElementById('teste-qtd-perguntas').textContent = `${perguntas.length} pergunta${perguntas.length !== 1 ? 's' : ''}`;
+
+  const container = document.getElementById('perguntas-container');
+  container.innerHTML = perguntas.map((p, i) => renderPergunta(p, i)).join('');
+
+  document.getElementById('prog-total').textContent = perguntas.length;
+  document.getElementById('footer-bar').style.display = 'flex';
+  atualizarProgresso();
+
+  iniciarTimer(t.tempo_limite_min || 60);
+  showScreen('screen-teste');
+  document.getElementById('timer-wrap').style.display = 'flex';
+}
+
+function renderPergunta(p, idx) {
+  const letras = ['A','B','C','D','E'];
+  if (p.tipo === 'dissertativa') {
+    return `
+    <div class="pergunta-card fade-in" style="animation-delay:${idx * 0.04}s">
+      <div class="pergunta-num">
+        <span class="badge-pill badge-dissertativa">Dissertativa</span>
+        &nbsp; Pergunta ${idx + 1}
+      </div>
+      <div class="pergunta-enunciado">${esc(p.enunciado)}</div>
+      <textarea class="dissertativa-area" id="resp-${p.id}"
+        placeholder="Escreva sua resposta..."
+        oninput="onDissertativaInput('${p.id}', this)"></textarea>
+      <div class="char-count" id="cc-${p.id}">0 caracteres</div>
+    </div>`;
+  }
+
+  const opcoes = (p.opcoes || []).map((op, oi) => `
+    <label class="opcao" id="opcao-${p.id}-${oi}" onclick="selecionarOpcao('${p.id}', '${oi}', this.closest('.pergunta-card'))">
+      <input type="radio" name="q-${p.id}" value="${oi}">
+      <span class="opcao-letra">${letras[oi] || oi}</span>
+      <span class="opcao-texto">${esc(op)}</span>
+    </label>`).join('');
+
+  return `
+  <div class="pergunta-card fade-in" style="animation-delay:${idx * 0.04}s">
+    <div class="pergunta-num">
+      <span class="badge-pill badge-multipla">Múltipla escolha</span>
+      &nbsp; Pergunta ${idx + 1}
+    </div>
+    <div class="pergunta-enunciado">${esc(p.enunciado)}</div>
+    <div class="opcoes">${opcoes}</div>
+  </div>`;
+}
+
+function selecionarOpcao(perguntaId, opcaoIdx, card) {
+  card.querySelectorAll('.opcao').forEach(o => o.classList.remove('selecionada'));
+  const label = card.querySelector(`#opcao-${perguntaId}-${opcaoIdx}`);
+  if (label) label.classList.add('selecionada');
+  respostas[perguntaId] = opcaoIdx;
+  atualizarProgresso();
+}
+
+function onDissertativaInput(perguntaId, el) {
+  respostas[perguntaId] = el.value;
+  const cc = document.getElementById('cc-' + perguntaId);
+  if (cc) cc.textContent = `${el.value.length} caracteres`;
+  atualizarProgresso();
+}
+
+function atualizarProgresso() {
+  if (!testeData) return;
+  const perguntas  = testeData.perguntas || [];
+  const respondidas = perguntas.filter(p => {
+    const r = respostas[p.id];
+    return r !== undefined && r !== null && r !== '';
+  }).length;
+  document.getElementById('prog-respondidas').textContent = respondidas;
+  const pct = perguntas.length ? (respondidas / perguntas.length) * 100 : 0;
+  document.getElementById('prog-fill').style.width = pct + '%';
+}
+
+// ── TIMER ────────────────────────────────────────────────────────────
+function iniciarTimer(minutos) {
+  timerSecs = minutos * 60;
+  renderTimer();
+  timerHandle = setInterval(() => {
+    timerSecs--;
+    renderTimer();
+    if (timerSecs <= 0) {
+      clearInterval(timerHandle);
+      submeterTeste(true);
+    }
+  }, 1000);
+}
+
+function renderTimer() {
+  const m   = Math.floor(timerSecs / 60);
+  const s   = timerSecs % 60;
+  const str = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  const el  = document.getElementById('timer-val');
+  el.textContent = str;
+  el.className   = 'timer-val' + (timerSecs <= 120 ? ' danger' : '');
+}
+
+// ── SUBMETER ─────────────────────────────────────────────────────────
+async function submeterTeste(automatico = false) {
+  if (!automatico) {
+    const perguntas   = testeData?.perguntas || [];
+    const respondidas = perguntas.filter(p => respostas[p.id] !== undefined && respostas[p.id] !== '').length;
+    if (respondidas < perguntas.length) {
+      const ok = confirm(`Você respondeu ${respondidas} de ${perguntas.length} perguntas. Deseja enviar mesmo assim?`);
+      if (!ok) return;
+    }
+  }
+
+  clearInterval(timerHandle);
+  const btn = document.getElementById('btn-enviar');
+  btn.disabled = true;
+  btn.innerHTML = `<div style="width:16px;height:16px;border:2px solid #fff6;border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite"></div> Enviando...`;
+
+  const payload = {
+    token: TOKEN,
+    respostas: Object.entries(respostas).map(([pergunta_id, resposta]) => ({ pergunta_id, resposta: String(resposta) }))
+  };
+
+  try {
+    const r    = await fetch(`${BASE}/ats-submeter-teste`, {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(payload)
+    });
+    const data = await r.json();
+    mostrarResultado(data.resultado || data);
+  } catch {
+    btn.disabled = false;
+    btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><polyline points="22 2 15 22 11 13 2 9 22 2"/></svg> Enviar Respostas`;
+    alert('Erro ao enviar respostas. Tente novamente.');
+  }
+}
+
+// ── RESULTADO ────────────────────────────────────────────────────────
+function mostrarResultado(r) {
+  clearInterval(timerHandle);
+  document.getElementById('footer-bar').style.display  = 'none';
+  document.getElementById('timer-wrap').style.display  = 'none';
+
+  const total       = r.score_total       != null ? Number(r.score_total).toFixed(1)       : '—';
+  const multipla    = r.score_multipla    != null ? Number(r.score_multipla).toFixed(1)    : '—';
+  const dissertativa = r.score_dissertativa != null ? Number(r.score_dissertativa).toFixed(1) : '—';
+
+  document.getElementById('res-score-total').textContent       = total;
+  document.getElementById('res-score-multipla').textContent    = multipla;
+  document.getElementById('res-score-dissertativa').textContent = dissertativa;
+
+  if (r.feedback_ia) {
+    document.getElementById('res-feedback-texto').textContent  = r.feedback_ia;
+    document.getElementById('res-feedback-wrap').style.display = 'block';
+  }
+
+  showScreen('screen-resultado');
+}
+
+function esc(str) {
+  return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ── BRAND ────────────────────────────────────────────────────────────
+(async function carregarMarca() {
+  try {
+    const r = await fetch('https://webhook.danns.com.br/webhook/ats-marca', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ action:'get' })
+    });
+    if (!r.ok) return;
+    const { marca: m } = await r.json();
+    if (!m) return;
+    if (m.nome_empresa) document.getElementById('hdr-name').textContent = m.nome_empresa;
+    const css = document.documentElement.style;
+    if (m.cor_primaria)   css.setProperty('--accent',  m.cor_primaria);
+    if (m.cor_secundaria) css.setProperty('--accent2', m.cor_secundaria);
+  } catch {}
+})();
+</script>
+</body>
+</html>
