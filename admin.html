@@ -1503,6 +1503,27 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
 </div>
 
 <!-- ══════════════ MODAL PREVIEW MARCA ══════════════ -->
+<!-- ══════════════ MODAL SUGERIR AVALIAÇÃO ══════════════ -->
+<div class="modal-overlay" id="modal-sugerir-aval">
+  <div class="modal" role="dialog" aria-modal="true" style="max-width:520px">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">🧠 Selecionar Candidato</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px">Avaliação: <span id="sugerir-aval-titulo" style="color:var(--accent2)">—</span></div>
+      </div>
+      <button class="modal-close" onclick="fecharModalSugerirAval()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div id="sugerir-aval-lista" style="max-height:420px;overflow-y:auto">
+        <p style="color:var(--muted);font-size:13px;text-align:center;padding:16px">Carregando...</p>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="fecharModalSugerirAval()">Fechar</button>
+    </div>
+  </div>
+</div>
+
 <div id="modal-preview-marca" style="display:none;position:fixed;inset:0;background:#00000090;z-index:2000;display:none;align-items:center;justify-content:center">
   <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:32px;max-width:480px;width:90%;position:relative">
     <button onclick="document.getElementById('modal-preview-marca').style.display='none'"
@@ -3264,7 +3285,7 @@ async function carregarTestes() {
   try {
     const r    = await fetch(BASE_URL + '/ats-testes-lista');
     const data = await r.json();
-    testes = Array.isArray(data) ? data : (data.testes || []);
+    testes = Array.isArray(data) ? data : (data.testes_tecnicos || data.testes || []);
     renderTestes();
   } catch {
     body.innerHTML = '<div class="empty-state"><p>Erro ao carregar testes.</p></div>';
@@ -3393,8 +3414,72 @@ async function confirmarEnviarTeste() {
   }
 }
 
-function sugerirAvaliacao(tipo) {
-  showToast('Selecione um candidato em "Em processo" e clique em 🧪 Teste para enviar.', 'info');
+let _sugerirAvalTipo = null;
+
+async function sugerirAvaliacao(tipo) {
+  _sugerirAvalTipo = tipo;
+  const nomes = {
+    comp_disc: 'Perfil Comportamental DISC', eq: 'Inteligência Emocional (EQ)',
+    resultados: 'Orientação para Resultados', trabalho_equipe: 'Trabalho em Equipe',
+    lideranca: 'Liderança e Influência', adaptabilidade: 'Adaptabilidade e Resiliência'
+  };
+  document.getElementById('sugerir-aval-titulo').textContent = nomes[tipo] || tipo;
+  document.getElementById('modal-sugerir-aval').classList.add('open');
+
+  const lista = document.getElementById('sugerir-aval-lista');
+  lista.innerHTML = '<p style="color:var(--muted);font-size:13px;text-align:center;padding:16px">Carregando candidatos...</p>';
+
+  try {
+    const emProcesso = (candidatos.length ? candidatos : await buscarCandidatosParaAval())
+      .filter(c => !['reprovado','arquivado','aprovado'].includes((c.etapa_atual || '').toLowerCase()));
+
+    if (!emProcesso.length) {
+      lista.innerHTML = '<p style="color:var(--muted);font-size:13px;text-align:center;padding:16px">Nenhum candidato em processo no momento.</p>';
+      return;
+    }
+
+    lista.innerHTML = emProcesso.map(c => {
+      const id = c.candidatura_id || c.candidato_id;
+      return `
+        <div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)">
+          <div style="flex:1;min-width:0">
+            <div style="font-weight:600;font-size:13px">${c.nome || '—'}</div>
+            <div style="font-size:11px;color:var(--muted)">${c.vaga_titulo || '—'} · ${c.etapa_atual || '—'}</div>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="enviarAvalSugestao('${id}',this)">Enviar</button>
+        </div>`;
+    }).join('');
+  } catch {
+    lista.innerHTML = '<p style="color:var(--danger);font-size:13px;text-align:center;padding:16px">Erro ao carregar candidatos.</p>';
+  }
+}
+
+async function buscarCandidatosParaAval() {
+  const r    = await fetch(BASE_URL + '/ats-admin-candidatos');
+  const data = await r.json();
+  return Array.isArray(data) ? data : (data.candidatos || []);
+}
+
+async function enviarAvalSugestao(candidaturaId, btn) {
+  btn.disabled = true; btn.textContent = 'Enviando...';
+  try {
+    const r = await fetch(BASE_URL + '/ats-enviar-avaliacao', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ candidatura_id: candidaturaId, tipo_avaliacao: _sugerirAvalTipo })
+    });
+    if (!r.ok) throw new Error();
+    btn.textContent = '✅ Enviado';
+    btn.style.background = 'var(--success)';
+    showToast('✅ Avaliação enviada via WhatsApp!', 'success');
+  } catch {
+    btn.disabled = false; btn.textContent = 'Enviar';
+    showToast('Erro ao enviar avaliação.', 'error');
+  }
+}
+
+function fecharModalSugerirAval() {
+  document.getElementById('modal-sugerir-aval').classList.remove('open');
+  _sugerirAvalTipo = null;
 }
 
 function abrirModalCriarTeste() {
