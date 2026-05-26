@@ -386,6 +386,18 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
 .m-vtable tbody tr:hover td{background:rgba(108,99,255,.07);cursor:default}
 .m-vtable .score-badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:.75rem;font-weight:700}
 .m-empty{text-align:center;padding:32px 0;color:var(--muted);font-size:.85rem}
+.m-funil-toggle{display:flex;gap:6px;flex-wrap:wrap}
+.m-funil-tab{padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:.76rem;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s}
+.m-funil-tab:hover{color:var(--text);border-color:var(--muted)}
+.m-funil-tab.active{background:var(--accent-dim);border-color:var(--accent);color:var(--accent)}
+.m-funil-panel{transition:opacity .25s ease,transform .25s ease}
+.m-funil-panel.m-hidden{display:none}
+.m-badge-live{display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:10px;background:#10b98118;color:#10b981;font-size:.63rem;font-weight:700;letter-spacing:.06em;margin-left:8px;vertical-align:middle}
+.m-badge-live-dot{width:6px;height:6px;border-radius:50%;background:#10b981;animation:m-pulse 1.6s infinite}
+@keyframes m-pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.65)}}
+.m-badge-hist{display:inline-flex;align-items:center;padding:2px 8px;border-radius:10px;background:#3b82f618;color:#60a5fa;font-size:.63rem;font-weight:700;letter-spacing:.06em;margin-left:8px;vertical-align:middle}
+.m-conv{display:flex;align-items:center;justify-content:center;gap:5px;padding:3px 0 4px;font-size:.71rem;color:var(--muted)}
+.m-conv strong{color:var(--accent2)}
 @media(max-width:860px){.m-mid-grid,.m-donut-grid{grid-template-columns:1fr!important}}
 </style>
 <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
@@ -566,9 +578,33 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
       <!-- Funil + Linha -->
       <div class="m-mid-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
         <div class="m-card">
-          <div class="m-card-title">🔻 Funil de Candidatos</div>
-          <div id="m-funil"><div class="m-empty">Carregando...</div></div>
+          <!-- Toggle pills -->
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+            <div class="m-funil-toggle">
+              <button class="m-funil-tab active" id="m-tab-atual"     onclick="_mToggleFunil('atual')">📍 Pipeline Atual</button>
+              <button class="m-funil-tab"        id="m-tab-historico" onclick="_mToggleFunil('historico')">📈 Funil Histórico</button>
+            </div>
+          </div>
+
+          <!-- Painel 1: Pipeline Atual -->
+          <div id="m-funil-panel-atual" class="m-funil-panel">
+            <div style="display:flex;align-items:center;margin-bottom:12px">
+              <span style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)">Estado atual</span>
+              <span class="m-badge-live"><span class="m-badge-live-dot"></span>AO VIVO</span>
+            </div>
+            <div id="m-funil"><div class="m-empty">Carregando...</div></div>
+          </div>
+
+          <!-- Painel 2: Funil Histórico -->
+          <div id="m-funil-panel-historico" class="m-funil-panel m-hidden">
+            <div style="display:flex;align-items:center;margin-bottom:12px">
+              <span style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)">Acumulado histórico</span>
+              <span class="m-badge-hist">HISTÓRICO</span>
+            </div>
+            <div id="m-funil-hist"><div class="m-empty">Carregando...</div></div>
+          </div>
         </div>
+
         <div class="m-card">
           <div class="m-card-title">📈 Evolução Mensal</div>
           <canvas id="chart-evolucao" style="max-height:220px"></canvas>
@@ -3042,6 +3078,7 @@ async function carregarMetricas() {
 
     // Funil
     _mFunil(g);
+    _mFunilHistorico(d.funil_historico || {});
 
     // Charts
     _mChartLinha(d.evolucao_mensal || []);
@@ -3096,6 +3133,70 @@ function _mFunil(g) {
       <div class="m-funil-num">${pct}%</div>
     </div>`;
   }).join('');
+
+  requestAnimationFrame(() => {
+    el.querySelectorAll('.m-funil-fill').forEach(bar => {
+      bar.style.width = bar.dataset.pct + '%';
+    });
+  });
+}
+
+function _mToggleFunil(tipo) {
+  const panelAtual  = document.getElementById('m-funil-panel-atual');
+  const panelHist   = document.getElementById('m-funil-panel-historico');
+  const tabAtual    = document.getElementById('m-tab-atual');
+  const tabHist     = document.getElementById('m-tab-historico');
+  if (!panelAtual || !panelHist) return;
+
+  if (tipo === 'atual') {
+    panelAtual.classList.remove('m-hidden');
+    panelHist.classList.add('m-hidden');
+    tabAtual.classList.add('active');
+    tabHist.classList.remove('active');
+  } else {
+    panelHist.classList.remove('m-hidden');
+    panelAtual.classList.add('m-hidden');
+    tabHist.classList.add('active');
+    tabAtual.classList.remove('active');
+  }
+}
+
+function _mFunilHistorico(h) {
+  const el = document.getElementById('m-funil-hist');
+  if (!el) return;
+
+  const etapas = [
+    { label: 'Triagem',          key: 'triagem',            color: '#6c63ff' },
+    { label: 'Entrevista RH',    key: 'entrevista_rh',      color: '#3b82f6' },
+    { label: 'Entrev. Técnica',  key: 'entrevista_tecnica', color: '#06b6d4' },
+    { label: 'Aprovados',        key: 'aprovados',          color: '#10b981' },
+  ];
+
+  const base = h[etapas[0].key] || 1;
+
+  let html = '';
+  etapas.forEach((e, i) => {
+    const n      = h[e.key] || 0;
+    const pctBar = base > 0 ? Math.round(n / base * 100) : 0;
+
+    html += `<div class="m-funil-row">
+      <div class="m-funil-label">${e.label}</div>
+      <div class="m-funil-track">
+        <div class="m-funil-fill" style="background:${e.color};width:0%" data-pct="${pctBar}">
+          ${pctBar > 8 ? n : ''}
+        </div>
+      </div>
+      <div class="m-funil-num">${pctBar}%</div>
+    </div>`;
+
+    if (i < etapas.length - 1) {
+      const prox    = h[etapas[i + 1].key] || 0;
+      const conv    = n > 0 ? Math.round(prox / n * 100) : 0;
+      html += `<div class="m-conv">↓ <strong>${conv}%</strong> avançaram</div>`;
+    }
+  });
+
+  el.innerHTML = html;
 
   requestAnimationFrame(() => {
     el.querySelectorAll('.m-funil-fill').forEach(bar => {
