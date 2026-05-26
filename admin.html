@@ -405,26 +405,6 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
 </head>
 <body>
 
-<!-- ══════════════ LOGIN ══════════════ -->
-<div id="login-screen">
-  <div class="login-box" id="login-box">
-    <div class="login-logo">
-      <div class="logo-icon">
-        <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-      </div>
-      <span>TechRecruit AI</span>
-    </div>
-    <h2>Painel Administrativo</h2>
-    <p>Acesso restrito a administradores</p>
-    <div class="login-field">
-      <label>Senha</label>
-      <input type="password" id="login-pwd" placeholder="••••••••••••" autocomplete="current-password">
-      <div class="login-error" id="login-err"></div>
-    </div>
-    <button class="login-btn" id="login-btn">Entrar</button>
-  </div>
-</div>
-
 <!-- ══════════════ APP SHELL ══════════════ -->
 <div id="app">
 
@@ -437,10 +417,10 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
     </div>
     <div class="header-spacer"></div>
     <div class="header-user">
-      <div class="header-badge">A</div>
+      <div class="header-badge" id="header-badge">A</div>
       <div>
-        <div class="header-user-name">Administrador</div>
-        <div class="header-user-role">Acesso total</div>
+        <div class="header-user-name" id="header-user-nome">Administrador</div>
+        <div class="header-user-role" id="header-user-plano">Acesso total</div>
       </div>
       <button class="logout-btn" id="logout-btn">Sair</button>
     </div>
@@ -448,6 +428,13 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
 
   <!-- sidebar -->
   <aside class="admin-sidebar">
+    <div style="display:flex;align-items:center;gap:10px;padding:4px 8px 14px;border-bottom:1px solid var(--border);margin-bottom:14px">
+      <div id="sidebar-empresa-icon" style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;flex-shrink:0">A</div>
+      <div style="min-width:0">
+        <div id="sidebar-empresa-nome" style="font-size:12px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">TechRecruit AI</div>
+        <div id="sidebar-empresa-plano" style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em">Master</div>
+      </div>
+    </div>
     <div class="sidebar-section">Menu</div>
     <div class="nav-item active" data-nav="vagas">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
@@ -472,6 +459,12 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
     <div class="nav-item" data-nav="config">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
       Configurações
+    </div>
+    <div style="margin-top:auto;padding-top:16px;border-top:1px solid var(--border);margin-top:24px">
+      <div class="nav-item" id="sidebar-logout-btn" style="color:var(--danger)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Sair
+      </div>
     </div>
   </aside>
 
@@ -1338,7 +1331,6 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
 <script>
 // ─── CONSTANTS ───────────────────────────────────────────────────
 const BASE_URL = 'https://webhook.danns.com.br/webhook';
-let adminPassword = sessionStorage.getItem('admin_pwd') || 'TechRecruit@2025';
 
 // ─── STATE ────────────────────────────────────────────────────────
 let vagas = [];
@@ -1352,37 +1344,46 @@ let currentAdmissao = null;
 let candTabAtivo = 'em_processo';
 let agendamentoCandidaturaId = null;
 
-// ─── LOGIN ────────────────────────────────────────────────────────
+// ─── AUTH ─────────────────────────────────────────────────────────
 function checkAuth() {
-  if (sessionStorage.getItem('admin_auth') === '1') showApp();
-}
-
-document.getElementById('login-btn').onclick = doLogin;
-document.getElementById('login-pwd').onkeydown = e => { if (e.key === 'Enter') doLogin(); };
-
-function doLogin() {
-  const val = document.getElementById('login-pwd').value;
-  if (val === adminPassword) {
-    sessionStorage.setItem('admin_auth', '1');
-    showApp();
-  } else {
-    document.getElementById('login-err').textContent = 'Senha incorreta. Tente novamente.';
-    document.getElementById('login-box').classList.add('shake');
-    setTimeout(() => document.getElementById('login-box').classList.remove('shake'), 400);
-    document.getElementById('login-pwd').value = '';
+  if (!sessionStorage.getItem('ats_token')) {
+    window.location.replace('login.html');
+    return;
   }
+  showApp();
 }
 
 function showApp() {
-  document.getElementById('login-screen').style.display = 'none';
+  const sess = JSON.parse(sessionStorage.getItem('ats_session') || '{}');
+  const nome = sess.nome || 'TechRecruit AI';
+  const plano = sess.plano || 'admin';
+  const email = sess.email || '';
+  // Header
+  const headerNome = document.getElementById('header-user-nome');
+  const headerPlano = document.getElementById('header-user-plano');
+  const headerBadge = document.getElementById('header-badge');
+  if (headerNome)  headerNome.textContent  = nome;
+  if (headerPlano) headerPlano.textContent = plano.charAt(0).toUpperCase() + plano.slice(1);
+  if (headerBadge) headerBadge.textContent = (email || nome).charAt(0).toUpperCase();
+  // Sidebar empresa
+  const sbNome  = document.getElementById('sidebar-empresa-nome');
+  const sbPlano = document.getElementById('sidebar-empresa-plano');
+  const sbIcon  = document.getElementById('sidebar-empresa-icon');
+  if (sbNome)  sbNome.textContent  = nome;
+  if (sbPlano) sbPlano.textContent = plano;
+  if (sbIcon)  sbIcon.textContent  = nome.charAt(0).toUpperCase();
   document.getElementById('app').style.display = 'block';
   init();
 }
 
-document.getElementById('logout-btn').onclick = () => {
-  sessionStorage.removeItem('admin_auth');
-  location.reload();
-};
+function doLogout() {
+  sessionStorage.removeItem('ats_token');
+  sessionStorage.removeItem('ats_session');
+  window.location.replace('login.html');
+}
+
+document.getElementById('logout-btn').onclick = doLogout;
+document.getElementById('sidebar-logout-btn').onclick = doLogout;
 
 // ─── NAV ──────────────────────────────────────────────────────────
 function mostrarSecao(nav) {
@@ -1398,7 +1399,7 @@ function mostrarSecao(nav) {
 }
 
 document.querySelectorAll('.nav-item').forEach(el => {
-  el.onclick = () => mostrarSecao(el.dataset.nav);
+  el.onclick = () => { if (el.dataset.nav) mostrarSecao(el.dataset.nav); };
 });
 
 window.addEventListener('hashchange', () => {
