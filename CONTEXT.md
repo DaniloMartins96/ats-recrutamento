@@ -1,5 +1,5 @@
 # CONTEXT.md — ATS TechRecruit AI
-> Atualizado: 2026-05-25
+> Atualizado: 2026-05-26
 
 ## COMO INICIAR UMA NOVA CONVERSA
 
@@ -63,6 +63,12 @@ Continuando projeto ATS TechRecruit. Leia o CONTEXT.md
 | WF01 | Triagem GPT-4o | `FwiPkcJ72u636AUR` |
 | WF09 | Admin Candidatos (lista) | `PjDkMlETX6LQYdap` |
 | WF16 | Atualizar Etapa | `3L1ZEDy8ykWQsUsJ` |
+| WF21 | Gerar Contrato via IA | (atualizado para usar template do banco) |
+| WF22 | Upload Template Contrato | `xsOJX5x5pJRvqHQD` |
+| WF23 | Info Template Contrato | `UqWvNt67qEktYLlP` |
+| WF24 | Download Template Completo | `YRVXi3WTXCjVPCr3` |
+| WF25 | Assistente Planilhas IA | `ZD2PhutUiq2Ex9To` |
+| WF26 | Métricas | `7McEclEKdvmOSTxi` |
 | WF Resposta WA | Resposta WhatsApp | `5PL1gPhSf11XZj1V` |
 
 ### Endpoints principais (base: `https://webhook.danns.com.br/webhook`)
@@ -70,6 +76,11 @@ Continuando projeto ATS TechRecruit. Leia o CONTEXT.md
 - `GET /ats-admin-candidatos` — WF09, lista todos os candidatos com dados completos
 - `POST /ats-atualizar-etapa` — WF16, avança/reprova candidato, agenda entrevista
 - `POST /ats-formulario-admissao` — WF18, salva dados de admissão
+- `POST /ats-upload-contrato-modelo` — WF22, salva template .docx no banco
+- `GET /ats-get-contrato-modelo` — WF23, retorna info do template (sem base64)
+- `GET /ats-get-contrato-modelo-completo` — WF24, retorna template com base64
+- `POST /ats-assistente-planilha` — WF25, assistente IA para planilhas
+- `GET /ats-metricas` — WF26, retorna todas as métricas
 
 ---
 
@@ -101,25 +112,26 @@ Etapas (`etapa_atual`): `triagem` → `entrevista_rh` → `entrevista_tecnica` �
 
 ---
 
-## STATUS ATUAL (2026-05-25)
+## STATUS ATUAL (2026-05-26)
 
 ### Concluído nesta sessão
-- `downloadCurriculo` no admin.html — baixa PDF do candidato via base64
-- WF09 retorna `curriculo_base64` e `curriculo_nome` no SELECT
-- Modal de Agendamento de Entrevista completo (data, hora, tipo, link/endereço)
-- Botão "Avançar" removido — substituído por "Agendar"
-- Botão "Rejeitar" corrigido para POST (antes era só local)
-- Bug corrigido: botão Agendar sumia em entrevista_rh/tecnica
-- Bug corrigido: coluna ETAPA mostrava 'aprovado' incorretamente
-- Bug corrigido: documentos DP apareciam duplicados (dedup por `d.id`, campo `d.observacao`)
-- WF01 publicado com campos de currículo no SQL
+- Seção Configurações refatorada com abas internas: Empresa, Contrato, IA & Triagem, Integrações, Segurança, Planilhas
+- WF22 `POST /ats-upload-contrato-modelo` (ID: `xsOJX5x5pJRvqHQD`) — salva template .docx no banco
+- WF23 `GET /ats-get-contrato-modelo` (ID: `UqWvNt67qEktYLlP`) — retorna info do template
+- WF24 `GET /ats-get-contrato-modelo-completo` (ID: `YRVXi3WTXCjVPCr3`) — retorna template com base64
+- WF21 atualizado para usar template do banco ao gerar contrato
+- Tabela `contratos_modelo` criada no banco
+- Fix: nome "undefined" no modal de Admissão corrigido
+- WF25 `POST /ats-assistente-planilha` (ID: `ZD2PhutUiq2Ex9To`) — assistente IA para planilhas
+- Aba Planilhas nas Configurações com suporte a Excel e Google Sheets (SheetJS)
+- WF26 `GET /ats-metricas` (ID: `7McEclEKdvmOSTxi`) — retorna todas as métricas
+- Painel de Métricas completo: KPIs, funil atual + histórico com toggle, evolução mensal, ranking por vaga, donuts de status/etapa
 
 ### Pendente / Próximas melhorias
-1. Upload de modelo de contrato da empresa (PDF padrão da empresa)
-2. Integração com Excel/Google Sheets para relatórios
-3. Multi-tenant (múltiplas empresas no mesmo ATS)
-4. Investigar causa raiz de linhas duplicadas em `documentos_admissao` (WF17?)
-5. Verificar se credencial PostgreSQL está vinculada corretamente no WF09 após update via SDK
+1. Contrato modelo: melhorar preenchimento do template real
+2. Planilhas: edição mais inteligente preservando formatação do .xlsx original
+3. Personalização de marca (logo, cores, nome da empresa)
+4. Multi-tenant (múltiplas empresas no mesmo ATS)
 
 ---
 
