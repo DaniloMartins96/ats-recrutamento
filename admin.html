@@ -1581,8 +1581,8 @@ function abrirModalVaga(id) {
     document.getElementById('mv-local').value = v.cidade || v.local || v.localizacao || '';
     document.getElementById('mv-descricao').value = v.descricao || v.descricao_vaga || '';
     document.getElementById('mv-status').value = v.status || 'ativa';
-    tagData.stack = [...(v.stack_tecnica || v.stack || v.tecnologias || [])];
-    tagData.comp  = [...(v.competencias || v.competencias_comportamentais || [])];
+    tagData.stack = _parseTagArray(v.stack_tecnica || v.stack || v.tecnologias);
+    tagData.comp  = _parseTagArray(v.competencias  || v.competencias_comportamentais);
     document.getElementById('mv-sobre-empresa').value = v.sobre_empresa || v.sobre || v.empresa_descricao || '';
     document.getElementById('mv-valores').value = v.valores_empresa || v.valores || '';
     document.getElementById('mv-responsabilidades').value = v.responsabilidades || v.descricao_responsabilidades || '';
@@ -1590,6 +1590,7 @@ function abrirModalVaga(id) {
     document.getElementById('mv-requisitos-desej').value = v.requisitos_desejaveis || v.diferenciais || '';
     document.getElementById('mv-salario-min').value = Number(v.salario_min) > 0 ? v.salario_min : '';
     document.getElementById('mv-salario-max').value = Number(v.salario_max) > 0 ? v.salario_max : '';
+    setSelectValue('mv-mostrar-salario', v.mostrar_salario || 'sim');
     document.getElementById('mv-beneficios').value = v.beneficios || '';
     document.getElementById('mv-qtd-vagas').value = v.vagas_abertas || v.quantidade_vagas || 1;
     setSelectValue('mv-contrato', v.tipo_contrato || v.contrato || 'CLT');
@@ -1779,6 +1780,12 @@ function setSelectValue(id, val) {
 }
 
 // ─── TAG INPUTS ───────────────────────────────────────────────────
+function _parseTagArray(val) {
+  if (!val) return [];
+  if (Array.isArray(val)) return [...val];
+  try { const p = JSON.parse(val); return Array.isArray(p) ? p : []; } catch { return []; }
+}
+
 function initTagInputs() {
   setupTagInput('stack');
   setupTagInput('comp');

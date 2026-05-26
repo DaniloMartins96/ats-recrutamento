@@ -538,20 +538,30 @@ function renderizarCards(vagas) {
   grid.innerHTML = vagas.map((v, i) => renderCard(v, i)).join('');
 }
 
+function safeParseArray(val) {
+  if (Array.isArray(val)) return val;
+  if (!val) return [];
+  try { const p = JSON.parse(val); return Array.isArray(p) ? p : []; } catch { return []; }
+}
+
 function renderCard(v, idx) {
-  const modal     = v.modalidade || '';
-  const dept      = v.departamento || v.area || '';
-  const senior    = v.senioridade  || '';
-  const localRaw  = v.localizacao || v.cidade || v.local || '';
-  const local     = (localRaw && localRaw !== '—') ? localRaw : (modal === 'Remoto' ? 'Remoto' : 'A definir');
-  const contrato  = v.tipo_contrato || v.contrato || '';
-  const cands     = v.candidatos_count || v.candidatos || 0;
-  const salMin    = Number(v.salario_min) || 0;
-  const salMax    = Number(v.salario_max) || 0;
-  const criado    = v.criado_em || v.data_publicacao || '';
-  const titulo    = v.titulo || 'Vaga';
-  const id        = v.id || v.vaga_id || '';
-  const isNew     = criado && (Date.now() - new Date(criado).getTime()) < 7 * 86400000;
+  const modal        = v.modalidade || '';
+  const dept         = v.departamento || v.area || '';
+  const senior       = v.senioridade  || '';
+  const localRaw     = v.cidade || v.localizacao || v.local || '';
+  const local        = (localRaw && localRaw !== '—') ? localRaw : (modal === 'Remoto' ? 'Remoto' : 'A definir');
+  const contrato     = v.tipo_contrato || v.contrato || '';
+  const cands        = Number(v.candidatos_count || v.candidatos) || 0;
+  const salMin       = Number(v.salario_min) || 0;
+  const salMax       = Number(v.salario_max) || 0;
+  const criado       = v.criado_em || v.data_publicacao || '';
+  const titulo       = v.titulo || 'Vaga';
+  const id           = v.id || v.vaga_id || '';
+  const isNew        = criado && (Date.now() - new Date(criado).getTime()) < 7 * 86400000;
+  const descricao    = (v.descricao || v.descricao_vaga || v.requisitos_obrigatorios || '').slice(0, 160);
+  const beneficios   = v.beneficios || '';
+  const vagasAbertas = Number(v.vagas_abertas) || 0;
+  const stack        = safeParseArray(v.stack_tecnica || v.stack || v.tecnologias).slice(0, 6);
 
   const salarioTxt = salMin > 0
     ? 'R$ ' + salMin.toLocaleString('pt-BR') + (salMax > 0 ? ' – R$ ' + salMax.toLocaleString('pt-BR') : '+')
@@ -563,7 +573,7 @@ function renderCard(v, idx) {
                    : 'badge-tipo';
 
   const delay = Math.min(idx * 50, 400);
-  const candURL = `candidatura.html?vaga_id=${encodeURIComponent(id)}&titulo=${encodeURIComponent(titulo)}&departamento=${encodeURIComponent(dept)}&senioridade=${encodeURIComponent(senior)}&modalidade=${encodeURIComponent(modal)}`;
+  const candURL = `/candidatura?vaga_id=${encodeURIComponent(id)}&titulo=${encodeURIComponent(titulo)}&departamento=${encodeURIComponent(dept)}&senioridade=${encodeURIComponent(senior)}&modalidade=${encodeURIComponent(modal)}`;
 
   return `
   <div class="job-card" style="animation-delay:${delay}ms" onclick="window.location='${candURL}'">
@@ -581,12 +591,18 @@ function renderCard(v, idx) {
       ${dept ? `<span class="card-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>${dept}</span>` : ''}
       ${senior ? `<span class="card-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>${senior}</span>` : ''}
       <span class="card-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>${local}</span>
+      ${vagasAbertas > 1 ? `<span class="card-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>${vagasAbertas} vagas</span>` : ''}
     </div>
+
+    ${descricao ? `<p style="font-size:13px;color:var(--muted);line-height:1.5;margin:8px 0 10px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${descricao}${descricao.length === 160 ? '…' : ''}</p>` : ''}
+
+    ${stack.length ? `<div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px">${stack.map(t => `<span style="padding:2px 9px;border-radius:5px;font-size:11px;font-weight:600;background:var(--surface3);color:var(--accent2);border:1px solid var(--border)">${t}</span>`).join('')}</div>` : ''}
 
     <div class="card-bottom">
       <div>
         <div class="card-salary">${salarioTxt}</div>
         ${salMin > 0 ? '<div class="card-salary-label">Faixa salarial</div>' : ''}
+        ${beneficios ? `<div style="font-size:11px;color:var(--muted);margin-top:3px" title="${beneficios}">🎁 ${beneficios.slice(0,50)}${beneficios.length>50?'…':''}</div>` : ''}
       </div>
       <div style="display:flex;align-items:center;gap:14px">
         ${cands ? `<span class="card-candidates"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>${cands} candidato${cands !== 1 ? 's' : ''}</span>` : ''}
