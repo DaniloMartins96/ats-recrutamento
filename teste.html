@@ -205,6 +205,10 @@ body::after{
       <div class="teste-titulo" id="teste-titulo">Carregando...</div>
       <div class="teste-meta">
         <span class="teste-meta-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <span id="teste-candidato" style="display:none">—</span>
+        </span>
+        <span class="teste-meta-item">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
           <span id="teste-vaga">—</span>
         </span>
@@ -288,6 +292,12 @@ function showScreen(id) {
     const data = await r.json();
     testeData  = data.teste || data;
 
+    if (testeData.candidato_nome) {
+      const el = document.getElementById('teste-candidato');
+      el.textContent = testeData.candidato_nome;
+      el.style.display = '';
+    }
+
     if (testeData.status === 'concluido') {
       mostrarResultado(testeData);
       return;
@@ -369,7 +379,13 @@ function selecionarOpcao(perguntaId, opcaoIdx, card) {
 function onDissertativaInput(perguntaId, el) {
   respostas[perguntaId] = el.value;
   const cc = document.getElementById('cc-' + perguntaId);
-  if (cc) cc.textContent = `${el.value.length} caracteres`;
+  if (cc) {
+    const len  = el.value.length;
+    const falta = Math.max(0, 100 - len);
+    cc.textContent = falta > 0 ? `${len} caracteres (mínimo 100 — faltam ${falta})` : `${len} caracteres ✓`;
+    cc.style.color = falta > 0 ? 'var(--warn)' : 'var(--success)';
+    el.style.borderColor = (len > 0 && falta > 0) ? 'rgba(245,158,11,.5)' : '';
+  }
   atualizarProgresso();
 }
 
