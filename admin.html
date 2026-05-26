@@ -1572,33 +1572,40 @@ function abrirModalVaga(id) {
   if (id) {
     const v = vagas.find(x => x.id === id);
     if (!v) return;
+    console.log('[editarVaga] objeto completo:', v);
     document.getElementById('modal-vaga-title').textContent = 'Editar Vaga';
     document.getElementById('mv-save').textContent = 'Salvar Alterações';
+    // Identificação
     document.getElementById('mv-titulo').value = v.titulo || '';
-    setSelectValue('mv-departamento', v.departamento || v.area || '');
-    setSelectValue('mv-nivel', v.senioridade || v.nivel || v.nivel_senioridade || '');
+    setSelectValue('mv-departamento', v.departamento || '');
+    setSelectValue('mv-nivel', v.senioridade || '');
     setSelectValue('mv-modalidade', v.modalidade || '');
-    document.getElementById('mv-local').value = v.cidade || v.local || v.localizacao || '';
-    document.getElementById('mv-descricao').value = v.descricao || v.descricao_vaga || '';
+    document.getElementById('mv-local').value = v.cidade || '';
     document.getElementById('mv-status').value = v.status || 'ativa';
-    tagData.stack = _parseTagArray(v.stack_tecnica || v.stack || v.tecnologias);
-    tagData.comp  = _parseTagArray(v.competencias  || v.competencias_comportamentais);
-    document.getElementById('mv-sobre-empresa').value = v.sobre_empresa || v.sobre || v.empresa_descricao || '';
-    document.getElementById('mv-valores').value = v.valores_empresa || v.valores || '';
-    document.getElementById('mv-responsabilidades').value = v.responsabilidades || v.descricao_responsabilidades || '';
-    document.getElementById('mv-requisitos-obrig').value = v.requisitos_obrigatorios || v.requisitos || '';
-    document.getElementById('mv-requisitos-desej').value = v.requisitos_desejaveis || v.diferenciais || '';
+    setSelectValue('mv-contrato', v.tipo_contrato || 'CLT');
+    // Empresa
+    document.getElementById('mv-sobre-empresa').value = v.sobre_empresa || '';
+    document.getElementById('mv-valores').value = v.valores_empresa || '';
+    // Descrição e requisitos
+    document.getElementById('mv-descricao').value = v.descricao || '';
+    document.getElementById('mv-responsabilidades').value = v.responsabilidades || '';
+    document.getElementById('mv-requisitos-obrig').value = v.requisitos_obrigatorios || '';
+    document.getElementById('mv-requisitos-desej').value = v.requisitos_desejaveis || '';
+    // Stack e competências (array ou string JSON → array de tags)
+    tagData.stack = _parseTagArray(v.stack_tecnica);
+    tagData.comp  = _parseTagArray(v.competencias_comportamentais);
+    // Remuneração
     document.getElementById('mv-salario-min').value = Number(v.salario_min) > 0 ? v.salario_min : '';
     document.getElementById('mv-salario-max').value = Number(v.salario_max) > 0 ? v.salario_max : '';
     setSelectValue('mv-mostrar-salario', v.mostrar_salario || 'sim');
     document.getElementById('mv-beneficios').value = v.beneficios || '';
-    document.getElementById('mv-qtd-vagas').value = v.vagas_abertas || v.quantidade_vagas || 1;
-    setSelectValue('mv-contrato', v.tipo_contrato || v.contrato || 'CLT');
-    document.getElementById('mv-exp-anos').value = v.experiencia_minima_anos || v.experiencia_anos || '';
+    // Detalhes adicionais
+    document.getElementById('mv-qtd-vagas').value = v.vagas_abertas || 1;
+    document.getElementById('mv-exp-anos').value = v.experiencia_minima_anos || '';
     setSelectValue('mv-ingles-obrig', v.ingles_obrigatorio ? 'sim' : 'nao');
-    setSelectValue('mv-nivel-ingles', v.nivel_ingles_minimo || v.nivel_ingles || '');
+    setSelectValue('mv-nivel-ingles', v.nivel_ingles_minimo || '');
     document.getElementById('mv-data-limite').value = v.data_limite ? v.data_limite.split('T')[0] : '';
-    document.getElementById('mv-recrutador').value = v.recrutador_responsavel || v.recrutador || '';
+    document.getElementById('mv-recrutador').value = v.recrutador_responsavel || '';
     toggleNivelIngles();
   } else {
     document.getElementById('modal-vaga-title').textContent = 'Nova Vaga';
