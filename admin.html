@@ -3041,13 +3041,12 @@ async function carregarMetricas() {
     _mContador('m-kpi-semana',    g.candidatos_semana   || 0, 0, '');
 
     // Funil
-    const funil = d.funil || {};
-    _mFunil(funil);
+    _mFunil(g);
 
     // Charts
     _mChartLinha(d.evolucao_mensal || []);
     _mChartDonut1(g.total_candidatos || 0, g.taxa_aprovacao || 0);
-    _mChartDonut2(funil);
+    _mChartDonut2(g);
 
     // Tabela vagas
     _mTabelaVagas(d.por_vaga || []);
@@ -3072,20 +3071,20 @@ function _mContador(id, fim, dec, suf) {
   requestAnimationFrame(tick);
 }
 
-function _mFunil(funil) {
+function _mFunil(g) {
   const etapas = [
-    { label: 'Triagem',           key: 'triagem',            color: '#6c63ff' },
-    { label: 'Entrevista RH',     key: 'entrevista_rh',      color: '#3b82f6' },
-    { label: 'Entrev. Técnica',   key: 'entrevista_tecnica', color: '#06b6d4' },
-    { label: 'Admissão',          key: 'admissao',           color: '#8b5cf6' },
-    { label: 'Aprovado',          key: 'aprovado',           color: '#10b981' },
+    { label: 'Triagem',          key: 'total_triagem',            color: '#6c63ff' },
+    { label: 'Entrevista RH',    key: 'total_entrevista_rh',      color: '#3b82f6' },
+    { label: 'Entrev. Técnica',  key: 'total_entrevista_tecnica', color: '#06b6d4' },
+    { label: 'Admissão',         key: 'total_admissao',           color: '#8b5cf6' },
+    { label: 'Aprovado',         key: 'total_aprovados',          color: '#10b981' },
   ];
-  const total = funil['triagem'] || funil['total'] || 1;
+  const total = g.total_candidatos || 1;
   const el = document.getElementById('m-funil');
   if (!el) return;
 
   el.innerHTML = etapas.map(e => {
-    const n   = funil[e.key] || 0;
+    const n   = g[e.key] || 0;
     const pct = total > 0 ? Math.round(n / total * 100) : 0;
     return `<div class="m-funil-row">
       <div class="m-funil-label">${e.label}</div>
@@ -3098,7 +3097,6 @@ function _mFunil(funil) {
     </div>`;
   }).join('');
 
-  // Animar barras
   requestAnimationFrame(() => {
     el.querySelectorAll('.m-funil-fill').forEach(bar => {
       bar.style.width = bar.dataset.pct + '%';
@@ -3172,24 +3170,24 @@ function _mChartDonut1(total, taxaAprovacao) {
   });
 }
 
-function _mChartDonut2(funil) {
+function _mChartDonut2(g) {
   const canvas = document.getElementById('chart-donut-etapa');
   if (!canvas || !window.Chart) return;
   if (_chartDonut2) { _chartDonut2.destroy(); _chartDonut2 = null; }
 
   const etapas = [
-    { label: 'Triagem',          key: 'triagem',            color: '#6c63ff' },
-    { label: 'Entrevista RH',    key: 'entrevista_rh',      color: '#3b82f6' },
-    { label: 'Entrev. Técnica',  key: 'entrevista_tecnica', color: '#06b6d4' },
-    { label: 'Admissão',         key: 'admissao',           color: '#8b5cf6' },
-    { label: 'Aprovado',         key: 'aprovado',           color: '#10b981' },
+    { label: 'Triagem',          key: 'total_triagem',            color: '#6c63ff' },
+    { label: 'Entrevista RH',    key: 'total_entrevista_rh',      color: '#3b82f6' },
+    { label: 'Entrev. Técnica',  key: 'total_entrevista_tecnica', color: '#06b6d4' },
+    { label: 'Admissão',         key: 'total_admissao',           color: '#8b5cf6' },
+    { label: 'Aprovado',         key: 'total_aprovados',          color: '#10b981' },
   ];
 
   _chartDonut2 = new Chart(canvas.getContext('2d'), {
     type: 'doughnut',
     data: {
       labels:   etapas.map(e => e.label),
-      datasets: [{ data: etapas.map(e => funil[e.key] || 0), backgroundColor: etapas.map(e => e.color), borderColor: '#13131a', borderWidth: 3, hoverOffset: 6 }]
+      datasets: [{ data: etapas.map(e => g[e.key] || 0), backgroundColor: etapas.map(e => e.color), borderColor: '#13131a', borderWidth: 3, hoverOffset: 6 }]
     },
     options: {
       responsive: true, cutout: '62%',
@@ -3213,7 +3211,7 @@ function _mTabelaVagas(vagas) {
     const cls   = score >= 70 ? '#10b981' : score >= 50 ? '#f59e0b' : '#ff4d6d';
     return `<tr>
       <td style="font-weight:600">${v.vaga || '—'}</td>
-      <td style="color:var(--muted)">${v.depto || '—'}</td>
+      <td style="color:var(--muted)">${v.departamento || v.depto || '—'}</td>
       <td style="text-align:center;font-weight:700">${v.total || 0}</td>
       <td style="text-align:center;color:#34d399;font-weight:700">${v.aprovados || 0}</td>
       <td style="text-align:center;color:#f87171;font-weight:700">${v.reprovados || 0}</td>
