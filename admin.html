@@ -1288,12 +1288,30 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
   </div>
   <div class="so-body" style="padding-top:0">
     <div class="tab-bar" style="margin:0 -20px 0;padding:12px 20px 0;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--surface);z-index:2">
-      <button class="tab-btn active" id="so-tab-analise" onclick="setSoTab('analise')">📋 Análise IA</button>
-      <button class="tab-btn" id="so-tab-perfil" onclick="setSoTab('perfil')">📊 Perfil & Avaliações</button>
+      <button class="tab-btn active" id="so-tab-perfil-completo" onclick="setSoTab('perfil-completo')">📋 Perfil Completo</button>
+      <button class="tab-btn" id="so-tab-entrevista" onclick="setSoTab('entrevista')">🎯 Entrevista</button>
+      <button class="tab-btn" id="so-tab-dados-brutos" onclick="setSoTab('dados-brutos')">📊 Dados Brutos</button>
     </div>
 
-    <!-- ── Pane 1: Análise (conteúdo original) ── -->
-    <div id="so-pane-analise" style="padding-top:16px">
+    <!-- ── Pane 1: Perfil Completo ── -->
+    <div id="so-pane-perfil-completo" style="padding-top:16px">
+      <div id="pp-perfil-content">
+        <div style="text-align:center;padding:40px 0;color:var(--muted);font-size:13px">Carregando...</div>
+      </div>
+    </div>
+
+    <!-- ── Pane 2: Entrevista ── -->
+    <div id="so-pane-entrevista" style="display:none;padding-top:16px">
+      <div id="so-perguntas-star-ia"></div>
+      <div class="divider"></div>
+      <div style="font-size:13px;font-weight:700;margin-bottom:12px">📋 Análise STAR das Respostas do Candidato</div>
+      <div id="so-accordions"></div>
+      <div id="so-competencias-pane"></div>
+      <div id="so-alertas-entrevista"></div>
+    </div>
+
+    <!-- ── Pane 3: Dados Brutos ── -->
+    <div id="so-pane-dados-brutos" style="display:none;padding-top:16px">
       <div class="score-ring">
         <div class="score-circle" id="so-score-circle">
           <div class="score-inner">
@@ -1303,55 +1321,14 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
         </div>
         <div class="score-label" id="so-score-label">Score IA</div>
       </div>
-
       <div class="dim-bars" id="so-dims"></div>
       <div class="divider"></div>
-
-      <div style="font-size:13px;font-weight:700;margin-bottom:12px">Análise STAR das Respostas</div>
-      <div id="so-accordions"></div>
-
+      <div id="so-perfil-content">
+        <div style="text-align:center;padding:40px 0;color:var(--muted);font-size:13px">Carregando histórico...</div>
+      </div>
       <div class="divider"></div>
       <div style="font-size:12px;color:var(--muted);margin-bottom:8px;font-weight:600">CURRÍCULO</div>
       <div id="so-cv-info" style="font-size:13px;color:var(--muted)">Nenhum arquivo enviado</div>
-    </div>
-
-    <!-- ── Pane 2: Perfil & Avaliações ── -->
-    <div id="so-pane-perfil" style="display:none;padding-top:16px">
-
-      <!-- pill switcher -->
-      <div style="display:flex;gap:4px;margin-bottom:20px;background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:4px">
-        <button id="ppill-analise" onclick="setPerfilPill('analise')"
-          style="flex:1;padding:7px 12px;border:none;border-radius:16px;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;transition:all .2s;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff">
-          📊 Análise Consolidada
-        </button>
-        <button id="ppill-historico" onclick="setPerfilPill('historico')"
-          style="flex:1;padding:7px 12px;border:none;border-radius:16px;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;transition:all .2s;background:transparent;color:var(--muted)">
-          🧪 Histórico de Testes
-        </button>
-      </div>
-
-      <!-- PAINEL 1: Análise Consolidada -->
-      <div id="pp-analise">
-        <div id="pp-analise-btn-wrap" style="text-align:center;padding:28px 0 16px">
-          <button id="btn-gerar-analise" onclick="gerarAnaliseConsolidada()"
-            style="display:inline-flex;align-items:center;gap:8px;padding:13px 24px;border:none;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;box-shadow:0 4px 20px rgba(108,99,255,.4);transition:all .2s">
-            ✨ Gerar Análise Completa com IA
-          </button>
-          <p style="font-size:11px;color:var(--muted);margin-top:10px;line-height:1.6;max-width:280px;margin-left:auto;margin-right:auto">
-            A análise cruza triagem curricular, testes técnicos e avaliações comportamentais. Pode levar até 20 segundos.
-          </p>
-        </div>
-        <div id="pp-analise-erro" style="display:none;text-align:center;font-size:13px;padding:10px 0;color:var(--danger)"></div>
-        <div id="pp-analise-resultado" style="display:none"></div>
-      </div>
-
-      <!-- PAINEL 2: Histórico de Testes -->
-      <div id="pp-historico" style="display:none">
-        <div id="so-perfil-content">
-          <div style="text-align:center;padding:40px 0;color:var(--muted);font-size:13px">Carregando histórico...</div>
-        </div>
-      </div>
-
     </div>
   </div>
   <div class="so-footer">
@@ -1630,6 +1607,18 @@ let currentCandidaturaId = null;
 let currentAdmissao = null;
 let candTabAtivo = 'em_processo';
 let agendamentoCandidaturaId = null;
+const analiseConsolidadaCache = {};
+const _triagemCache = {};
+
+// Restaurar análises salvas em sessões anteriores
+try {
+  Object.keys(localStorage).forEach(function(key) {
+    if (key.startsWith('analise_')) {
+      const cid = key.replace('analise_', '');
+      try { analiseConsolidadaCache[cid] = JSON.parse(localStorage.getItem(key)); } catch(e) {}
+    }
+  });
+} catch(e) {}
 
 // ─── AUTH ─────────────────────────────────────────────────────────
 function checkAuth() {
@@ -2606,15 +2595,15 @@ function abrirCandidato(candidaturaId) {
       </div>`;
   }
 
-  const comps = c.competencias_identificadas || [];
-  if (comps.length) {
-    const compNomes = comps.map(comp => typeof comp === 'object' && comp !== null ? (comp.nome || comp.name || String(comp)) : String(comp));
-    dimsHtml += `
-      <div style="margin-bottom:14px">
-        <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Competências Identificadas</div>
-        <div style="display:flex;flex-wrap:wrap;gap:6px">${compNomes.map(n => `<span class="badge badge-purple">${n}</span>`).join('')}</div>
-      </div>`;
-  }
+  const compsRaw  = parseJsonSafe(c.competencias_identificadas, []);
+  const comps     = Array.isArray(compsRaw) ? compsRaw : [];
+  const compNomes = comps.map(comp => typeof comp === 'object' && comp !== null ? (comp.nome || comp.name || String(comp)) : String(comp));
+  const competHtml = compNomes.length ? `<div style="margin-top:16px">
+    <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">📌 Competências Identificadas</div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px">${compNomes.map(n => `<span class="badge badge-purple">${n}</span>`).join('')}</div>
+  </div>` : '';
+  const competEl = document.getElementById('so-competencias-pane');
+  if (competEl) competEl.innerHTML = competHtml;
 
   const buildList = (label, items, color, icon) => {
     if (!Array.isArray(items) || !items.length) return '';
@@ -2754,7 +2743,7 @@ function abrirCandidato(candidaturaId) {
   }
 
   _historicoCarregadoId = null;
-  setSoTab('analise');
+  setSoTab('perfil-completo');
   document.getElementById('slideover-cand').classList.add('open');
   document.getElementById('so-backdrop').classList.add('open');
 }
@@ -2766,21 +2755,244 @@ function fecharSlideover() {
   currentCandidaturaId = null;
 }
 
+// ─── PARSE HELPER ─────────────────────────────────────────────────
+function parseJsonSafe(valor, fallback) {
+  if (valor === null || valor === undefined) return fallback;
+  if (Array.isArray(valor)) return valor;
+  if (typeof valor === 'object') return valor;
+  try { return JSON.parse(valor); } catch(e) { return fallback; }
+}
+
+// ─── RENDER HELPERS (ABA ENTREVISTA) ──────────────────────────────
+function renderPerguntasStarIA(analise, candidaturaId) {
+  if (!analise) {
+    return `<div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;margin-bottom:4px">
+      <div style="font-size:13px;color:var(--muted);line-height:1.6">Gere a análise completa na aba <strong>Perfil Completo</strong> para ver as perguntas personalizadas.</div>
+    </div>`;
+  }
+  const perguntas = parseJsonSafe(analise.perguntas_star, []);
+  if (!Array.isArray(perguntas) || !perguntas.length) {
+    return '<p style="font-size:12px;color:var(--muted);padding:8px 0 0">Nenhuma pergunta STAR personalizada disponível.</p>';
+  }
+  const cards = perguntas.map(p => {
+    if (typeof p === 'string') return `<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px"><div style="font-size:13px;font-weight:600;line-height:1.5">${p}</div></div>`;
+    if (!p || typeof p !== 'object') return '';
+    return `<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px">
+      ${p.situacao ? `<div style="font-size:11px;color:var(--muted);margin-bottom:5px">${p.situacao}</div>` : ''}
+      <div style="font-size:13px;font-weight:600;line-height:1.5;margin-bottom:6px">${p.pergunta || ''}</div>
+      ${p.objetivo ? `<div style="font-size:11px;color:var(--accent2);font-style:italic">Objetivo: ${p.objetivo}</div>` : ''}
+    </div>`;
+  }).join('');
+  return `<div style="margin-bottom:4px">
+    <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">💬 Perguntas STAR Personalizadas pela IA</div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:12px">Geradas com base no perfil específico deste candidato</div>
+    ${cards}
+  </div>`;
+}
+
+function renderAlertasEntrevista(analise) {
+  if (!analise) return '';
+  const alertas = parseJsonSafe(analise.alertas, []);
+  if (!Array.isArray(alertas) || !alertas.length) return '';
+  return `<div style="margin-top:16px">
+    <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">🚨 Alertas para a Entrevista</div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px">
+      ${alertas.map(al => `<span style="padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;background:rgba(255,77,109,.15);color:var(--danger);border:1px solid rgba(255,77,109,.3)">⚠️ ${al || ''}</span>`).join('')}
+    </div>
+  </div>`;
+}
+
+// ─── RENDER PERFIL COMPLETO ────────────────────────────────────────
+function renderPerfilCompleto(triagemData, analise, candidaturaId) {
+  const p = triagemData ? (triagemData.triagem_ia || triagemData.perfil || triagemData) : {};
+  const c = candidatos.find(x => (x.candidatura_id || x.candidato_id) === candidaturaId) || {};
+  const hasAnalise = !!analise;
+  const barColor = v => v >= 8 ? 'var(--success)' : v >= 6 ? 'var(--accent2)' : v >= 4 ? 'var(--warn)' : 'var(--danger)';
+  const CLASSIF_CFG = {
+    'Excelente':    { bg:'rgba(16,185,129,.15)',  c:'#10b981' },
+    'Muito Bom':    { bg:'rgba(59,130,246,.15)',  c:'#3b82f6' },
+    'Bom':          { bg:'rgba(108,99,255,.15)',  c:'var(--accent2)' },
+    'Regular':      { bg:'rgba(245,158,11,.15)',  c:'var(--warn)' },
+    'Insuficiente': { bg:'rgba(255,77,109,.15)',  c:'var(--danger)' }
+  };
+
+  // A) Header score
+  let headerHtml = '';
+  if (hasAnalise) {
+    const score   = parseFloat(analise.score_geral || 0);
+    const classif = String(analise.classificacao || '');
+    const cc      = CLASSIF_CFG[classif] || { bg:'rgba(108,99,255,.12)', c:'var(--accent2)' };
+    const fitRaw  = String(analise.fit_vaga || '').toLowerCase();
+    const fc = fitRaw.includes('alt') ? { label:'Alto',  bg:'rgba(16,185,129,.15)', c:'#10b981' }
+      : fitRaw.includes('med')        ? { label:'Médio', bg:'rgba(245,158,11,.15)', c:'var(--warn)' }
+      :                                 { label:'Baixo', bg:'rgba(255,77,109,.15)', c:'var(--danger)' };
+    const fitLabel = analise.fit_vaga || fc.label;
+    headerHtml = `<div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;padding:16px;background:var(--surface2);border:1px solid var(--border);border-radius:14px">
+      <div style="width:72px;height:72px;border-radius:50%;border:3px solid ${barColor(score)};background:${barColor(score)}18;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0">
+        <div style="font-size:24px;font-weight:900;color:${barColor(score)};line-height:1">${score > 0 ? score.toFixed(1) : '—'}</div>
+        <div style="font-size:9px;color:var(--muted)">/10</div>
+      </div>
+      <div style="flex:1;min-width:0">
+        ${classif ? `<span style="display:inline-block;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;background:${cc.bg};color:${cc.c};margin-bottom:8px">${classif}</span>` : ''}
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px">
+          <span style="font-size:12px;font-weight:600;color:var(--muted)">Fit com a Vaga:</span>
+          <span style="padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;background:${fc.bg};color:${fc.c}">${fitLabel || '—'}</span>
+        </div>
+        ${analise.recomendacao_final ? `<div style="font-size:12px;color:var(--text);line-height:1.5">🎯 ${analise.recomendacao_final}</div>` : ''}
+      </div>
+    </div>`;
+  } else {
+    const score  = parseFloat(c.score_total || p.score_total || 0);
+    const fitRaw = String(c.nivel_fit || p.nivel_fit || '').toLowerCase();
+    const fc = fitRaw.includes('alt') ? { label:'Alto',  bg:'rgba(16,185,129,.15)', c:'#10b981' }
+      : fitRaw.includes('med')        ? { label:'Médio', bg:'rgba(245,158,11,.15)', c:'var(--warn)' }
+      :                                 { label:'Baixo', bg:'rgba(255,77,109,.15)', c:'var(--danger)' };
+    headerHtml = `<div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;padding:16px;background:var(--surface2);border:1px solid var(--border);border-radius:14px">
+      <div style="width:72px;height:72px;border-radius:50%;border:3px solid ${barColor(score)};background:${barColor(score)}18;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0">
+        <div style="font-size:24px;font-weight:900;color:${barColor(score)};line-height:1">${score > 0 ? score.toFixed(1) : '—'}</div>
+        <div style="font-size:9px;color:var(--muted)">/10</div>
+      </div>
+      <div style="flex:1;min-width:0">
+        <span style="display:inline-block;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;background:rgba(245,158,11,.15);color:var(--warn);margin-bottom:8px">Análise Parcial</span>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px">
+          <span style="padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;background:${fc.bg};color:${fc.c}">Fit ${fc.label}</span>
+        </div>
+        <div style="font-size:11px;color:var(--muted)">Gere a análise completa para cruzar todos os dados</div>
+      </div>
+    </div>`;
+  }
+
+  // B) Botão gerar análise
+  const buttonHtml = `<div style="text-align:center;padding:10px 0 20px">
+    <button id="btn-gerar-analise" onclick="gerarAnaliseConsolidada()" style="display:inline-flex;align-items:center;gap:8px;padding:12px 22px;border:none;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;box-shadow:0 4px 20px rgba(108,99,255,.35);transition:all .2s">
+      ✨ Gerar Nova Análise Completa
+    </button>
+    <p style="font-size:11px;color:var(--muted);margin-top:8px;line-height:1.6">Cruza triagem, testes técnicos e avaliações comportamentais</p>
+  </div>`;
+
+  // C) Perfil comportamental / resumo
+  const perfilTexto = (hasAnalise && analise.perfil_comportamental)
+    ? analise.perfil_comportamental
+    : String(c.resumo_executivo || p.resumo_executivo || '');
+  const perfilLabel = (hasAnalise && analise.perfil_comportamental) ? '🧠 Perfil Comportamental' : '📋 Resumo Executivo';
+  const perfilHtml  = perfilTexto ? `<div style="margin-bottom:20px">
+    <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">${perfilLabel}</div>
+    <p style="font-size:13px;color:var(--text);line-height:1.65;margin:0">${perfilTexto}</p>
+  </div>` : '';
+
+  // D) Grid pontos fortes / desenvolvimento
+  const liItem = (txt, icon, cor) =>
+    `<div style="font-size:12px;color:var(--text);padding:5px 0 5px 10px;border-left:2px solid ${cor};margin-bottom:5px;line-height:1.45">${icon} ${txt || ''}</div>`;
+  const pontosFortes = parseJsonSafe(
+    hasAnalise ? analise.pontos_fortes : (c.pontos_fortes || p.pontos_fortes), []);
+  const pontosDesenv = parseJsonSafe(
+    hasAnalise ? analise.pontos_desenvolvimento : (c.pontos_atencao || p.pontos_atencao), []);
+  const pf = Array.isArray(pontosFortes) ? pontosFortes : [];
+  const pd = Array.isArray(pontosDesenv) ? pontosDesenv : [];
+  const gridHtml = `<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+    <div>
+      <div style="font-size:11px;font-weight:700;color:var(--success);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">✅ Pontos Fortes</div>
+      ${pf.length ? pf.map(f => liItem(f, '✅', 'var(--success)')).join('') : '<p style="font-size:12px;color:var(--muted);margin:0">Nenhum identificado.</p>'}
+    </div>
+    <div>
+      <div style="font-size:11px;font-weight:700;color:var(--warn);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">⚠️ Desenvolvimento</div>
+      ${pd.length ? pd.map(d => liItem(d, '⚠️', 'var(--warn)')).join('') : '<p style="font-size:12px;color:var(--muted);margin:0">Nenhum identificado.</p>'}
+    </div>
+  </div>`;
+
+  // E) Scores por dimensão
+  const sd   = p.scores_dimensoes || {};
+  const dims = [
+    { label:'Técnico',        val: parseFloat(sd.tecnico        || p.score_tecnico        || 0) },
+    { label:'Experiência',    val: parseFloat(sd.experiencia    || p.score_experiencia    || 0) },
+    { label:'Comportamental', val: parseFloat(sd.comportamental || p.score_comportamental || 0) },
+    { label:'Fit Cultural',   val: parseFloat(sd.fit_cultural   || p.score_fit_cultural   || 0) }
+  ];
+  const dimsHtml = dims.some(d => d.val > 0) ? `<div style="margin-bottom:20px">
+    <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">📊 Scores por Dimensão</div>
+    ${dims.map(d => `<div style="margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
+        <span style="color:var(--muted)">${d.label}</span>
+        <span style="font-weight:700;color:${barColor(d.val)}">${d.val.toFixed(1)}</span>
+      </div>
+      <div style="height:6px;background:var(--border);border-radius:6px;overflow:hidden">
+        <div style="height:100%;width:${d.val * 10}%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:6px;transition:width .5s"></div>
+      </div>
+    </div>`).join('')}
+  </div>` : '';
+
+  // F) Avaliações pendentes recomendadas
+  const testesSug = hasAnalise ? parseJsonSafe(analise.testes_sugeridos, []) : [];
+  const ts = Array.isArray(testesSug) ? testesSug : [];
+  const testesHtml = ts.length ? `<div style="margin-bottom:20px">
+    <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">🧪 Avaliações Pendentes Recomendadas</div>
+    ${ts.map(tipo => `<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)">
+      <span style="font-size:13px">${NOMES_AVAL_MAP[tipo] || tipo}</span>
+      <button class="btn btn-outline btn-sm" style="flex-shrink:0;font-size:11px;padding:5px 10px"
+        onclick="enviarAvalDaAnalise('${candidaturaId}','${tipo}',this)">📤 Enviar</button>
+    </div>`).join('')}
+  </div>` : '';
+
+  return headerHtml + buttonHtml + perfilHtml + gridHtml + dimsHtml + testesHtml;
+}
+
+// ─── CARREGAR PERFIL COMPLETO ──────────────────────────────────────
+async function carregarPerfilCompleto(candidaturaId) {
+  const id = candidaturaId || currentCandidaturaId;
+  const el = document.getElementById('pp-perfil-content');
+  if (!el || !id) return;
+  const analise = analiseConsolidadaCache[id] || null;
+  if (_triagemCache[id]) {
+    el.innerHTML = renderPerfilCompleto(_triagemCache[id], analise, id);
+    return;
+  }
+  // Render placeholder while fetching triagem
+  if (analise) {
+    el.innerHTML = renderPerfilCompleto(null, analise, id);
+  } else {
+    el.innerHTML = '<div style="text-align:center;padding:32px 0;color:var(--muted);font-size:13px">Carregando dados...</div>';
+  }
+  try {
+    const r    = await fetch(`${BASE_URL}/ats-perfil-candidato?candidatura_id=${id}&t=${Date.now()}`);
+    const data = await r.json();
+    _triagemCache[id] = data;
+    const elNow = document.getElementById('pp-perfil-content');
+    if (elNow) elNow.innerHTML = renderPerfilCompleto(data, analiseConsolidadaCache[id] || null, id);
+  } catch(e) {
+    console.error('[carregarPerfilCompleto] erro:', e);
+    const elNow = document.getElementById('pp-perfil-content');
+    if (elNow) elNow.innerHTML = renderPerfilCompleto(null, analise, id);
+  }
+}
+
 // ─── TABS DO SLIDEOVER ────────────────────────────────────────────
 function setSoTab(tab) {
-  document.getElementById('so-pane-analise').style.display = tab === 'analise' ? '' : 'none';
-  document.getElementById('so-pane-perfil').style.display  = tab === 'perfil'  ? '' : 'none';
-  document.getElementById('so-tab-analise').classList.toggle('active', tab === 'analise');
-  document.getElementById('so-tab-perfil').classList.toggle('active',  tab === 'perfil');
-  if (tab === 'perfil') {
-    setPerfilPill('analise');
+  ['perfil-completo', 'entrevista', 'dados-brutos'].forEach(t => {
+    const pane = document.getElementById('so-pane-' + t);
+    const btn  = document.getElementById('so-tab-' + t);
+    if (pane) pane.style.display = t === tab ? '' : 'none';
+    if (btn)  btn.classList.toggle('active', t === tab);
+  });
+  if (tab === 'perfil-completo') {
+    carregarPerfilCompleto(currentCandidaturaId);
+  }
+  if (tab === 'entrevista') {
+    const analise   = analiseConsolidadaCache[currentCandidaturaId] || null;
+    const starEl    = document.getElementById('so-perguntas-star-ia');
+    const alertasEl = document.getElementById('so-alertas-entrevista');
+    if (starEl)    starEl.innerHTML    = renderPerguntasStarIA(analise, currentCandidaturaId);
+    if (alertasEl) alertasEl.innerHTML = renderAlertasEntrevista(analise);
+  }
+  if (tab === 'dados-brutos') {
     carregarHistoricoTestes(currentCandidaturaId);
   }
 }
 
 function setPerfilPill(pill) {
-  document.getElementById('pp-analise').style.display   = pill === 'analise'   ? '' : 'none';
-  document.getElementById('pp-historico').style.display = pill === 'historico' ? '' : 'none';
+  const ppAnalise   = document.getElementById('pp-analise');
+  const ppHistorico = document.getElementById('pp-historico');
+  if (ppAnalise)   ppAnalise.style.display   = pill === 'analise'   ? '' : 'none';
+  if (ppHistorico) ppHistorico.style.display = pill === 'historico' ? '' : 'none';
   ['analise','historico'].forEach(p => {
     const btn = document.getElementById('ppill-' + p);
     if (!btn) return;
@@ -2816,11 +3028,11 @@ async function carregarHistoricoTestes(candidaturaId) {
 async function gerarAnaliseConsolidada() {
   const id = currentCandidaturaId;
   if (!id) { showToast('ID da candidatura não encontrado.', 'warn'); return; }
-  const btn    = document.getElementById('btn-gerar-analise');
-  const erroEl = document.getElementById('pp-analise-erro');
-  erroEl.style.display = 'none';
-  btn.disabled = true;
-  btn.innerHTML = '<div style="width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:inline-block;vertical-align:middle;margin-right:6px"></div>⏳ Analisando todos os dados...';
+  const btn = document.getElementById('btn-gerar-analise');
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<div style="width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:inline-block;vertical-align:middle;margin-right:6px"></div>⏳ Gerando análise com IA...';
+  }
   try {
     const r = await fetch(`${BASE_URL}/ats-analise-consolidada`, {
       method: 'POST', headers: {'Content-Type':'application/json'},
@@ -2837,20 +3049,25 @@ async function gerarAnaliseConsolidada() {
       analise.perguntas_star         = _tryArr(analise.perguntas_star);
       analise.alertas                = _tryArr(analise.alertas);
       analise.testes_sugeridos       = _tryArr(analise.testes_sugeridos);
-      document.getElementById('pp-analise-btn-wrap').style.display = 'none';
-      erroEl.style.display = 'none';
-      const resEl = document.getElementById('pp-analise-resultado');
-      resEl.innerHTML = renderAnaliseConsolidada(analise, id);
-      resEl.style.display = '';
+      // Salvar no cache e no localStorage
+      analiseConsolidadaCache[id] = analise;
+      try { localStorage.setItem('analise_' + id, JSON.stringify(analise)); } catch(e) {}
+      // Re-renderizar Aba 1
+      const perfilEl = document.getElementById('pp-perfil-content');
+      if (perfilEl) perfilEl.innerHTML = renderPerfilCompleto(_triagemCache[id] || null, analise, id);
+      // Atualizar Aba 2 se visível
+      const starEl = document.getElementById('so-perguntas-star-ia');
+      if (starEl) starEl.innerHTML = renderPerguntasStarIA(analise, id);
+      const alertasEl = document.getElementById('so-alertas-entrevista');
+      if (alertasEl) alertasEl.innerHTML = renderAlertasEntrevista(analise);
     } else {
       throw new Error(data.message || 'Resposta inesperada');
     }
   } catch(e) {
     console.error('[gerarAnalise] erro:', e);
-    erroEl.textContent = '❌ Erro ao gerar análise. Tente novamente.';
-    erroEl.style.display = '';
-    btn.disabled = false;
-    btn.innerHTML = '✨ Gerar Análise Completa com IA';
+    const btnNow = document.getElementById('btn-gerar-analise');
+    if (btnNow) { btnNow.disabled = false; btnNow.innerHTML = '✨ Gerar Nova Análise Completa'; }
+    showToast('Erro ao gerar análise. Tente novamente.', 'error');
   }
 }
 
