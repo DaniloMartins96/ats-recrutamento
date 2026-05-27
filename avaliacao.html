@@ -499,8 +499,12 @@ function showScreen(id) {
 }
 
 (function init() {
-  if (!TIPO || !AVALIACOES[TIPO]) { showScreen('screen-erro'); return; }
-  if (!PREVIEW && !TOKEN) { showScreen('screen-erro'); return; }
+  console.log('[avaliacao] tipo=', TIPO, '| preview=', PREVIEW, '| token=', TOKEN ? 'sim' : 'nao');
+  if (!TIPO || !AVALIACOES[TIPO]) {
+    console.log('[avaliacao] tipo invalido:', TIPO);
+    showScreen('screen-erro');
+    return;
+  }
   renderAvaliacao();
 })();
 
@@ -656,7 +660,8 @@ function atualizarProgresso() {
 }
 
 function fecharPreview() {
-  if (!window.close()) window.history.back();
+  window.close();
+  setTimeout(() => window.history.back(), 100);
 }
 
 // ── SUBMISSÃO ──
