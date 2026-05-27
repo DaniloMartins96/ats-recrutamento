@@ -570,7 +570,10 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
             </div>
             <p style="font-size:12px;color:var(--muted);line-height:1.55;margin-bottom:12px;flex:1">Identifica perfil dominante entre Dominância, Influência, Estabilidade e Conformidade.</p>
             <div style="margin-bottom:12px"><span style="font-size:10px;background:rgba(108,99,255,.12);color:var(--accent2);padding:2px 8px;border-radius:20px;font-weight:600">Recomendado: Todos os cargos</span></div>
-            <button class="btn btn-outline btn-sm" style="width:100%;justify-content:center" data-tipo="comp_disc" onclick="sugerirAvaliacao('comp_disc')">🤖 Sugerir para candidato</button>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-outline btn-sm" style="flex:1;justify-content:center" onclick="window.open('avaliacao.html?tipo=comp_disc','_blank')">👁️ Visualizar</button>
+              <button class="btn btn-primary btn-sm" style="flex:1;justify-content:center" onclick="sugerirAvaliacao('comp_disc')">🤖 Sugerir</button>
+            </div>
           </div>
 
           <div style="background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:20px;display:flex;flex-direction:column">
@@ -580,7 +583,10 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
             </div>
             <p style="font-size:12px;color:var(--muted);line-height:1.55;margin-bottom:12px;flex:1">Avalia as 5 grandes dimensões da personalidade: Abertura, Conscienciosidade, Extroversão, Amabilidade e Neuroticismo.</p>
             <div style="margin-bottom:12px"><span style="font-size:10px;background:rgba(108,99,255,.12);color:var(--accent2);padding:2px 8px;border-radius:20px;font-weight:600">Recomendado: Todos os cargos</span></div>
-            <button class="btn btn-outline btn-sm" style="width:100%;justify-content:center" data-tipo="comp_bigfive" onclick="sugerirAvaliacao('comp_bigfive')">🤖 Sugerir para candidato</button>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-outline btn-sm" style="flex:1;justify-content:center" onclick="window.open('avaliacao.html?tipo=comp_bigfive','_blank')">👁️ Visualizar</button>
+              <button class="btn btn-primary btn-sm" style="flex:1;justify-content:center" onclick="sugerirAvaliacao('comp_bigfive')">🤖 Sugerir</button>
+            </div>
           </div>
 
           <div style="background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:20px;display:flex;flex-direction:column">
@@ -590,7 +596,10 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
             </div>
             <p style="font-size:12px;color:var(--muted);line-height:1.55;margin-bottom:12px;flex:1">Mede capacidade de análise, resolução de problemas, raciocínio abstrato e numérico.</p>
             <div style="margin-bottom:12px"><span style="font-size:10px;background:rgba(108,99,255,.12);color:var(--accent2);padding:2px 8px;border-radius:20px;font-weight:600">Recomendado: Tech, Dados, Engenharia</span></div>
-            <button class="btn btn-outline btn-sm" style="width:100%;justify-content:center" data-tipo="comp_inteligencia" onclick="sugerirAvaliacao('comp_inteligencia')">🤖 Sugerir para candidato</button>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-outline btn-sm" style="flex:1;justify-content:center" onclick="window.open('avaliacao.html?tipo=comp_inteligencia','_blank')">👁️ Visualizar</button>
+              <button class="btn btn-primary btn-sm" style="flex:1;justify-content:center" onclick="sugerirAvaliacao('comp_inteligencia')">🤖 Sugerir</button>
+            </div>
           </div>
 
           <div style="background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:20px;display:flex;flex-direction:column">
@@ -600,7 +609,10 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
             </div>
             <p style="font-size:12px;color:var(--muted);line-height:1.55;margin-bottom:12px;flex:1">Analisa capacidade de inspirar, delegar, tomar decisões e desenvolver talentos.</p>
             <div style="margin-bottom:12px"><span style="font-size:10px;background:rgba(108,99,255,.12);color:var(--accent2);padding:2px 8px;border-radius:20px;font-weight:600">Recomendado: Gestores, Seniores</span></div>
-            <button class="btn btn-outline btn-sm" style="width:100%;justify-content:center" data-tipo="comp_lideranca" onclick="sugerirAvaliacao('comp_lideranca')">🤖 Sugerir para candidato</button>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-outline btn-sm" style="flex:1;justify-content:center" onclick="window.open('avaliacao.html?tipo=comp_lideranca','_blank')">👁️ Visualizar</button>
+              <button class="btn btn-primary btn-sm" style="flex:1;justify-content:center" onclick="sugerirAvaliacao('comp_lideranca')">🤖 Sugerir</button>
+            </div>
           </div>
 
           <div style="background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:20px;display:flex;flex-direction:column">
@@ -610,7 +622,10 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
             </div>
             <p style="font-size:12px;color:var(--muted);line-height:1.55;margin-bottom:12px;flex:1">Avalia orientação para vendas, persuasão, resiliência à rejeição e foco em resultados comerciais.</p>
             <div style="margin-bottom:12px"><span style="font-size:10px;background:rgba(108,99,255,.12);color:var(--accent2);padding:2px 8px;border-radius:20px;font-weight:600">Recomendado: Comercial, SDR, Account</span></div>
-            <button class="btn btn-outline btn-sm" style="width:100%;justify-content:center" data-tipo="comp_vendas" onclick="sugerirAvaliacao('comp_vendas')">🤖 Sugerir para candidato</button>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-outline btn-sm" style="flex:1;justify-content:center" onclick="window.open('avaliacao.html?tipo=comp_vendas','_blank')">👁️ Visualizar</button>
+              <button class="btn btn-primary btn-sm" style="flex:1;justify-content:center" onclick="sugerirAvaliacao('comp_vendas')">🤖 Sugerir</button>
+            </div>
           </div>
 
           <div style="background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:20px;display:flex;flex-direction:column">
@@ -620,7 +635,10 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
             </div>
             <p style="font-size:12px;color:var(--muted);line-height:1.55;margin-bottom:12px;flex:1">Mede pensamento divergente, abertura a novas ideias, tolerância à ambiguidade e propensão à inovação.</p>
             <div style="margin-bottom:12px"><span style="font-size:10px;background:rgba(108,99,255,.12);color:var(--accent2);padding:2px 8px;border-radius:20px;font-weight:600">Recomendado: Produto, Design, Marketing</span></div>
-            <button class="btn btn-outline btn-sm" style="width:100%;justify-content:center" data-tipo="comp_criatividade" onclick="sugerirAvaliacao('comp_criatividade')">🤖 Sugerir para candidato</button>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-outline btn-sm" style="flex:1;justify-content:center" onclick="window.open('avaliacao.html?tipo=comp_criatividade','_blank')">👁️ Visualizar</button>
+              <button class="btn btn-primary btn-sm" style="flex:1;justify-content:center" onclick="sugerirAvaliacao('comp_criatividade')">🤖 Sugerir</button>
+            </div>
           </div>
 
         </div>
@@ -3593,10 +3611,14 @@ let _sugerirAvalTipo = null;
 
 async function sugerirAvaliacao(tipo) {
   _sugerirAvalTipo = tipo;
+  console.log('sugerirAvaliacao chamado com tipo:', tipo);
   const nomes = {
-    comp_disc: 'Perfil Comportamental DISC', eq: 'Inteligência Emocional (EQ)',
-    resultados: 'Orientação para Resultados', trabalho_equipe: 'Trabalho em Equipe',
-    lideranca: 'Liderança e Influência', adaptabilidade: 'Adaptabilidade e Resiliência'
+    comp_disc:         'Perfil Comportamental DISC',
+    comp_bigfive:      'Big Five — Personalidade',
+    comp_inteligencia: 'Raciocínio Lógico',
+    comp_lideranca:    'Liderança e Influência',
+    comp_vendas:       'Perfil Comercial',
+    comp_criatividade: 'Criatividade e Inovação'
   };
   document.getElementById('sugerir-aval-titulo').textContent = nomes[tipo] || tipo;
   document.getElementById('modal-sugerir-aval').classList.add('open');
