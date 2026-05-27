@@ -1268,26 +1268,41 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
     </div>
     <button class="so-close" id="so-close">&times;</button>
   </div>
-  <div class="so-body">
-    <div class="score-ring">
-      <div class="score-circle" id="so-score-circle">
-        <div class="score-inner">
-          <div class="score-num" id="so-score-num">—</div>
-          <div class="score-max">/10</div>
-        </div>
-      </div>
-      <div class="score-label" id="so-score-label">Score IA</div>
+  <div class="so-body" style="padding-top:0">
+    <div class="tab-bar" style="margin:0 -20px 0;padding:12px 20px 0;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--surface);z-index:2">
+      <button class="tab-btn active" id="so-tab-analise" onclick="setSoTab('analise')">📋 Análise IA</button>
+      <button class="tab-btn" id="so-tab-perfil" onclick="setSoTab('perfil')">📊 Perfil & Avaliações</button>
     </div>
 
-    <div class="dim-bars" id="so-dims"></div>
-    <div class="divider"></div>
+    <!-- ── Pane 1: Análise (conteúdo original) ── -->
+    <div id="so-pane-analise" style="padding-top:16px">
+      <div class="score-ring">
+        <div class="score-circle" id="so-score-circle">
+          <div class="score-inner">
+            <div class="score-num" id="so-score-num">—</div>
+            <div class="score-max">/10</div>
+          </div>
+        </div>
+        <div class="score-label" id="so-score-label">Score IA</div>
+      </div>
 
-    <div style="font-size:13px;font-weight:700;margin-bottom:12px">Análise STAR das Respostas</div>
-    <div id="so-accordions"></div>
+      <div class="dim-bars" id="so-dims"></div>
+      <div class="divider"></div>
 
-    <div class="divider"></div>
-    <div style="font-size:12px;color:var(--muted);margin-bottom:8px;font-weight:600">CURRÍCULO</div>
-    <div id="so-cv-info" style="font-size:13px;color:var(--muted)">Nenhum arquivo enviado</div>
+      <div style="font-size:13px;font-weight:700;margin-bottom:12px">Análise STAR das Respostas</div>
+      <div id="so-accordions"></div>
+
+      <div class="divider"></div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:8px;font-weight:600">CURRÍCULO</div>
+      <div id="so-cv-info" style="font-size:13px;color:var(--muted)">Nenhum arquivo enviado</div>
+    </div>
+
+    <!-- ── Pane 2: Perfil & Avaliações ── -->
+    <div id="so-pane-perfil" style="display:none;padding-top:16px">
+      <div id="so-perfil-content">
+        <div style="text-align:center;padding:40px 0;color:var(--muted);font-size:13px">Carregando perfil...</div>
+      </div>
+    </div>
   </div>
   <div class="so-footer">
     <button class="btn btn-danger btn-sm" id="so-btn-rejeitar">Rejeitar</button>
@@ -2688,6 +2703,7 @@ function abrirCandidato(candidaturaId) {
     cvEl.innerHTML += `<br><span style="font-size:12px;color:var(--muted);margin-top:4px;display:inline-block">Currículo não enviado</span>`;
   }
 
+  setSoTab('analise');
   document.getElementById('slideover-cand').classList.add('open');
   document.getElementById('so-backdrop').classList.add('open');
 }
@@ -2697,6 +2713,135 @@ function fecharSlideover() {
   document.getElementById('so-backdrop').classList.remove('open');
   currentCandidatoId = null;
   currentCandidaturaId = null;
+}
+
+// ─── TABS DO SLIDEOVER ────────────────────────────────────────────
+function setSoTab(tab) {
+  document.getElementById('so-pane-analise').style.display = tab === 'analise' ? '' : 'none';
+  document.getElementById('so-pane-perfil').style.display  = tab === 'perfil'  ? '' : 'none';
+  document.getElementById('so-tab-analise').classList.toggle('active', tab === 'analise');
+  document.getElementById('so-tab-perfil').classList.toggle('active',  tab === 'perfil');
+  if (tab === 'perfil' && currentCandidaturaId) carregarPerfilCandidato(currentCandidaturaId);
+}
+
+async function carregarPerfilCandidato(candidaturaId) {
+  const el = document.getElementById('so-perfil-content');
+  el.innerHTML = '<div style="text-align:center;padding:40px 0;color:var(--muted);font-size:13px">Carregando perfil...</div>';
+  try {
+    const r    = await fetch(`${BASE_URL}/ats-perfil-candidato?candidatura_id=${candidaturaId}&t=${Date.now()}`);
+    const data = r.ok ? await r.json() : {};
+    el.innerHTML = renderPerfilContent(data);
+  } catch {
+    el.innerHTML = '<div style="text-align:center;padding:40px 0;color:var(--muted);font-size:13px">Erro ao carregar perfil. Tente novamente.</div>';
+  }
+}
+
+function renderPerfilContent(data) {
+  const p      = data.perfil || data;
+  const testes = data.testes || p.testes || [];
+  const score  = parseFloat(p.score_total || 0);
+  const fit    = (p.nivel_fit || p.fit || '').toString().toLowerCase();
+
+  // ── fit badge ──
+  const fitCfg = fit.includes('alt') ? { label:'Alto', color:'var(--success)', bg:'rgba(16,185,129,.12)' }
+    : fit.includes('med')            ? { label:'Médio', color:'var(--warn)',    bg:'rgba(245,158,11,.12)' }
+    :                                  { label:'Baixo', color:'var(--danger)',   bg:'rgba(255,77,109,.12)' };
+
+  // ── dimensões ──
+  const dims = [
+    { label:'Técnico',         val: parseFloat(p.score_tecnico           || p.dimensao_tecnica         || 0) },
+    { label:'Experiência',     val: parseFloat(p.score_experiencia       || p.dimensao_experiencia     || 0) },
+    { label:'Comportamental',  val: parseFloat(p.score_comportamental    || p.dimensao_comportamental  || 0) },
+    { label:'Fit Cultural',    val: parseFloat(p.score_fit_cultural      || p.dimensao_fit_cultural    || 0) },
+  ];
+
+  const barColor = v => v >= 7 ? 'var(--success)' : v >= 5 ? 'var(--warn)' : 'var(--danger)';
+
+  const dimsHtml = dims.some(d => d.val > 0) ? `
+    <div style="margin:16px 0">
+      ${dims.map(d => `
+        <div style="margin-bottom:10px">
+          <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
+            <span style="color:var(--muted)">${d.label}</span>
+            <span style="font-weight:700;color:${barColor(d.val)}">${d.val.toFixed(1)}</span>
+          </div>
+          <div style="height:6px;background:var(--border);border-radius:6px;overflow:hidden">
+            <div style="height:100%;width:${d.val * 10}%;background:${barColor(d.val)};border-radius:6px;transition:width .5s"></div>
+          </div>
+        </div>`).join('')}
+    </div>` : '';
+
+  const buildList = (items, icon, color) => Array.isArray(items) && items.length
+    ? items.map(i => `<div style="font-size:12px;color:var(--muted);padding:4px 0 4px 10px;border-left:2px solid ${color};margin-bottom:4px">${icon} ${i}</div>`).join('')
+    : '';
+
+  // ── testes ──
+  const testesHtml = testes.length ? testes.map(t => {
+    const concluido = t.status === 'concluido';
+    if (!concluido) {
+      return `
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:12px">
+          <div style="flex:1">
+            <div style="font-weight:600;font-size:13px;margin-bottom:4px">${t.titulo || 'Teste'}</div>
+            <span style="font-size:11px;background:rgba(245,158,11,.15);color:var(--warn);padding:2px 8px;border-radius:20px;font-weight:600">⏳ Aguardando resposta</span>
+          </div>
+        </div>`;
+    }
+    const dataFmt = t.concluido_em ? new Date(t.concluido_em).toLocaleDateString('pt-BR') : '—';
+    return `
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:10px">
+          <div>
+            <div style="font-weight:600;font-size:13px;margin-bottom:2px">${t.titulo || 'Teste'}</div>
+            <div style="font-size:11px;color:var(--muted)">${dataFmt}</div>
+          </div>
+          <div style="text-align:right;flex-shrink:0">
+            <div style="font-size:22px;font-weight:900;color:${barColor(parseFloat(t.score_total||0))};line-height:1">${parseFloat(t.score_total||0).toFixed(1)}</div>
+            <div style="font-size:10px;color:var(--muted)">score total</div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px;text-align:center">
+            <div style="font-size:16px;font-weight:800;color:var(--accent2)">${parseFloat(t.score_multipla||0).toFixed(1)}</div>
+            <div style="font-size:10px;color:var(--muted)">Múltipla escolha</div>
+          </div>
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px;text-align:center">
+            <div style="font-size:16px;font-weight:800;color:var(--success)">${parseFloat(t.score_dissertativa||0).toFixed(1)}</div>
+            <div style="font-size:10px;color:var(--muted)">Dissertativas</div>
+          </div>
+        </div>
+        ${t.feedback_ia ? `<div style="font-size:12px;color:var(--muted);background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px;line-height:1.55">${t.feedback_ia}</div>` : ''}
+      </div>`;
+  }).join('') : '<div style="color:var(--muted);font-size:13px;text-align:center;padding:16px 0">Nenhum teste enviado ainda.</div>';
+
+  const hasScore = score > 0;
+  return `
+    <!-- ── Triagem por IA ── -->
+    <div style="margin-bottom:20px">
+      <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px">🤖 Triagem por IA</div>
+      ${hasScore ? `
+        <div style="display:flex;align-items:center;gap:16px;margin-bottom:14px">
+          <div style="width:64px;height:64px;border-radius:50%;border:3px solid ${barColor(score)};background:${barColor(score)}18;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0">
+            <div style="font-size:20px;font-weight:900;color:${barColor(score)};line-height:1">${score.toFixed(1)}</div>
+            <div style="font-size:9px;color:var(--muted)">/10</div>
+          </div>
+          <div>
+            <span style="display:inline-block;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;background:${fitCfg.bg};color:${fitCfg.color};border:1px solid ${fitCfg.color}44">Fit ${fitCfg.label}</span>
+            ${p.resumo_executivo ? `<p style="font-size:12px;color:var(--muted);margin-top:6px;line-height:1.55">${p.resumo_executivo}</p>` : ''}
+          </div>
+        </div>` : '<p style="font-size:12px;color:var(--muted);margin-bottom:12px">Score não disponível ainda.</p>'}
+      ${dimsHtml}
+      ${buildList(p.pontos_fortes,  '✅', 'var(--success)') ? `<div style="margin-bottom:8px"><div style="font-size:11px;font-weight:700;color:var(--success);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Pontos Fortes</div>${buildList(p.pontos_fortes,'✅','var(--success)')}</div>` : ''}
+      ${buildList(p.pontos_atencao, '⚠️', 'var(--warn)')   ? `<div style="margin-bottom:8px"><div style="font-size:11px;font-weight:700;color:var(--warn);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Pontos de Atenção</div>${buildList(p.pontos_atencao,'⚠️','var(--warn)')}</div>` : ''}
+    </div>
+
+    <div style="border-top:1px solid var(--border);margin-bottom:16px"></div>
+
+    <!-- ── Testes Realizados ── -->
+    <div>
+      <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px">🧪 Testes Realizados</div>
+      ${testesHtml}
+    </div>`;
 }
 
 function downloadCurriculo(candidaturaId) {
