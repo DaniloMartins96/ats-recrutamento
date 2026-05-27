@@ -11,7 +11,6 @@
   --bg:#0a0a0f;--surface:#13131a;--surface2:#1a1a24;--border:#2a2a3a;
   --accent:#6c63ff;--accent2:#a78bfa;--text:#e2e2f0;--muted:#6b6b8a;
   --danger:#ff4d6d;--success:#10b981;--warn:#f59e0b;
-  --disc-d:#ef4444;--disc-i:#f59e0b;--disc-s:#10b981;--disc-c:#6c63ff;
 }
 html,body{min-height:100%;font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased}
 body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(ellipse 80% 70% at 15% 10%,#6c63ff18 0%,transparent 55%),radial-gradient(ellipse 60% 55% at 85% 90%,#a78bfa12 0%,transparent 55%)}
@@ -27,10 +26,8 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
 .progress-hdr-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:4px;transition:width .3s}
 .progress-hdr-label{font-size:11px;color:var(--muted);white-space:nowrap}
 
-.container{position:relative;z-index:1;max-width:720px;margin:0 auto;padding:84px 20px 80px}
-
-.screen{display:none}
-.screen.active{display:block}
+.container{position:relative;z-index:1;max-width:720px;margin:0 auto;padding:84px 20px 100px}
+.screen{display:none}.screen.active{display:block}
 
 .loader-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:50vh;gap:16px}
 .spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
@@ -41,14 +38,15 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
 .status-title{font-size:22px;font-weight:800;margin-bottom:10px}
 .status-sub{color:var(--muted);line-height:1.6;font-size:14px}
 
-/* ── HEADER DA AVALIAÇÃO ── */
+.preview-banner{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:10px;padding:10px 16px;font-size:12px;color:#f59e0b;margin-bottom:20px;display:flex;align-items:center;gap:8px}
+
 .aval-header{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px 28px;margin-bottom:24px}
 .aval-titulo{font-size:20px;font-weight:800;margin-bottom:6px}
 .aval-desc{font-size:13px;color:var(--muted);line-height:1.55;margin-bottom:14px}
 .aval-meta{display:flex;gap:16px;flex-wrap:wrap}
 .aval-meta-item{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:4px}
 
-/* ── BLOCO DISC ── */
+/* ── LIKERT BLOCOS ── */
 .disc-bloco{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px;margin-bottom:20px}
 .disc-bloco-titulo{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;display:flex;align-items:center;gap:8px}
 .disc-bloco-desc{font-size:12px;color:var(--muted);margin-bottom:20px;line-height:1.5}
@@ -56,19 +54,27 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
 .disc-pergunta:last-child{margin-bottom:0;padding-bottom:0;border-bottom:none}
 .disc-enunciado{font-size:14px;font-weight:500;margin-bottom:12px;line-height:1.5}
 .likert{display:flex;align-items:center;gap:0;width:100%}
-.likert-label{font-size:10px;color:var(--muted);flex-shrink:0;width:90px;line-height:1.3}
+.likert-label{font-size:10px;color:var(--muted);flex-shrink:0;width:80px;line-height:1.3}
 .likert-label.right{text-align:right}
 .likert-options{display:flex;gap:6px;flex:1;justify-content:center}
 .likert-opt{display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer}
 .likert-opt input[type=radio]{display:none}
-.likert-btn{
-  width:36px;height:36px;border-radius:50%;border:2px solid var(--border);
-  background:var(--surface2);display:flex;align-items:center;justify-content:center;
-  font-size:11px;font-weight:700;color:var(--muted);transition:all .15s;cursor:pointer;
-}
+.likert-btn{width:36px;height:36px;border-radius:50%;border:2px solid var(--border);background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--muted);transition:all .15s;cursor:pointer}
 .likert-opt:hover .likert-btn{border-color:rgba(108,99,255,.5);background:rgba(108,99,255,.08)}
 .likert-opt.selecionado .likert-btn{border-color:var(--accent);background:rgba(108,99,255,.2);color:var(--text)}
-.likert-num{font-size:10px;color:var(--muted)}
+
+/* ── MÚLTIPLA ESCOLHA ── */
+.mc-bloco{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px;margin-bottom:20px}
+.mc-num{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
+.mc-enunciado{font-size:14px;font-weight:500;line-height:1.55;margin-bottom:16px}
+.mc-opcoes{display:flex;flex-direction:column;gap:8px}
+.mc-opcao{display:flex;align-items:flex-start;gap:12px;padding:10px 14px;border:1.5px solid var(--border);border-radius:10px;cursor:pointer;transition:all .15s;background:var(--surface2)}
+.mc-opcao:hover{border-color:rgba(108,99,255,.4);background:rgba(108,99,255,.06)}
+.mc-opcao.selecionada{border-color:var(--accent);background:rgba(108,99,255,.12)}
+.mc-opcao input[type=radio]{display:none}
+.mc-letra{width:24px;height:24px;border-radius:6px;background:var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--muted);flex-shrink:0;transition:all .15s}
+.mc-opcao.selecionada .mc-letra{background:var(--accent);color:#fff}
+.mc-texto{font-size:13px;line-height:1.5;padding-top:3px}
 
 /* ── FOOTER ── */
 .footer-bar{position:fixed;bottom:0;left:0;right:0;z-index:10;background:rgba(10,10,15,.9);backdrop-filter:blur(16px);border-top:1px solid var(--border);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px}
@@ -76,28 +82,31 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
 .footer-prog-label{font-size:11px;color:var(--muted);margin-bottom:5px}
 .footer-bar-inner{height:4px;background:var(--border);border-radius:4px;overflow:hidden}
 .footer-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:4px;transition:width .3s}
+
 .btn{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;border-radius:10px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;transition:all .2s;border:none}
 .btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;box-shadow:0 4px 20px rgba(108,99,255,.4)}
 .btn-primary:hover:not(:disabled){opacity:.88}
 .btn-primary:disabled{opacity:.5;cursor:not-allowed}
+.btn-outline{background:transparent;color:var(--text);border:1.5px solid var(--border)}
+.btn-outline:hover{border-color:var(--accent);color:var(--accent)}
 
 /* ── RESULTADO ── */
 .resultado-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:40px;max-width:580px;margin:0 auto}
 .res-titulo{font-size:20px;font-weight:800;text-align:center;margin-bottom:24px}
-.disc-bars{margin:24px 0}
-.disc-bar-row{display:grid;grid-template-columns:140px 1fr 48px;align-items:center;gap:12px;margin-bottom:14px}
-.disc-bar-label{font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px}
-.disc-bar-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
-.disc-bar-track{height:10px;background:var(--border);border-radius:10px;overflow:hidden}
-.disc-bar-fill{height:100%;border-radius:10px;transition:width .8s ease}
-.disc-bar-pct{font-size:13px;font-weight:700;text-align:right}
-.disc-perfil-chip{
-  display:inline-flex;align-items:center;gap:8px;padding:6px 18px;border-radius:20px;
-  margin:0 auto 16px;font-size:13px;font-weight:700;border:1px solid;
-}
-.disc-descricao{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:16px;margin-top:20px}
-.disc-descricao-titulo{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
-.disc-descricao-texto{font-size:13px;line-height:1.65;color:var(--text)}
+.dim-bars{margin:24px 0}
+.dim-bar-row{display:grid;grid-template-columns:160px 1fr 48px;align-items:center;gap:12px;margin-bottom:14px}
+.dim-bar-label{font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px}
+.dim-bar-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.dim-bar-track{height:10px;background:var(--border);border-radius:10px;overflow:hidden}
+.dim-bar-fill{height:100%;border-radius:10px;transition:width .8s ease}
+.dim-bar-pct{font-size:13px;font-weight:700;text-align:right}
+.perfil-chip{display:inline-flex;align-items:center;gap:8px;padding:6px 18px;border-radius:20px;margin:0 auto 16px;font-size:13px;font-weight:700;border:1px solid}
+.res-descricao{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:16px;margin-top:20px}
+.res-descricao-titulo{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
+.res-descricao-texto{font-size:13px;line-height:1.65;color:var(--text)}
+.res-score-circle{width:100px;height:100px;border-radius:50%;border:4px solid var(--accent);display:flex;flex-direction:column;align-items:center;justify-content:center;margin:0 auto 20px}
+.res-score-num{font-size:28px;font-weight:800;color:var(--accent);line-height:1}
+.res-score-label{font-size:10px;color:var(--muted);margin-top:2px}
 
 @keyframes fadeInUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
 .fade-in{animation:fadeInUp .4s ease both}
@@ -113,12 +122,11 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
   <div class="hdr-spacer"></div>
   <div class="progress-hdr" id="progress-hdr" style="display:none">
     <div class="progress-hdr-bar"><div class="progress-hdr-fill" id="prog-hdr-fill" style="width:0%"></div></div>
-    <span class="progress-hdr-label" id="prog-hdr-label">0 / 28</span>
+    <span class="progress-hdr-label" id="prog-hdr-label">0 / 0</span>
   </div>
 </header>
 
 <div class="container">
-
   <div class="screen active" id="screen-loader">
     <div class="loader-wrap"><div class="spinner"></div><p style="color:var(--muted);font-size:13px">Carregando avaliação...</p></div>
   </div>
@@ -127,304 +135,706 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
     <div class="status-card fade-in">
       <div class="status-icon">❌</div>
       <div class="status-title">Avaliação não encontrada</div>
-      <p class="status-sub">O link desta avaliação é inválido ou já foi utilizado.<br>Verifique se o link está correto.</p>
-    </div>
-  </div>
-
-  <div class="screen" id="screen-concluido">
-    <div class="status-card fade-in">
-      <div class="status-icon">✅</div>
-      <div class="status-title">Avaliação já realizada</div>
-      <p class="status-sub">Você já concluiu esta avaliação anteriormente.<br>O recrutador analisará seu perfil em breve.</p>
+      <p class="status-sub">O link desta avaliação é inválido.<br>Verifique se o link está correto ou solicite um novo ao recrutador.</p>
     </div>
   </div>
 
   <div class="screen" id="screen-avaliacao">
+    <div id="preview-banner" class="preview-banner" style="display:none">
+      👁️ <strong>Modo preview</strong> — Visualização para o recrutador. As respostas não serão enviadas.
+    </div>
     <div class="aval-header fade-in">
-      <div class="aval-titulo">🧠 Perfil Comportamental DISC</div>
-      <div class="aval-desc">Responda com sinceridade — não há respostas certas ou erradas. Avalie cada afirmação de acordo com como você se comporta <strong>na maioria das situações profissionais</strong>.</div>
+      <div class="aval-titulo" id="aval-titulo">—</div>
+      <div class="aval-desc" id="aval-desc">—</div>
       <div class="aval-meta">
         <span class="aval-meta-item">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-          ~15 minutos
+          <span id="aval-tempo">—</span>
         </span>
         <span class="aval-meta-item">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-          <span id="aval-candidato">—</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          <span id="aval-total-label">— questões</span>
         </span>
-        <span class="aval-meta-item">28 afirmações</span>
+        <span class="aval-meta-item" id="aval-instrucao-meta">Escala: 1 = Discordo totalmente · 5 = Concordo totalmente</span>
       </div>
     </div>
-    <div id="disc-container"></div>
+    <div id="questoes-container"></div>
   </div>
 
   <div class="screen" id="screen-resultado">
-    <div class="resultado-card fade-in">
-      <div class="res-titulo">Seu Perfil Comportamental</div>
-      <div style="text-align:center;margin-bottom:8px">
-        <div class="disc-perfil-chip" id="res-perfil-chip">—</div>
-      </div>
-      <div class="disc-bars" id="res-bars"></div>
-      <div class="disc-descricao">
-        <div class="disc-descricao-titulo">Sobre seu perfil</div>
-        <div class="disc-descricao-texto" id="res-descricao">—</div>
-      </div>
-      <p style="text-align:center;color:var(--muted);font-size:12px;margin-top:20px">Resultado registrado. O recrutador entrará em contato em breve.</p>
+    <div class="resultado-card fade-in" id="res-card">
+      <div class="status-icon" style="text-align:center">✅</div>
+      <div class="res-titulo" id="res-titulo">Avaliação enviada!</div>
+      <div id="res-conteudo"></div>
+      <p style="text-align:center;color:var(--muted);font-size:12px;margin-top:24px">O recrutador analisará seu perfil em breve. Obrigado pela participação!</p>
     </div>
   </div>
-
 </div>
 
 <div class="footer-bar" id="footer-bar" style="display:none">
-  <div class="footer-prog">
-    <div class="footer-prog-label"><span id="prog-respondidas">0</span> de 28 respondidas</div>
+  <div class="footer-prog" id="footer-prog">
+    <div class="footer-prog-label"><span id="prog-respondidas">0</span> de <span id="prog-total">0</span> respondidas</div>
     <div class="footer-bar-inner"><div class="footer-bar-fill" id="prog-fill" style="width:0%"></div></div>
   </div>
-  <button class="btn btn-primary" id="btn-enviar" onclick="submeterAvaliacao()">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><polyline points="22 2 15 22 11 13 2 9 22 2"/></svg>
-    Enviar Avaliação
-  </button>
+  <div id="footer-btns"></div>
 </div>
 
 <script>
-const TOKEN = new URLSearchParams(window.location.search).get('token');
-const BASE  = 'https://webhook.danns.com.br/webhook';
-let respostas = {};
+const params  = new URLSearchParams(window.location.search);
+const TOKEN   = params.get('token') || '';
+const TIPO    = params.get('tipo')  || '';
+const CID     = params.get('cid')   || '';
+const PREVIEW = params.get('preview') === 'true';
+const BASE    = 'https://webhook.danns.com.br/webhook';
 
-const DISC_BLOCOS = [
-  {
-    dim: 'D', cor: '#ef4444',
-    titulo: 'Dimensão D — Dominância',
-    desc: 'Refere-se a como você responde a desafios, problemas e a sua assertividade na busca por resultados.',
-    perguntas: [
-      { id: 'd1', texto: 'Gosto de assumir o controle e tomar decisões rapidamente.' },
-      { id: 'd2', texto: 'Prefiro ambientes competitivos onde posso me destacar.' },
-      { id: 'd3', texto: 'Não tenho dificuldade em confrontar pessoas quando necessário.' },
-      { id: 'd4', texto: 'Coloco minha opinião mesmo sendo minoria no grupo.' },
-      { id: 'd5', texto: 'Trabalho bem sob pressão e prazos apertados.' },
-      { id: 'd6', texto: 'Foco nos resultados, mesmo que o processo seja desconfortável para outros.' },
-      { id: 'd7', texto: 'Aceito desafios que exigem assertividade e tomada de risco calculado.' }
+let respostas = {};
+let questoesFlat = [];
+
+// ── DADOS DAS AVALIAÇÕES ──────────────────────────────────────────
+
+const AVALIACOES = {
+
+  comp_disc: {
+    titulo: '🎯 Perfil Comportamental DISC',
+    desc: 'Responda com sinceridade — não há respostas certas ou erradas. Avalie cada afirmação de acordo com como você se comporta na maioria das situações profissionais.',
+    tempo: '~15 minutos',
+    tipo: 'likert_blocos',
+    blocos: [
+      {
+        dim: 'D', cor: '#ef4444',
+        titulo: 'Dimensão D — Dominância',
+        desc: 'Refere-se a como você responde a desafios, problemas e sua assertividade na busca por resultados.',
+        perguntas: [
+          'Prefiro tomar decisões rapidamente mesmo com informações limitadas',
+          'Gosto de assumir o controle em situações desafiadoras',
+          'Aceito bem críticas diretas e objetivas',
+          'Prefiro resultados a relacionamentos no trabalho',
+          'Sinto-me confortável delegando tarefas e cobrando resultados',
+          'Encaro conflitos como oportunidades de resolver problemas',
+          'Tenho facilidade em impor limites e dizer não'
+        ]
+      },
+      {
+        dim: 'I', cor: '#f59e0b',
+        titulo: 'Dimensão I — Influência',
+        desc: 'Refere-se a como você se comunica, influencia pessoas e se relaciona socialmente.',
+        perguntas: [
+          'Consigo motivar outras pessoas facilmente',
+          'Prefiro ambientes de trabalho colaborativos e animados',
+          'Gosto de conhecer pessoas novas e fazer networking',
+          'Sou otimista mesmo diante de dificuldades',
+          'Tenho facilidade em falar em público',
+          'Prefiro trabalhos que envolvam criatividade e inovação',
+          'Consigo convencer pessoas com facilidade'
+        ]
+      },
+      {
+        dim: 'S', cor: '#10b981',
+        titulo: 'Dimensão S — Estabilidade',
+        desc: 'Refere-se ao seu ritmo de trabalho, paciência, consistência e suporte à equipe.',
+        perguntas: [
+          'Prefiro rotinas estáveis a mudanças constantes',
+          'Sou paciente e consigo ouvir os outros com atenção',
+          'Priorizo a harmonia da equipe antes dos resultados individuais',
+          'Tenho dificuldade em mudar de tarefa quando estou focado',
+          'Sou leal e comprometido com minha equipe',
+          'Prefiro terminar o que começo antes de iniciar algo novo',
+          'Mantenho a calma em situações de pressão'
+        ]
+      },
+      {
+        dim: 'C', cor: '#6c63ff',
+        titulo: 'Dimensão C — Conformidade',
+        desc: 'Refere-se ao seu nível de atenção a regras, qualidade, precisão e análise crítica.',
+        perguntas: [
+          'Prefiro seguir processos e regras estabelecidas',
+          'Verifico meu trabalho várias vezes antes de entregar',
+          'Tenho dificuldade em tomar decisões sem dados suficientes',
+          'Prefiro trabalhar sozinho a trabalhar em grupo',
+          'Sou crítico em relação a erros, inclusive os meus',
+          'Valorizo a qualidade acima da velocidade',
+          'Preciso entender o porquê das coisas antes de executar'
+        ]
+      }
     ]
   },
-  {
-    dim: 'I', cor: '#f59e0b',
-    titulo: 'Dimensão I — Influência',
-    desc: 'Refere-se a como você se comunica, influencia pessoas e se relaciona socialmente.',
-    perguntas: [
-      { id: 'i1', texto: 'Sou comunicativo(a) e gosto de conhecer novas pessoas.' },
-      { id: 'i2', texto: 'Consigo motivar e entusiasmar os outros com facilidade.' },
-      { id: 'i3', texto: 'Tenho facilidade em me expressar em público.' },
-      { id: 'i4', texto: 'Gosto de brainstorm e compartilhar ideias em grupo.' },
-      { id: 'i5', texto: 'Sou otimista e geralmente vejo o lado positivo das situações.' },
-      { id: 'i6', texto: 'Construo relacionamentos com facilidade em qualquer ambiente.' },
-      { id: 'i7', texto: 'Prefiro trabalhar com muitas interações sociais ao longo do dia.' }
+
+  comp_bigfive: {
+    titulo: '🧬 Big Five — Personalidade',
+    desc: 'Avalie cada afirmação de acordo com o quanto ela descreve você. Não há respostas certas ou erradas.',
+    tempo: '~15 minutos',
+    tipo: 'likert_blocos',
+    blocos: [
+      {
+        dim: 'O', cor: '#8b5cf6',
+        titulo: 'Abertura à Experiência',
+        desc: 'Reflete curiosidade intelectual, imaginação e abertura a novas ideias.',
+        perguntas: [
+          'Gosto de explorar novas ideias e conceitos',
+          'Tenho interesse em arte, música ou literatura',
+          'Prefiro situações novas a rotinas conhecidas',
+          'Tenho imaginação vívida e criativa',
+          'Fico curioso sobre como as coisas funcionam',
+          'Gosto de questionar ideias estabelecidas'
+        ]
+      },
+      {
+        dim: 'C', cor: '#3b82f6',
+        titulo: 'Conscienciosidade',
+        desc: 'Reflete organização, autodisciplina, pontualidade e orientação a objetivos.',
+        perguntas: [
+          'Sou organizado e mantenho minhas coisas em ordem',
+          'Cumpro prazos mesmo sob pressão',
+          'Planejo minhas atividades com antecedência',
+          'Sou persistente mesmo diante de obstáculos',
+          'Sigo as regras mesmo quando ninguém está olhando',
+          'Tenho autodisciplina para completar tarefas entediantes'
+        ]
+      },
+      {
+        dim: 'E', cor: '#f59e0b',
+        titulo: 'Extroversão',
+        desc: 'Reflete sociabilidade, assertividade e tendência a buscar estímulos externos.',
+        perguntas: [
+          'Prefiro estar com pessoas a ficar sozinho',
+          'Sou animado e falante em grupos',
+          'Busco emoções e aventuras',
+          'Tenho muita energia no trabalho',
+          'Consigo me impor em conversas de grupo',
+          'Prefiro trabalhos que envolvam interação social constante'
+        ]
+      },
+      {
+        dim: 'A', cor: '#10b981',
+        titulo: 'Amabilidade',
+        desc: 'Reflete cooperação, empatia, confiança e consideração pelo próximo.',
+        perguntas: [
+          'Me preocupo com o bem-estar das pessoas ao meu redor',
+          'Evito conflitos e prefiro ceder do que brigar',
+          'Sou empático e consigo sentir o que outros sentem',
+          'Confio nas pessoas facilmente',
+          'Gosto de ajudar mesmo sem receber reconhecimento',
+          'Sou gentil mesmo com pessoas difíceis'
+        ]
+      },
+      {
+        dim: 'N', cor: '#ef4444',
+        titulo: 'Neuroticismo',
+        desc: 'Reflete instabilidade emocional, ansiedade e reatividade ao estresse.',
+        perguntas: [
+          'Fico ansioso facilmente em situações de pressão',
+          'Meu humor muda com frequência',
+          'Me preocupo muito com o que pode dar errado',
+          'Fico frustrado quando as coisas não saem como planejei',
+          'Tenho dificuldade em relaxar',
+          'Situações de estresse me afetam muito'
+        ]
+      }
     ]
   },
-  {
-    dim: 'S', cor: '#10b981',
-    titulo: 'Dimensão S — Estabilidade',
-    desc: 'Refere-se ao seu ritmo de trabalho, paciência, consistência e suporte à equipe.',
+
+  comp_inteligencia: {
+    titulo: '⚡ Raciocínio Lógico',
+    desc: 'Responda cada questão escolhendo a alternativa correta. Não há tempo limite — leia com atenção.',
+    tempo: '~25 minutos',
+    tipo: 'multipla',
     perguntas: [
-      { id: 's1', texto: 'Prefiro rotinas estáveis e processos bem definidos.' },
-      { id: 's2', texto: 'Sou um(a) bom(a) ouvinte e gosto de dar suporte à equipe.' },
-      { id: 's3', texto: 'Prefiro concluir uma tarefa completamente antes de começar outra.' },
-      { id: 's4', texto: 'Evito conflitos e busco harmonia nas relações de trabalho.' },
-      { id: 's5', texto: 'Sou leal e consistente nas minhas entregas ao longo do tempo.' },
-      { id: 's6', texto: 'Prefiro mudanças graduais a mudanças rápidas e inesperadas.' },
-      { id: 's7', texto: 'Gosto de ambientes de trabalho calmos e com pouca imprevisibilidade.' }
+      { texto: 'Se todos os A são B, e todos os B são C, então:',
+        opcoes: ['Todos os A são C','Alguns C são A','Nenhum A é C','Impossível determinar'], resposta: 0 },
+      { texto: 'Qual número completa a sequência: 2, 4, 8, 16, ___?',
+        opcoes: ['24','32','28','20'], resposta: 1 },
+      { texto: 'João tem o dobro da idade de Maria. Daqui a 5 anos, a soma das idades será 40. Qual a idade atual de João?',
+        opcoes: ['15','20','18','25'], resposta: 1 },
+      { texto: 'Se A > B e B > C, então:',
+        opcoes: ['A > C','C > A','A = C','Impossível determinar'], resposta: 0 },
+      { texto: 'Qual é o próximo número da sequência: 1, 4, 9, 16, 25, ___?',
+        opcoes: ['30','35','36','42'], resposta: 2 },
+      { texto: 'Em um grupo de 30 pessoas, 60% são mulheres. Quantos homens há no grupo?',
+        opcoes: ['10','12','15','18'], resposta: 1 },
+      { texto: 'Livro está para biblioteca assim como quadro está para:',
+        opcoes: ['Pintor','Museu','Parede','Tela'], resposta: 1 },
+      { texto: 'Dois trens partem em sentidos opostos de cidades distantes 300 km. Um vai a 80 km/h e o outro a 70 km/h. Em quantas horas se encontram?',
+        opcoes: ['1h','2h','3h','4h'], resposta: 1 },
+      { texto: 'Um produto custa R$ 150 após desconto de 25%. Qual era o preço original?',
+        opcoes: ['R$ 175','R$ 187,50','R$ 200','R$ 210'], resposta: 2 },
+      { texto: 'Qual número completa a sequência de Fibonacci: 1, 1, 2, 3, 5, 8, ___?',
+        opcoes: ['11','12','13','14'], resposta: 2 },
+      { texto: 'Se uma tarefa leva 6 horas para 4 pessoas, quanto tempo levaria para 3 pessoas?',
+        opcoes: ['7h','8h','9h','10h'], resposta: 1 },
+      { texto: 'Todos os gatos são animais. Alguns animais são domésticos. Portanto:',
+        opcoes: ['Todos os gatos são domésticos','Alguns gatos podem ser domésticos','Nenhum gato é doméstico','Impossível determinar'], resposta: 1 },
+      { texto: 'Qual não pertence ao grupo: triângulo, quadrado, círculo, esfera?',
+        opcoes: ['Triângulo','Quadrado','Círculo','Esfera'], resposta: 3 },
+      { texto: 'Se 5 máquinas produzem 5 peças em 5 minutos, quantas peças 5 máquinas produzem em 100 minutos?',
+        opcoes: ['5','50','100','500'], resposta: 2 },
+      { texto: 'Complete a sequência: 3, 6, 11, 18, 27, ___?',
+        opcoes: ['36','38','40','42'], resposta: 1 },
+      { texto: 'Qual a próxima letra da sequência: A, C, E, G, ___?',
+        opcoes: ['H','I','J','K'], resposta: 1 },
+      { texto: 'Em uma sala com 10 pessoas, cada uma aperta a mão de todas as outras uma vez. Quantos apertos ocorrem?',
+        opcoes: ['40','45','50','100'], resposta: 1 },
+      { texto: 'Uma empresa tem 120 funcionários. 1/3 trabalha em TI e 1/4 em Vendas. Quantos estão em outras áreas?',
+        opcoes: ['40','45','50','55'], resposta: 2 },
+      { texto: 'Se CAMA está para DORMIR, então MESA está para:',
+        opcoes: ['Sala','Cadeira','Comer','Madeira'], resposta: 2 },
+      { texto: 'Qual o valor de X: 2X + 8 = 20?',
+        opcoes: ['4','5','6','7'], resposta: 2 }
     ]
   },
-  {
-    dim: 'C', cor: '#6c63ff',
-    titulo: 'Dimensão C — Conformidade',
-    desc: 'Refere-se ao seu nível de atenção a regras, qualidade, precisão e análise crítica.',
+
+  comp_lideranca: {
+    titulo: '👑 Liderança e Influência',
+    desc: 'Avalie cada afirmação de acordo com como você age e se percebe em situações de liderança.',
+    tempo: '~18 minutos',
+    tipo: 'likert_flat',
+    cor: '#f59e0b',
     perguntas: [
-      { id: 'c1', texto: 'Sou muito detalhista e verifico meu trabalho várias vezes antes de entregar.' },
-      { id: 'c2', texto: 'Prefiro ter dados e análises completas antes de tomar qualquer decisão.' },
-      { id: 'c3', texto: 'Sigo regras e padrões estabelecidos rigorosamente.' },
-      { id: 'c4', texto: 'Tenho altos padrões de qualidade para o meu próprio trabalho.' },
-      { id: 'c5', texto: 'Gosto de organizar e planejar detalhadamente antes de agir.' },
-      { id: 'c6', texto: 'Fico desconfortável com erros e imprecisões no trabalho.' },
-      { id: 'c7', texto: 'Analiso todos os prós e contras antes de tomar decisões importantes.' }
+      'Consigo inspirar pessoas ao meu redor a darem o melhor de si',
+      'Tomo decisões difíceis mesmo sob pressão',
+      'Sei delegar tarefas de acordo com o perfil de cada pessoa',
+      'Dou feedback construtivo sem constranger',
+      'Mantenho a equipe motivada mesmo em momentos difíceis',
+      'Resolvo conflitos entre membros da equipe com eficiência',
+      'Comunico minha visão de forma clara e inspiradora',
+      'Adapto meu estilo de liderança conforme a situação',
+      'Reconheço e celebro as conquistas da equipe',
+      'Sei quando ouvir e quando tomar a frente',
+      'Tenho habilidade para desenvolver pessoas',
+      'Assumo responsabilidade pelos erros da equipe',
+      'Crio um ambiente seguro para a equipe expressar ideias',
+      'Mantenho a equipe focada nos objetivos mesmo diante de distrações',
+      'Sei priorizar as tarefas mais importantes em momentos de sobrecarga',
+      'Construo relacionamentos de confiança com minha equipe',
+      'Sou transparente sobre os desafios e limitações da empresa',
+      'Incentivo a autonomia e iniciativa dos membros da equipe',
+      'Tomo decisões baseadas em dados e evidências',
+      'Sei lidar com diferentes perfis de pessoas na equipe',
+      'Mantenho a calma e a racionalidade em situações de crise',
+      'Facilito o crescimento profissional dos meus liderados',
+      'Alinjo expectativas com a equipe de forma clara e frequente',
+      'Tenho visão estratégica e consigo transmiti-la à equipe'
+    ]
+  },
+
+  comp_vendas: {
+    titulo: '🏆 Perfil Comercial',
+    desc: 'Avalie cada afirmação de acordo com como você se comporta em situações de vendas e negociação.',
+    tempo: '~12 minutos',
+    tipo: 'likert_flat',
+    cor: '#10b981',
+    perguntas: [
+      'Consigo identificar as necessidades do cliente rapidamente',
+      'Não desisto facilmente após uma rejeição',
+      'Tenho habilidade para negociar e criar acordos vantajosos',
+      'Mantenho relacionamentos de longo prazo com clientes',
+      'Consigo superar minhas metas regularmente',
+      'Sou proativo em buscar novos clientes',
+      'Consigo adaptar meu discurso para diferentes perfis de clientes',
+      'Tenho facilidade em identificar oportunidades de upsell e cross-sell',
+      'Mantenho um pipeline de vendas organizado e atualizado',
+      'Sei lidar com objeções de forma positiva e construtiva',
+      'Sou disciplinado na execução do processo de vendas',
+      'Consigo criar urgência e motivar o cliente a decidir',
+      'Tenho alta tolerância à frustração e pressão por resultados',
+      'Sei ouvir mais do que falar nas reuniões com clientes',
+      'Cumpro os compromissos assumidos com os clientes',
+      'Tenho conhecimento profundo dos produtos/serviços que vendo',
+      'Busco entender o mercado e os concorrentes constantemente',
+      'Consigo fazer prospecção ativa por múltiplos canais',
+      'Tenho foco e consistência para bater metas mês a mês',
+      'Me sinto energizado pelo processo de conquistar um novo cliente'
+    ]
+  },
+
+  comp_criatividade: {
+    titulo: '💡 Criatividade e Inovação',
+    desc: 'Avalie cada afirmação de acordo com como você se percebe em relação ao pensamento criativo e inovador.',
+    tempo: '~10 minutos',
+    tipo: 'likert_flat',
+    cor: '#a78bfa',
+    perguntas: [
+      'Gosto de pensar em soluções diferentes das convencionais',
+      'Vejo problemas como oportunidades de inovação',
+      'Consigo gerar muitas ideias rapidamente',
+      'Não tenho medo de propor ideias incomuns',
+      'Busco inspiração em áreas fora da minha especialidade',
+      'Tenho facilidade em conectar conceitos de diferentes áreas',
+      'Questiono processos e formas de fazer as coisas',
+      'Tolero bem a ambiguidade e a falta de respostas claras',
+      'Me adapto bem a mudanças e situações novas',
+      'Experimento novas abordagens mesmo sem garantia de sucesso',
+      'Tenho curiosidade intelectual sobre temas variados',
+      'Consigo pensar de forma abstrata e conceitual',
+      'Gosto de colaborar criativamente com outras pessoas',
+      'Não me satisfaço facilmente com as respostas óbvias',
+      'Tenho iniciativa para propor melhorias sem ser solicitado',
+      'Consigo ver padrões e conexões que outros não percebem',
+      'Tenho persistência para desenvolver uma ideia até o fim',
+      'Valorizo a diversidade de perspectivas para enriquecer soluções'
     ]
   }
-];
 
-const DISC_DESCRICOES = {
-  D: { label: 'Dominante', emoji: '🦁', desc: 'Você é direto(a), orientado(a) a resultados e assertivo(a). Gosta de desafios, assume riscos calculados e possui forte senso de urgência. Tende a liderar e a tomar decisões com agilidade.' },
-  I: { label: 'Influente', emoji: '🌟', desc: 'Você é comunicativo(a), entusiasta e persuasivo(a). Constrói relacionamentos com facilidade e é capaz de inspirar e engajar pessoas ao seu redor. Trabalha bem em ambientes colaborativos e dinâmicos.' },
-  S: { label: 'Estável', emoji: '🌿', desc: 'Você é paciente, confiável e colaborativo(a). Valoriza a estabilidade, a harmonia e o trabalho em equipe. É um pilar de consistência e suporte para as pessoas ao seu redor.' },
-  C: { label: 'Criterioso(a)', emoji: '🔬', desc: 'Você é analítico(a), preciso(a) e orientado(a) a qualidade. Segue processos rigorosamente e toma decisões baseadas em dados. É altamente confiável quando se trata de entregas precisas e de alto padrão.' }
 };
 
+// ── DESCRIÇÕES DISC ──
+const DISC_DESC = {
+  D: { label: 'Dominante',    emoji: '🦁', cor: '#ef4444', desc: 'Você é direto(a), orientado(a) a resultados e assertivo(a). Gosta de desafios, assume riscos calculados e possui forte senso de urgência. Tende a liderar e a tomar decisões com agilidade.' },
+  I: { label: 'Influente',    emoji: '🌟', cor: '#f59e0b', desc: 'Você é comunicativo(a), entusiasta e persuasivo(a). Constrói relacionamentos com facilidade e é capaz de inspirar e engajar pessoas ao seu redor.' },
+  S: { label: 'Estável',      emoji: '🌿', cor: '#10b981', desc: 'Você é paciente, confiável e colaborativo(a). Valoriza a estabilidade, a harmonia e o trabalho em equipe. É um pilar de consistência e suporte para as pessoas ao seu redor.' },
+  C: { label: 'Criterioso(a)','emoji': '🔬', cor: '#6c63ff', desc: 'Você é analítico(a), preciso(a) e orientado(a) a qualidade. Segue processos rigorosamente e toma decisões baseadas em dados.' }
+};
+
+const BIGFIVE_DESC = {
+  O: { label: 'Abertura',          emoji: '🔮', cor: '#8b5cf6' },
+  C: { label: 'Conscienciosidade', emoji: '📋', cor: '#3b82f6' },
+  E: { label: 'Extroversão',       emoji: '💬', cor: '#f59e0b' },
+  A: { label: 'Amabilidade',       emoji: '🤝', cor: '#10b981' },
+  N: { label: 'Neuroticismo',      emoji: '⚡', cor: '#ef4444' }
+};
+
+// ── INIT ──
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
 }
 
-(async function init() {
-  if (!TOKEN) { showScreen('screen-erro'); return; }
-  try {
-    const r = await fetch(`${BASE}/ats-get-avaliacao?token=${encodeURIComponent(TOKEN)}`);
-    if (!r.ok && r.status !== 404) throw new Error();
-    if (r.ok) {
-      const data = await r.json();
-      const aval = data.avaliacao || data;
-      if (aval.status === 'concluido') { mostrarResultado(aval); return; }
-      if (aval.candidato_nome) document.getElementById('aval-candidato').textContent = aval.candidato_nome;
-    }
-  } catch {}
+(function init() {
+  if (!TIPO || !AVALIACOES[TIPO]) { showScreen('screen-erro'); return; }
+  if (!PREVIEW && !TOKEN) { showScreen('screen-erro'); return; }
   renderAvaliacao();
 })();
 
 function renderAvaliacao() {
-  const container = document.getElementById('disc-container');
-  container.innerHTML = DISC_BLOCOS.map((bloco, bi) => `
-    <div class="disc-bloco fade-in" style="animation-delay:${bi * 0.08}s">
-      <div class="disc-bloco-titulo">
-        <span style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:6px;background:${bloco.cor}22;color:${bloco.cor};font-size:12px;font-weight:900">${bloco.dim}</span>
-        ${bloco.titulo}
-      </div>
-      <div class="disc-bloco-desc">${bloco.desc}</div>
-      ${bloco.perguntas.map(p => renderPergunta(p)).join('')}
-    </div>`).join('');
+  const aval = AVALIACOES[TIPO];
+
+  document.getElementById('aval-titulo').textContent = aval.titulo;
+  document.getElementById('aval-desc').textContent   = aval.desc;
+  document.getElementById('aval-tempo').textContent  = aval.tempo;
+
+  if (PREVIEW) {
+    document.getElementById('preview-banner').style.display = 'flex';
+  }
+
+  const container = document.getElementById('questoes-container');
+  questoesFlat = [];
+
+  if (aval.tipo === 'likert_blocos') {
+    document.getElementById('aval-instrucao-meta').textContent = 'Escala: 1 = Discordo totalmente · 5 = Concordo totalmente';
+    aval.blocos.forEach(b => b.perguntas.forEach(t => questoesFlat.push({ texto: t })));
+    document.getElementById('aval-total-label').textContent = questoesFlat.length + ' afirmações';
+    document.getElementById('prog-total').textContent = questoesFlat.length;
+    document.getElementById('prog-hdr-label').textContent = `0 / ${questoesFlat.length}`;
+    container.innerHTML = aval.blocos.map((b, bi) => renderBlocoLikert(b, bi)).join('');
+  } else if (aval.tipo === 'likert_flat') {
+    document.getElementById('aval-instrucao-meta').textContent = 'Escala: 1 = Discordo totalmente · 5 = Concordo totalmente';
+    aval.perguntas.forEach(t => questoesFlat.push({ texto: t }));
+    document.getElementById('aval-total-label').textContent = questoesFlat.length + ' afirmações';
+    document.getElementById('prog-total').textContent = questoesFlat.length;
+    document.getElementById('prog-hdr-label').textContent = `0 / ${questoesFlat.length}`;
+    container.innerHTML = renderBlocoFlatLikert(aval);
+  } else if (aval.tipo === 'multipla') {
+    document.getElementById('aval-instrucao-meta').textContent = 'Escolha a alternativa correta para cada questão';
+    aval.perguntas.forEach(p => questoesFlat.push(p));
+    document.getElementById('aval-total-label').textContent = questoesFlat.length + ' questões';
+    document.getElementById('prog-total').textContent = questoesFlat.length;
+    document.getElementById('prog-hdr-label').textContent = `0 / ${questoesFlat.length}`;
+    container.innerHTML = aval.perguntas.map((p, i) => renderPerguntaMultipla(p, i)).join('');
+  }
+
+  // footer
+  const footerBtns = document.getElementById('footer-btns');
+  if (PREVIEW) {
+    document.getElementById('footer-prog').style.display = 'none';
+    footerBtns.innerHTML = `<button class="btn btn-outline" onclick="fecharPreview()">✕ Fechar preview</button>`;
+  } else {
+    footerBtns.innerHTML = `
+      <button class="btn btn-primary" id="btn-enviar" onclick="submeterAvaliacao()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><polyline points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        Enviar Avaliação
+      </button>`;
+  }
 
   document.getElementById('footer-bar').style.display = 'flex';
   document.getElementById('progress-hdr').style.display = 'flex';
   showScreen('screen-avaliacao');
 }
 
-function renderPergunta(p) {
-  const labels = ['','Discordo\ntotalmente','','','','Concordo\ntotalmente'];
+// ── RENDER BLOCOS LIKERT ──
+function renderBlocoLikert(bloco, bi) {
+  let offset = 0;
+  const aval = AVALIACOES[TIPO];
+  for (let i = 0; i < bi; i++) offset += aval.blocos[i].perguntas.length;
+
   return `
-  <div class="disc-pergunta" id="perg-${p.id}">
-    <div class="disc-enunciado">${esc(p.texto)}</div>
+    <div class="disc-bloco fade-in" style="animation-delay:${bi * 0.07}s">
+      <div class="disc-bloco-titulo">
+        <span style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:6px;background:${bloco.cor}22;color:${bloco.cor};font-size:12px;font-weight:900">${bloco.dim}</span>
+        ${esc(bloco.titulo)}
+      </div>
+      <div class="disc-bloco-desc">${esc(bloco.desc)}</div>
+      ${bloco.perguntas.map((t, pi) => renderPerguntaLikert(t, offset + pi)).join('')}
+    </div>`;
+}
+
+function renderBlocoFlatLikert(aval) {
+  return `
+    <div class="disc-bloco fade-in">
+      <div class="disc-bloco-titulo">
+        <span style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:6px;background:${aval.cor}22;color:${aval.cor};font-size:12px">●</span>
+        Afirmações
+      </div>
+      <div class="disc-bloco-desc">Avalie cada afirmação de 1 (Discordo totalmente) a 5 (Concordo totalmente).</div>
+      ${aval.perguntas.map((t, i) => renderPerguntaLikert(t, i)).join('')}
+    </div>`;
+}
+
+function renderPerguntaLikert(texto, idx) {
+  return `
+  <div class="disc-pergunta" id="perg-${idx}">
+    <div class="disc-enunciado">${esc(texto)}</div>
     <div class="likert">
-      <span class="likert-label" style="font-size:10px;color:var(--muted);width:80px;line-height:1.3">Discordo totalmente</span>
+      <span class="likert-label">Discordo totalmente</span>
       <div class="likert-options">
         ${[1,2,3,4,5].map(n => `
-          <label class="likert-opt" id="lo-${p.id}-${n}">
-            <input type="radio" name="q-${p.id}" value="${n}" onchange="onLikert('${p.id}',${n})">
+          <label class="likert-opt" id="lo-${idx}-${n}">
+            <input type="radio" name="q-${idx}" value="${n}" onchange="onLikert(${idx},${n})">
             <span class="likert-btn">${n}</span>
           </label>`).join('')}
       </div>
-      <span class="likert-label right" style="font-size:10px;color:var(--muted);width:80px;text-align:right;line-height:1.3">Concordo totalmente</span>
+      <span class="likert-label right">Concordo totalmente</span>
     </div>
   </div>`;
 }
 
-function onLikert(pergId, val) {
-  respostas[pergId] = val;
+function renderPerguntaMultipla(p, idx) {
+  const letras = ['A','B','C','D'];
+  return `
+  <div class="mc-bloco fade-in" id="perg-${idx}" style="animation-delay:${idx * 0.03}s">
+    <div class="mc-num">Questão ${idx + 1}</div>
+    <div class="mc-enunciado">${esc(p.texto)}</div>
+    <div class="mc-opcoes">
+      ${p.opcoes.map((op, oi) => `
+        <label class="mc-opcao" id="mc-${idx}-${oi}" onclick="onMultipla(${idx},${oi})">
+          <input type="radio" name="q-${idx}" value="${oi}">
+          <span class="mc-letra">${letras[oi]}</span>
+          <span class="mc-texto">${esc(op)}</span>
+        </label>`).join('')}
+    </div>
+  </div>`;
+}
+
+// ── HANDLERS ──
+function onLikert(idx, val) {
+  if (PREVIEW) return;
+  respostas[idx] = val;
   [1,2,3,4,5].forEach(n => {
-    const el = document.getElementById(`lo-${pergId}-${n}`);
+    const el = document.getElementById(`lo-${idx}-${n}`);
     if (el) el.classList.toggle('selecionado', n === val);
   });
   atualizarProgresso();
 }
 
+function onMultipla(idx, oi) {
+  if (PREVIEW) return;
+  respostas[idx] = oi;
+  const aval = AVALIACOES[TIPO];
+  aval.perguntas[idx].opcoes.forEach((_, i) => {
+    const el = document.getElementById(`mc-${idx}-${i}`);
+    if (el) el.classList.toggle('selecionada', i === oi);
+  });
+  atualizarProgresso();
+}
+
 function atualizarProgresso() {
-  const total = DISC_BLOCOS.reduce((s, b) => s + b.perguntas.length, 0);
+  const total = questoesFlat.length;
   const resp  = Object.keys(respostas).length;
   document.getElementById('prog-respondidas').textContent = resp;
   const pct = (resp / total) * 100;
-  document.getElementById('prog-fill').style.width = pct + '%';
-  document.getElementById('prog-hdr-fill').style.width = pct + '%';
-  document.getElementById('prog-hdr-label').textContent = `${resp} / ${total}`;
+  document.getElementById('prog-fill').style.width        = pct + '%';
+  document.getElementById('prog-hdr-fill').style.width    = pct + '%';
+  document.getElementById('prog-hdr-label').textContent   = `${resp} / ${total}`;
 }
 
+function fecharPreview() {
+  if (!window.close()) window.history.back();
+}
+
+// ── SUBMISSÃO ──
 async function submeterAvaliacao() {
-  const total = DISC_BLOCOS.reduce((s, b) => s + b.perguntas.length, 0);
+  const total = questoesFlat.length;
   const resp  = Object.keys(respostas).length;
   if (resp < total) {
-    const ok = confirm(`Você respondeu ${resp} de ${total} afirmações. Deseja enviar mesmo assim?`);
-    if (!ok) return;
+    if (!confirm(`Você respondeu ${resp} de ${total} questões. Deseja enviar mesmo assim?`)) return;
   }
 
   const btn = document.getElementById('btn-enviar');
-  btn.disabled = true;
-  btn.innerHTML = `<div style="width:16px;height:16px;border:2px solid #fff6;border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite"></div> Enviando...`;
+  if (btn) { btn.disabled = true; btn.innerHTML = `<div style="width:16px;height:16px;border:2px solid #fff6;border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite"></div> Enviando...`; }
 
   const payload = {
     token: TOKEN,
-    tipo: 'comp_disc',
-    respostas: Object.entries(respostas).map(([pergunta_id, resposta]) => ({ pergunta_id, resposta: Number(resposta) }))
+    tipo:  TIPO,
+    cid:   CID,
+    respostas: Object.entries(respostas).map(([idx, resposta]) => ({
+      pergunta_index: Number(idx),
+      resposta: resposta
+    }))
   };
 
   try {
-    const r = await fetch(`${BASE}/ats-submeter-avaliacao`, {
+    const r    = await fetch(`${BASE}/ats-submeter-avaliacao`, {
       method: 'POST', headers: {'Content-Type':'application/json'},
       body: JSON.stringify(payload)
     });
-    const data = await r.json();
-    mostrarResultado(data.resultado || calcularLocal());
+    const data = await r.json().catch(() => ({}));
+    mostrarResultado(data);
   } catch {
-    mostrarResultado(calcularLocal());
+    mostrarResultado({});
   }
 }
 
-function calcularLocal() {
-  const scores = { D: 0, I: 0, S: 0, C: 0 };
-  DISC_BLOCOS.forEach(b => {
-    b.perguntas.forEach(p => { scores[b.dim] += respostas[p.id] || 0; });
-  });
-  const max = 35;
-  return {
-    score_d: ((scores.D / max) * 100).toFixed(1),
-    score_i: ((scores.I / max) * 100).toFixed(1),
-    score_s: ((scores.S / max) * 100).toFixed(1),
-    score_c: ((scores.C / max) * 100).toFixed(1),
-  };
-}
-
-function mostrarResultado(r) {
-  document.getElementById('footer-bar').style.display  = 'none';
+// ── RESULTADO ──
+function mostrarResultado(data) {
+  document.getElementById('footer-bar').style.display    = 'none';
   document.getElementById('progress-hdr').style.display = 'none';
 
-  const dims = [
-    { dim: 'D', label: 'Dominância',   cor: '#ef4444', pct: Number(r.score_d || 0) },
-    { dim: 'I', label: 'Influência',   cor: '#f59e0b', pct: Number(r.score_i || 0) },
-    { dim: 'S', label: 'Estabilidade', cor: '#10b981', pct: Number(r.score_s || 0) },
-    { dim: 'C', label: 'Conformidade', cor: '#6c63ff', pct: Number(r.score_c || 0) },
-  ];
+  const aval = AVALIACOES[TIPO];
+  document.getElementById('res-titulo').textContent = aval.titulo.replace(/^[^\w]+ ?/u,'') + ' — Concluída!';
 
-  const dominante = dims.reduce((a, b) => a.pct >= b.pct ? a : b);
-  const info = DISC_DESCRICOES[dominante.dim];
+  const conteudo = document.getElementById('res-conteudo');
 
-  const chip = document.getElementById('res-perfil-chip');
-  chip.textContent = `${info.emoji} Perfil ${info.label}`;
-  chip.style.background = dominante.cor + '22';
-  chip.style.color       = dominante.cor;
-  chip.style.borderColor = dominante.cor + '55';
-
-  document.getElementById('res-bars').innerHTML = dims.map(d => `
-    <div class="disc-bar-row">
-      <div class="disc-bar-label">
-        <span class="disc-bar-dot" style="background:${d.cor}"></span>
-        ${d.dim} · ${d.label}
+  if (TIPO === 'comp_disc') {
+    const scores = calcularDiscLocal();
+    const dims = [
+      { dim:'D', label:'Dominância',   cor:'#ef4444', pct: scores.D },
+      { dim:'I', label:'Influência',   cor:'#f59e0b', pct: scores.I },
+      { dim:'S', label:'Estabilidade', cor:'#10b981', pct: scores.S },
+      { dim:'C', label:'Conformidade', cor:'#6c63ff', pct: scores.C }
+    ];
+    const r = data.resultado || {};
+    if (r.score_d !== undefined) {
+      dims[0].pct = Number(r.score_d);
+      dims[1].pct = Number(r.score_i);
+      dims[2].pct = Number(r.score_s);
+      dims[3].pct = Number(r.score_c);
+    }
+    const dominante = dims.reduce((a, b) => a.pct >= b.pct ? a : b);
+    const info = DISC_DESC[dominante.dim];
+    conteudo.innerHTML = `
+      <div style="text-align:center">
+        <div class="perfil-chip" style="background:${info.cor}22;color:${info.cor};border-color:${info.cor}55">${info.emoji} Perfil ${info.label}</div>
       </div>
-      <div class="disc-bar-track">
-        <div class="disc-bar-fill" style="width:${d.pct}%;background:${d.cor}"></div>
+      <div class="dim-bars">
+        ${dims.map(d => `
+          <div class="dim-bar-row">
+            <div class="dim-bar-label"><span class="dim-bar-dot" style="background:${d.cor}"></span>${d.dim} · ${d.label}</div>
+            <div class="dim-bar-track"><div class="dim-bar-fill" style="width:0%;background:${d.cor}" data-pct="${d.pct.toFixed(1)}"></div></div>
+            <div class="dim-bar-pct" style="color:${d.cor}">${d.pct.toFixed(0)}%</div>
+          </div>`).join('')}
       </div>
-      <div class="disc-bar-pct" style="color:${d.cor}">${d.pct.toFixed(0)}%</div>
-    </div>`).join('');
+      <div class="res-descricao">
+        <div class="res-descricao-titulo">Sobre seu perfil</div>
+        <div class="res-descricao-texto">${esc(info.desc)}</div>
+      </div>`;
+    setTimeout(() => {
+      document.querySelectorAll('.dim-bar-fill').forEach(el => {
+        el.style.width = el.dataset.pct + '%';
+      });
+    }, 100);
 
-  document.getElementById('res-descricao').textContent = info.desc;
+  } else if (TIPO === 'comp_bigfive') {
+    const scores = calcularBigFiveLocal();
+    conteudo.innerHTML = `
+      <div class="dim-bars">
+        ${Object.entries(scores).map(([dim, pct]) => {
+          const info = BIGFIVE_DESC[dim];
+          return `
+            <div class="dim-bar-row">
+              <div class="dim-bar-label"><span class="dim-bar-dot" style="background:${info.cor}"></span>${info.emoji} ${info.label}</div>
+              <div class="dim-bar-track"><div class="dim-bar-fill" style="width:0%;background:${info.cor}" data-pct="${pct.toFixed(1)}"></div></div>
+              <div class="dim-bar-pct" style="color:${info.cor}">${pct.toFixed(0)}%</div>
+            </div>`;
+        }).join('')}
+      </div>`;
+    setTimeout(() => {
+      document.querySelectorAll('.dim-bar-fill').forEach(el => {
+        el.style.width = el.dataset.pct + '%';
+      });
+    }, 100);
+
+  } else if (TIPO === 'comp_inteligencia') {
+    const score = calcularInteligenciaLocal();
+    const r = data.resultado || {};
+    const pct = r.score !== undefined ? Number(r.score) : score;
+    conteudo.innerHTML = `
+      <div class="res-score-circle" style="border-color:var(--accent)">
+        <div class="res-score-num">${pct.toFixed(0)}%</div>
+        <div class="res-score-label">acertos</div>
+      </div>
+      <p style="text-align:center;color:var(--muted);font-size:13px">Sua pontuação foi registrada e será analisada pelo recrutador.</p>`;
+
+  } else {
+    const score = calcularLikertFlatLocal();
+    const r = data.resultado || {};
+    const pct = r.score !== undefined ? Number(r.score) : score;
+    const cor = AVALIACOES[TIPO].cor || 'var(--accent)';
+    conteudo.innerHTML = `
+      <div class="res-score-circle" style="border-color:${cor}">
+        <div class="res-score-num" style="color:${cor}">${pct.toFixed(0)}%</div>
+        <div class="res-score-label">pontuação</div>
+      </div>
+      <p style="text-align:center;color:var(--muted);font-size:13px">Sua avaliação foi registrada com sucesso.</p>`;
+  }
+
   showScreen('screen-resultado');
-  setTimeout(() => {
-    document.querySelectorAll('.disc-bar-fill').forEach(el => {
-      const w = el.style.width; el.style.width = '0%';
-      setTimeout(() => { el.style.width = w; }, 50);
-    });
-  }, 100);
+}
+
+// ── CÁLCULOS LOCAIS ──
+function calcularDiscLocal() {
+  const scores = { D: 0, I: 0, S: 0, C: 0 };
+  let offset = 0;
+  AVALIACOES.comp_disc.blocos.forEach(b => {
+    b.perguntas.forEach((_, pi) => { scores[b.dim] += respostas[offset + pi] || 0; });
+    offset += b.perguntas.length;
+  });
+  const max = 35;
+  return { D: (scores.D/max)*100, I: (scores.I/max)*100, S: (scores.S/max)*100, C: (scores.C/max)*100 };
+}
+
+function calcularBigFiveLocal() {
+  const scores = {};
+  let offset = 0;
+  AVALIACOES.comp_bigfive.blocos.forEach(b => {
+    let sum = 0;
+    b.perguntas.forEach((_, pi) => { sum += respostas[offset + pi] || 0; });
+    scores[b.dim] = (sum / (b.perguntas.length * 5)) * 100;
+    offset += b.perguntas.length;
+  });
+  return scores;
+}
+
+function calcularInteligenciaLocal() {
+  let acertos = 0;
+  AVALIACOES.comp_inteligencia.perguntas.forEach((p, i) => {
+    if (respostas[i] === p.resposta) acertos++;
+  });
+  return (acertos / AVALIACOES.comp_inteligencia.perguntas.length) * 100;
+}
+
+function calcularLikertFlatLocal() {
+  const aval = AVALIACOES[TIPO];
+  let sum = 0;
+  aval.perguntas.forEach((_, i) => { sum += respostas[i] || 0; });
+  return (sum / (aval.perguntas.length * 5)) * 100;
 }
 
 function esc(str) {
   return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
+// ── MARCA ──
 (async function carregarMarca() {
   try {
-    const r = await fetch('https://webhook.danns.com.br/webhook/ats-marca', {
+    const r = await fetch(`${BASE}/ats-marca`, {
       method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ action:'get' })
     });
