@@ -1317,9 +1317,41 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
 
     <!-- ── Pane 2: Perfil & Avaliações ── -->
     <div id="so-pane-perfil" style="display:none;padding-top:16px">
-      <div id="so-perfil-content">
-        <div style="text-align:center;padding:40px 0;color:var(--muted);font-size:13px">Carregando perfil...</div>
+
+      <!-- pill switcher -->
+      <div style="display:flex;gap:4px;margin-bottom:20px;background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:4px">
+        <button id="ppill-analise" onclick="setPerfilPill('analise')"
+          style="flex:1;padding:7px 12px;border:none;border-radius:16px;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;transition:all .2s;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff">
+          📊 Análise Consolidada
+        </button>
+        <button id="ppill-historico" onclick="setPerfilPill('historico')"
+          style="flex:1;padding:7px 12px;border:none;border-radius:16px;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;transition:all .2s;background:transparent;color:var(--muted)">
+          🧪 Histórico de Testes
+        </button>
       </div>
+
+      <!-- PAINEL 1: Análise Consolidada -->
+      <div id="pp-analise">
+        <div id="pp-analise-btn-wrap" style="text-align:center;padding:28px 0 16px">
+          <button id="btn-gerar-analise" onclick="gerarAnaliseConsolidada()"
+            style="display:inline-flex;align-items:center;gap:8px;padding:13px 24px;border:none;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;box-shadow:0 4px 20px rgba(108,99,255,.4);transition:all .2s">
+            ✨ Gerar Análise Completa com IA
+          </button>
+          <p style="font-size:11px;color:var(--muted);margin-top:10px;line-height:1.6;max-width:280px;margin-left:auto;margin-right:auto">
+            A análise cruza triagem curricular, testes técnicos e avaliações comportamentais. Pode levar até 20 segundos.
+          </p>
+        </div>
+        <div id="pp-analise-erro" style="display:none;text-align:center;font-size:13px;padding:10px 0;color:var(--danger)"></div>
+        <div id="pp-analise-resultado" style="display:none"></div>
+      </div>
+
+      <!-- PAINEL 2: Histórico de Testes -->
+      <div id="pp-historico" style="display:none">
+        <div id="so-perfil-content">
+          <div style="text-align:center;padding:40px 0;color:var(--muted);font-size:13px">Carregando histórico...</div>
+        </div>
+      </div>
+
     </div>
   </div>
   <div class="so-footer">
@@ -2721,6 +2753,7 @@ function abrirCandidato(candidaturaId) {
     cvEl.innerHTML += `<br><span style="font-size:12px;color:var(--muted);margin-top:4px;display:inline-block">Currículo não enviado</span>`;
   }
 
+  _historicoCarregadoId = null;
   setSoTab('analise');
   document.getElementById('slideover-cand').classList.add('open');
   document.getElementById('so-backdrop').classList.add('open');
@@ -2739,84 +2772,241 @@ function setSoTab(tab) {
   document.getElementById('so-pane-perfil').style.display  = tab === 'perfil'  ? '' : 'none';
   document.getElementById('so-tab-analise').classList.toggle('active', tab === 'analise');
   document.getElementById('so-tab-perfil').classList.toggle('active',  tab === 'perfil');
-  if (tab === 'perfil') carregarPerfilCandidato(currentCandidaturaId);
+  if (tab === 'perfil') {
+    setPerfilPill('analise');
+    carregarHistoricoTestes(currentCandidaturaId);
+  }
 }
 
-async function carregarPerfilCandidato(candidaturaId) {
+function setPerfilPill(pill) {
+  document.getElementById('pp-analise').style.display   = pill === 'analise'   ? '' : 'none';
+  document.getElementById('pp-historico').style.display = pill === 'historico' ? '' : 'none';
+  ['analise','historico'].forEach(p => {
+    const btn = document.getElementById('ppill-' + p);
+    if (!btn) return;
+    btn.style.background = p === pill ? 'linear-gradient(135deg,var(--accent),var(--accent2))' : 'transparent';
+    btn.style.color      = p === pill ? '#fff' : 'var(--muted)';
+  });
+  if (pill === 'historico') carregarHistoricoTestes(currentCandidaturaId);
+}
+
+let _historicoCarregadoId = null;
+
+async function carregarHistoricoTestes(candidaturaId) {
   const id = candidaturaId || currentCandidaturaId;
   const el = document.getElementById('so-perfil-content');
-  console.log('Carregando perfil para candidatura:', id);
+  if (!el) return;
   if (!id) {
     el.innerHTML = '<div style="text-align:center;padding:40px 0;color:var(--muted);font-size:13px">ID da candidatura não encontrado.</div>';
     return;
   }
-  const url = `${BASE_URL}/ats-perfil-candidato?candidatura_id=${id}&t=${Date.now()}`;
-  console.log('[perfilCandidato] URL:', url);
-  el.innerHTML = '<div style="text-align:center;padding:40px 0;color:var(--muted);font-size:13px">Carregando perfil...</div>';
+  if (_historicoCarregadoId === id) return;
+  el.innerHTML = '<div style="text-align:center;padding:40px 0;color:var(--muted);font-size:13px">Carregando histórico...</div>';
   try {
-    const r    = await fetch(url);
+    const r    = await fetch(`${BASE_URL}/ats-perfil-candidato?candidatura_id=${id}&t=${Date.now()}`);
     const data = await r.json();
-    console.log('[perfilCandidato] status:', r.status, '| data:', data);
-    el.innerHTML = renderPerfilContent(data);
+    _historicoCarregadoId = id;
+    el.innerHTML = renderHistoricoTestes(data);
   } catch(e) {
-    console.error('[perfilCandidato] erro:', e);
-    el.innerHTML = '<div style="text-align:center;padding:40px 0;color:var(--muted);font-size:13px">Erro ao carregar perfil. Tente novamente.</div>';
+    console.error('[historicoTestes] erro:', e);
+    el.innerHTML = '<div style="text-align:center;padding:40px 0;color:var(--muted);font-size:13px">Erro ao carregar histórico. Tente novamente.</div>';
   }
 }
 
-function renderPerfilContent(data) {
-  // suporta: { success, triagem_ia, testes_realizados } ou { perfil, testes } ou flat
-  const p      = data.triagem_ia || data.perfil || data;
-  const testes = data.testes_realizados || data.testes || p.testes || [];
-  const score  = parseFloat(p.score_total || 0);
-  const fit    = (p.nivel_fit || p.fit || '').toString().toLowerCase();
+async function gerarAnaliseConsolidada() {
+  const id = currentCandidaturaId;
+  if (!id) { showToast('ID da candidatura não encontrado.', 'warn'); return; }
+  const btn    = document.getElementById('btn-gerar-analise');
+  const erroEl = document.getElementById('pp-analise-erro');
+  erroEl.style.display = 'none';
+  btn.disabled = true;
+  btn.innerHTML = '<div style="width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:inline-block;vertical-align:middle;margin-right:6px"></div>⏳ Analisando todos os dados...';
+  try {
+    const r = await fetch(`${BASE_URL}/ats-analise-consolidada`, {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ candidatura_id: id }),
+      signal: AbortSignal.timeout(30000)
+    });
+    const data = await r.json();
+    if (data.success === true) {
+      document.getElementById('pp-analise-btn-wrap').style.display = 'none';
+      erroEl.style.display = 'none';
+      const resEl = document.getElementById('pp-analise-resultado');
+      resEl.innerHTML = renderAnaliseConsolidada(data.analise || {}, id);
+      resEl.style.display = '';
+    } else {
+      throw new Error(data.message || 'Resposta inesperada');
+    }
+  } catch(e) {
+    console.error('[gerarAnalise] erro:', e);
+    erroEl.textContent = '❌ Erro ao gerar análise. Tente novamente.';
+    erroEl.style.display = '';
+    btn.disabled = false;
+    btn.innerHTML = '✨ Gerar Análise Completa com IA';
+  }
+}
 
-  // ── fit badge ──
-  const fitCfg = fit.includes('alt') ? { label:'Alto', color:'var(--success)', bg:'rgba(16,185,129,.12)' }
-    : fit.includes('med')            ? { label:'Médio', color:'var(--warn)',    bg:'rgba(245,158,11,.12)' }
-    :                                  { label:'Baixo', color:'var(--danger)',   bg:'rgba(255,77,109,.12)' };
+const NOMES_AVAL_MAP = {
+  comp_disc:'Perfil Comportamental DISC', comp_bigfive:'Big Five — Personalidade',
+  comp_inteligencia:'Raciocínio Lógico',  comp_lideranca:'Liderança e Influência',
+  comp_vendas:'Perfil Comercial',         comp_criatividade:'Criatividade e Inovação'
+};
 
-  // ── dimensões ──
-  const dims = [
-    { label:'Técnico',         val: parseFloat(p.score_tecnico           || p.dimensao_tecnica         || 0) },
-    { label:'Experiência',     val: parseFloat(p.score_experiencia       || p.dimensao_experiencia     || 0) },
-    { label:'Comportamental',  val: parseFloat(p.score_comportamental    || p.dimensao_comportamental  || 0) },
-    { label:'Fit Cultural',    val: parseFloat(p.score_fit_cultural      || p.dimensao_fit_cultural    || 0) },
-  ];
+function renderAnaliseConsolidada(a, candidaturaId) {
+  const score   = parseFloat(a.score_geral || 0);
+  const classif = String(a.classificacao || '');
+  const fitRaw  = String(a.fit_vaga || a.fit || '').toLowerCase();
 
-  const barColor = v => v >= 7 ? 'var(--success)' : v >= 5 ? 'var(--warn)' : 'var(--danger)';
+  const barColor = v => v >= 8 ? 'var(--success)' : v >= 6 ? 'var(--accent2)' : v >= 4 ? 'var(--warn)' : 'var(--danger)';
 
-  const dimsHtml = dims.some(d => d.val > 0) ? `
-    <div style="margin:16px 0">
-      ${dims.map(d => `
-        <div style="margin-bottom:10px">
-          <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
-            <span style="color:var(--muted)">${d.label}</span>
-            <span style="font-weight:700;color:${barColor(d.val)}">${d.val.toFixed(1)}</span>
-          </div>
-          <div style="height:6px;background:var(--border);border-radius:6px;overflow:hidden">
-            <div style="height:100%;width:${d.val * 10}%;background:${barColor(d.val)};border-radius:6px;transition:width .5s"></div>
-          </div>
+  const CLASSIF_CFG = {
+    'Excelente':   { bg:'rgba(16,185,129,.15)',  c:'#10b981' },
+    'Muito Bom':   { bg:'rgba(59,130,246,.15)',  c:'#3b82f6' },
+    'Bom':         { bg:'rgba(108,99,255,.15)',  c:'var(--accent2)' },
+    'Regular':     { bg:'rgba(245,158,11,.15)',  c:'var(--warn)' },
+    'Insuficiente':{ bg:'rgba(255,77,109,.15)',  c:'var(--danger)' }
+  };
+  const cc = CLASSIF_CFG[classif] || { bg:'rgba(108,99,255,.12)', c:'var(--accent2)' };
+  const fc = fitRaw.includes('alt') ? { label:'Alto',  bg:'rgba(16,185,129,.15)',c:'#10b981' }
+    : fitRaw.includes('med')        ? { label:'Médio', bg:'rgba(245,158,11,.15)',c:'var(--warn)' }
+    :                                 { label:'Baixo', bg:'rgba(255,77,109,.15)',c:'var(--danger)' };
+  const fitLabel = a.fit_vaga || a.fit || fc.label;
+
+  const fortes = Array.isArray(a.pontos_fortes)          ? a.pontos_fortes          : [];
+  const desenv  = Array.isArray(a.pontos_desenvolvimento) ? a.pontos_desenvolvimento : [];
+  const perguntas = Array.isArray(a.perguntas_star)       ? a.perguntas_star         : [];
+  const alertas   = Array.isArray(a.alertas)              ? a.alertas                : [];
+  const testesSug = Array.isArray(a.testes_sugeridos)     ? a.testes_sugeridos       : [];
+
+  const listItem = (txt, icon, cor) =>
+    `<div style="font-size:12px;color:var(--text);padding:5px 0 5px 10px;border-left:2px solid ${cor};margin-bottom:5px;line-height:1.45">${icon} ${txt || ''}</div>`;
+
+  const pergHtml = perguntas.length ? perguntas.map(p => `
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px">
+      ${p.situacao ? `<div style="font-size:11px;color:var(--muted);margin-bottom:5px">${p.situacao}</div>` : ''}
+      <div style="font-size:13px;font-weight:600;line-height:1.5;margin-bottom:6px">${p.pergunta || ''}</div>
+      ${p.objetivo ? `<div style="font-size:11px;color:var(--accent2);font-style:italic">Objetivo: ${p.objetivo}</div>` : ''}
+    </div>`).join('')
+    : '<p style="font-size:12px;color:var(--muted);text-align:center;padding:10px 0">Nenhuma pergunta sugerida ainda.</p>';
+
+  const alertasHtml = alertas.length ? `
+    <div style="margin-bottom:20px">
+      <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">🚨 Alertas</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px">
+        ${alertas.map(al => `<span style="padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;background:rgba(255,77,109,.15);color:var(--danger);border:1px solid rgba(255,77,109,.3)">${al}</span>`).join('')}
+      </div>
+    </div>` : '';
+
+  const testesSugHtml = testesSug.length ? `
+    <div style="margin-bottom:20px">
+      <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">🧪 Avaliações Ainda Recomendadas</div>
+      ${testesSug.map(tipo => `
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)">
+          <span style="font-size:13px">${NOMES_AVAL_MAP[tipo] || tipo}</span>
+          <button class="btn btn-outline btn-sm" style="flex-shrink:0;font-size:11px;padding:5px 10px"
+            onclick="enviarAvalDaAnalise('${candidaturaId}','${tipo}',this)">📤 Enviar Agora</button>
         </div>`).join('')}
     </div>` : '';
 
-  const buildList = (items, icon, color) => Array.isArray(items) && items.length
-    ? items.map(i => `<div style="font-size:12px;color:var(--muted);padding:4px 0 4px 10px;border-left:2px solid ${color};margin-bottom:4px">${icon} ${i}</div>`).join('')
-    : '';
+  return `
+    <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;padding:16px;background:var(--surface2);border:1px solid var(--border);border-radius:14px">
+      <div style="width:72px;height:72px;border-radius:50%;border:3px solid ${barColor(score)};background:${barColor(score)}18;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0">
+        <div style="font-size:24px;font-weight:900;color:${barColor(score)};line-height:1">${score > 0 ? score.toFixed(1) : '—'}</div>
+        <div style="font-size:9px;color:var(--muted)">/10</div>
+      </div>
+      <div style="flex:1;min-width:0">
+        ${classif ? `<span style="display:inline-block;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;background:${cc.bg};color:${cc.c};margin-bottom:8px">${classif}</span>` : ''}
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <span style="font-size:12px;font-weight:600;color:var(--muted)">Fit com a Vaga:</span>
+          <span style="padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;background:${fc.bg};color:${fc.c}">${fitLabel || '—'}</span>
+        </div>
+      </div>
+    </div>
 
-  // ── testes ──
+    ${a.recomendacao_final ? `
+    <div style="background:rgba(108,99,255,.08);border:1px solid rgba(108,99,255,.2);border-radius:12px;padding:14px 16px;margin-bottom:20px;display:flex;gap:10px;align-items:flex-start">
+      <span style="font-size:18px;line-height:1.3">🎯</span>
+      <p style="font-size:13px;color:var(--text);line-height:1.65;margin:0">${a.recomendacao_final}</p>
+    </div>` : ''}
+
+    ${a.resumo_executivo ? `
+    <div style="margin-bottom:20px">
+      <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">📋 Resumo Executivo</div>
+      <p style="font-size:13px;color:var(--text);line-height:1.65;margin:0">${a.resumo_executivo}</p>
+    </div>` : ''}
+
+    ${a.perfil_comportamental ? `
+    <div style="margin-bottom:20px">
+      <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">🧠 Perfil Comportamental</div>
+      <p style="font-size:13px;color:var(--text);line-height:1.65;margin:0">${a.perfil_comportamental}</p>
+    </div>` : ''}
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--success);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">✅ Pontos Fortes</div>
+        ${fortes.length ? fortes.map(f => listItem(f,'✅','var(--success)')).join('') : '<p style="font-size:12px;color:var(--muted);margin:0">Nenhum identificado.</p>'}
+      </div>
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--warn);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">⚠️ Desenvolvimento</div>
+        ${desenv.length ? desenv.map(d => listItem(d,'⚠️','var(--warn)')).join('') : '<p style="font-size:12px;color:var(--muted);margin:0">Nenhum identificado.</p>'}
+      </div>
+    </div>
+
+    <div style="margin-bottom:20px">
+      <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">💬 Perguntas STAR para a Entrevista</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:12px">Perguntas personalizadas baseadas no perfil do candidato</div>
+      ${pergHtml}
+    </div>
+
+    ${alertasHtml}
+    ${testesSugHtml}`;
+}
+
+function renderHistoricoTestes(data) {
+  const p      = data.triagem_ia || data.perfil || data;
+  const testes = Array.isArray(data.testes_realizados) ? data.testes_realizados
+    : Array.isArray(data.testes) ? data.testes
+    : Array.isArray(p.testes)   ? p.testes : [];
+
+  const score  = parseFloat(p.score_total || 0);
+  const fit    = String(p.nivel_fit || p.fit || '').toLowerCase();
+  const barColor = v => v >= 7 ? 'var(--success)' : v >= 5 ? 'var(--warn)' : 'var(--danger)';
+  const fc = fit.includes('alt') ? { label:'Alto',  bg:'rgba(16,185,129,.12)', c:'var(--success)' }
+    : fit.includes('med')        ? { label:'Médio', bg:'rgba(245,158,11,.12)', c:'var(--warn)' }
+    :                              { label:'Baixo', bg:'rgba(255,77,109,.12)', c:'var(--danger)' };
+
+  const sd = p.scores_dimensoes || {};
+  const dims = [
+    { label:'Técnico',        val: parseFloat(sd.tecnico        || p.score_tecnico        || p.dimensao_tecnica        || 0) },
+    { label:'Experiência',    val: parseFloat(sd.experiencia    || p.score_experiencia    || p.dimensao_experiencia    || 0) },
+    { label:'Comportamental', val: parseFloat(sd.comportamental || p.score_comportamental || p.dimensao_comportamental || 0) },
+    { label:'Fit Cultural',   val: parseFloat(sd.fit_cultural   || p.score_fit_cultural   || p.dimensao_fit_cultural   || 0) }
+  ];
+  const dimsHtml = dims.some(d => d.val > 0) ? `<div style="margin:12px 0">${dims.map(d => `
+    <div style="margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
+        <span style="color:var(--muted)">${d.label}</span>
+        <span style="font-weight:700;color:${barColor(d.val)}">${d.val.toFixed(1)}</span>
+      </div>
+      <div style="height:6px;background:var(--border);border-radius:6px;overflow:hidden">
+        <div style="height:100%;width:${d.val*10}%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:6px;transition:width .5s"></div>
+      </div>
+    </div>`).join('')}</div>` : '';
+
+  const fortes  = Array.isArray(p.pontos_fortes)  ? p.pontos_fortes  : [];
+  const atencao = Array.isArray(p.pontos_atencao) ? p.pontos_atencao : [];
+  const li = (txt, icon, cor) => `<div style="font-size:12px;color:var(--muted);padding:4px 0 4px 10px;border-left:2px solid ${cor};margin-bottom:4px">${icon} ${txt}</div>`;
+
   const testesHtml = testes.length ? testes.map(t => {
-    const concluido = t.status === 'concluido';
-    if (!concluido) {
-      return `
-        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:12px">
-          <div style="flex:1">
-            <div style="font-weight:600;font-size:13px;margin-bottom:4px">${t.titulo || 'Teste'}</div>
-            <span style="font-size:11px;background:rgba(245,158,11,.15);color:var(--warn);padding:2px 8px;border-radius:20px;font-weight:600">⏳ Aguardando resposta</span>
-          </div>
-        </div>`;
-    }
+    if (t.status !== 'concluido') return `
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:12px">
+        <div style="flex:1">
+          <div style="font-weight:600;font-size:13px;margin-bottom:4px">${t.titulo || 'Teste'}</div>
+          <span style="font-size:11px;background:rgba(245,158,11,.15);color:var(--warn);padding:2px 8px;border-radius:20px;font-weight:600">⏳ Aguardando resposta</span>
+        </div>
+      </div>`;
     const dataFmt = t.concluido_em ? new Date(t.concluido_em).toLocaleDateString('pt-BR') : '—';
+    const s = parseFloat(t.score_total || 0);
     return `
       <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px">
         <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:10px">
@@ -2825,7 +3015,7 @@ function renderPerfilContent(data) {
             <div style="font-size:11px;color:var(--muted)">${dataFmt}</div>
           </div>
           <div style="text-align:right;flex-shrink:0">
-            <div style="font-size:22px;font-weight:900;color:${barColor(parseFloat(t.score_total||0))};line-height:1">${parseFloat(t.score_total||0).toFixed(1)}</div>
+            <div style="font-size:22px;font-weight:900;color:${barColor(s)};line-height:1">${s.toFixed(1)}</div>
             <div style="font-size:10px;color:var(--muted)">score total</div>
           </div>
         </div>
@@ -2843,34 +3033,36 @@ function renderPerfilContent(data) {
       </div>`;
   }).join('') : '<div style="color:var(--muted);font-size:13px;text-align:center;padding:16px 0">Nenhum teste enviado ainda.</div>';
 
-  const hasScore = score > 0;
   return `
-    <!-- ── Triagem por IA ── -->
     <div style="margin-bottom:20px">
       <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px">🤖 Triagem por IA</div>
-      ${hasScore ? `
+      ${score > 0 ? `
         <div style="display:flex;align-items:center;gap:16px;margin-bottom:14px">
           <div style="width:64px;height:64px;border-radius:50%;border:3px solid ${barColor(score)};background:${barColor(score)}18;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0">
             <div style="font-size:20px;font-weight:900;color:${barColor(score)};line-height:1">${score.toFixed(1)}</div>
             <div style="font-size:9px;color:var(--muted)">/10</div>
           </div>
           <div>
-            <span style="display:inline-block;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;background:${fitCfg.bg};color:${fitCfg.color};border:1px solid ${fitCfg.color}44">Fit ${fitCfg.label}</span>
+            <span style="display:inline-block;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;background:${fc.bg};color:${fc.c};border:1px solid ${fc.c}44">Fit ${fc.label}</span>
             ${p.resumo_executivo ? `<p style="font-size:12px;color:var(--muted);margin-top:6px;line-height:1.55">${p.resumo_executivo}</p>` : ''}
           </div>
         </div>` : '<p style="font-size:12px;color:var(--muted);margin-bottom:12px">Score não disponível ainda.</p>'}
       ${dimsHtml}
-      ${buildList(p.pontos_fortes,  '✅', 'var(--success)') ? `<div style="margin-bottom:8px"><div style="font-size:11px;font-weight:700;color:var(--success);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Pontos Fortes</div>${buildList(p.pontos_fortes,'✅','var(--success)')}</div>` : ''}
-      ${buildList(p.pontos_atencao, '⚠️', 'var(--warn)')   ? `<div style="margin-bottom:8px"><div style="font-size:11px;font-weight:700;color:var(--warn);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Pontos de Atenção</div>${buildList(p.pontos_atencao,'⚠️','var(--warn)')}</div>` : ''}
+      ${fortes.length  ? `<div style="margin-bottom:8px"><div style="font-size:11px;font-weight:700;color:var(--success);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Pontos Fortes</div>${fortes.map(f=>li(f,'✅','var(--success)')).join('')}</div>` : ''}
+      ${atencao.length ? `<div style="margin-bottom:8px"><div style="font-size:11px;font-weight:700;color:var(--warn);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Pontos de Atenção</div>${atencao.map(a=>li(a,'⚠️','var(--warn)')).join('')}</div>` : ''}
     </div>
 
     <div style="border-top:1px solid var(--border);margin-bottom:16px"></div>
 
-    <!-- ── Testes Realizados ── -->
     <div>
-      <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px">🧪 Testes Realizados</div>
+      <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px">📝 Testes Técnicos</div>
       ${testesHtml}
     </div>`;
+}
+
+function enviarAvalDaAnalise(candidaturaId, tipo, btn) {
+  _sugerirAvalTipo = tipo;
+  enviarAvalSugestao(candidaturaId, btn);
 }
 
 function downloadCurriculo(candidaturaId) {
