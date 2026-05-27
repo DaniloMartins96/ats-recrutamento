@@ -2829,10 +2829,18 @@ async function gerarAnaliseConsolidada() {
     });
     const data = await r.json();
     if (data.success === true) {
+      const analise = data.analise || {};
+      console.log('DEBUG analise consolidada:', analise);
+      const _tryArr = v => { try { return typeof v === 'string' ? JSON.parse(v) : (Array.isArray(v) ? v : []); } catch(e) { return []; } };
+      analise.pontos_fortes          = _tryArr(analise.pontos_fortes);
+      analise.pontos_desenvolvimento = _tryArr(analise.pontos_desenvolvimento);
+      analise.perguntas_star         = _tryArr(analise.perguntas_star);
+      analise.alertas                = _tryArr(analise.alertas);
+      analise.testes_sugeridos       = _tryArr(analise.testes_sugeridos);
       document.getElementById('pp-analise-btn-wrap').style.display = 'none';
       erroEl.style.display = 'none';
       const resEl = document.getElementById('pp-analise-resultado');
-      resEl.innerHTML = renderAnaliseConsolidada(data.analise || {}, id);
+      resEl.innerHTML = renderAnaliseConsolidada(analise, id);
       resEl.style.display = '';
     } else {
       throw new Error(data.message || 'Resposta inesperada');
@@ -2881,12 +2889,15 @@ function renderAnaliseConsolidada(a, candidaturaId) {
   const listItem = (txt, icon, cor) =>
     `<div style="font-size:12px;color:var(--text);padding:5px 0 5px 10px;border-left:2px solid ${cor};margin-bottom:5px;line-height:1.45">${icon} ${txt || ''}</div>`;
 
-  const pergHtml = perguntas.length ? perguntas.map(p => `
-    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px">
+  const pergHtml = perguntas.length ? perguntas.map(p => {
+    if (typeof p === 'string') return `<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px"><div style="font-size:13px;font-weight:600;line-height:1.5">${p}</div></div>`;
+    if (!p || typeof p !== 'object') return '';
+    return `<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px">
       ${p.situacao ? `<div style="font-size:11px;color:var(--muted);margin-bottom:5px">${p.situacao}</div>` : ''}
       <div style="font-size:13px;font-weight:600;line-height:1.5;margin-bottom:6px">${p.pergunta || ''}</div>
       ${p.objetivo ? `<div style="font-size:11px;color:var(--accent2);font-style:italic">Objetivo: ${p.objetivo}</div>` : ''}
-    </div>`).join('')
+    </div>`;
+  }).join('')
     : '<p style="font-size:12px;color:var(--muted);text-align:center;padding:10px 0">Nenhuma pergunta sugerida ainda.</p>';
 
   const alertasHtml = alertas.length ? `
