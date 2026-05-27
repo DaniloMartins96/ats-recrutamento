@@ -1405,13 +1405,13 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
         <div class="form-group">
           <label class="form-label">Avaliação</label>
           <select class="form-select" id="enviar-aval-lista">
-            <option value="">Selecione...</option>
-            <option value="comp_disc">🎯 Perfil Comportamental DISC</option>
-            <option value="eq">❤️ Inteligência Emocional (EQ)</option>
-            <option value="resultados">🏆 Orientação para Resultados</option>
-            <option value="trabalho_equipe">🤝 Trabalho em Equipe</option>
-            <option value="lideranca">👑 Liderança e Influência</option>
-            <option value="adaptabilidade">⚡ Adaptabilidade e Resiliência</option>
+            <option value="" data-tipo="">Selecione...</option>
+            <option value="comp_disc"        data-tipo="comp_disc">🎯 Perfil Comportamental DISC</option>
+            <option value="eq"               data-tipo="eq">❤️ Inteligência Emocional (EQ)</option>
+            <option value="resultados"       data-tipo="resultados">🏆 Orientação para Resultados</option>
+            <option value="trabalho_equipe"  data-tipo="trabalho_equipe">🤝 Trabalho em Equipe</option>
+            <option value="lideranca"        data-tipo="lideranca">👑 Liderança e Influência</option>
+            <option value="adaptabilidade"   data-tipo="adaptabilidade">⚡ Adaptabilidade e Resiliência</option>
           </select>
         </div>
         <div id="et-aval-sugestao" style="display:none;padding:8px 12px;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.2);border-radius:8px;font-size:12px;color:#10b981;margin-top:8px"></div>
@@ -2721,24 +2721,35 @@ function setSoTab(tab) {
   document.getElementById('so-pane-perfil').style.display  = tab === 'perfil'  ? '' : 'none';
   document.getElementById('so-tab-analise').classList.toggle('active', tab === 'analise');
   document.getElementById('so-tab-perfil').classList.toggle('active',  tab === 'perfil');
-  if (tab === 'perfil' && currentCandidaturaId) carregarPerfilCandidato(currentCandidaturaId);
+  if (tab === 'perfil') carregarPerfilCandidato(currentCandidaturaId);
 }
 
 async function carregarPerfilCandidato(candidaturaId) {
+  const id = candidaturaId || currentCandidaturaId;
   const el = document.getElementById('so-perfil-content');
+  console.log('Carregando perfil para candidatura:', id);
+  if (!id) {
+    el.innerHTML = '<div style="text-align:center;padding:40px 0;color:var(--muted);font-size:13px">ID da candidatura não encontrado.</div>';
+    return;
+  }
+  const url = `${BASE_URL}/ats-perfil-candidato?candidatura_id=${id}&t=${Date.now()}`;
+  console.log('[perfilCandidato] URL:', url);
   el.innerHTML = '<div style="text-align:center;padding:40px 0;color:var(--muted);font-size:13px">Carregando perfil...</div>';
   try {
-    const r    = await fetch(`${BASE_URL}/ats-perfil-candidato?candidatura_id=${candidaturaId}&t=${Date.now()}`);
-    const data = r.ok ? await r.json() : {};
+    const r    = await fetch(url);
+    const data = await r.json();
+    console.log('[perfilCandidato] status:', r.status, '| data:', data);
     el.innerHTML = renderPerfilContent(data);
-  } catch {
+  } catch(e) {
+    console.error('[perfilCandidato] erro:', e);
     el.innerHTML = '<div style="text-align:center;padding:40px 0;color:var(--muted);font-size:13px">Erro ao carregar perfil. Tente novamente.</div>';
   }
 }
 
 function renderPerfilContent(data) {
-  const p      = data.perfil || data;
-  const testes = data.testes || p.testes || [];
+  // suporta: { success, triagem_ia, testes_realizados } ou { perfil, testes } ou flat
+  const p      = data.triagem_ia || data.perfil || data;
+  const testes = data.testes_realizados || data.testes || p.testes || [];
   const score  = parseFloat(p.score_total || 0);
   const fit    = (p.nivel_fit || p.fit || '').toString().toLowerCase();
 
@@ -3559,7 +3570,9 @@ async function confirmarEnviarTeste() {
       fecharModalEnviarTeste();
       showToast('🧪 Teste enviado ao candidato!', 'success');
     } else {
-      const tipo = document.getElementById('enviar-aval-lista').value;
+      const sel  = document.getElementById('enviar-aval-lista');
+      const tipo = sel.options[sel.selectedIndex]?.dataset?.tipo || sel.value;
+      console.log('[enviarAvaliacao] tipo selecionado:', tipo, '| candidatura_id:', _enviarTesteParaCandidatura);
       if (!tipo) { showToast('Selecione uma avaliação.', 'warn'); return; }
       const r = await fetch(BASE_URL + '/ats-enviar-avaliacao', {
         method: 'POST', headers: {'Content-Type':'application/json'},
