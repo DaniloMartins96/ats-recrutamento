@@ -1896,9 +1896,9 @@ function abrirModalVaga(id) {
     // Identificação
     document.getElementById('mv-titulo').value = v.titulo || '';
     setSelectValue('mv-departamento', v.departamento || '');
-    setSelectValue('mv-nivel', v.senioridade || '');
+    setSelectValue('mv-nivel', v.senioridade || v.nivel || '');
     setSelectValue('mv-modalidade', v.modalidade || '');
-    document.getElementById('mv-local').value = v.cidade || '';
+    document.getElementById('mv-local').value = v.cidade || v.local || '';
     document.getElementById('mv-status').value = v.status || 'ativa';
     setSelectValue('mv-contrato', v.tipo_contrato || 'CLT');
     // Empresa
@@ -1910,8 +1910,8 @@ function abrirModalVaga(id) {
     document.getElementById('mv-requisitos-obrig').value = v.requisitos_obrigatorios || '';
     document.getElementById('mv-requisitos-desej').value = v.requisitos_desejaveis || '';
     // Stack e competências (array ou string JSON → array de tags)
-    tagData.stack = _parseTagArray(v.stack_tecnica);
-    tagData.comp  = _parseTagArray(v.competencias_comportamentais);
+    tagData.stack = _parseTagArray(v.stack_tecnica || v.stack);
+    tagData.comp  = _parseTagArray(v.competencias_comportamentais || v.competencias);
     // Remuneração
     document.getElementById('mv-salario-min').value = Number(v.salario_min) > 0 ? v.salario_min : '';
     document.getElementById('mv-salario-max').value = Number(v.salario_max) > 0 ? v.salario_max : '';
@@ -1991,8 +1991,9 @@ async function salvarVaga(statusOverride) {
     responsabilidades: document.getElementById('mv-responsabilidades').value.trim(),
     requisitos_obrigatorios: document.getElementById('mv-requisitos-obrig').value.trim(),
     requisitos_desejaveis: document.getElementById('mv-requisitos-desej').value.trim(),
-    salario_min: parseFloat(document.getElementById('mv-salario-min').value) || 0,
-    salario_max: parseFloat(document.getElementById('mv-salario-max').value) || 0,
+    salario_min: parseFloat(document.getElementById('mv-salario-min').value) || null,
+    salario_max: parseFloat(document.getElementById('mv-salario-max').value) || null,
+    mostrar_salario: document.getElementById('mv-mostrar-salario').value,
     beneficios: document.getElementById('mv-beneficios').value.trim(),
     vagas_abertas: parseInt(document.getElementById('mv-qtd-vagas').value) || 1,
     tipo_contrato: document.getElementById('mv-contrato').value,
