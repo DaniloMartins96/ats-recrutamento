@@ -3099,179 +3099,140 @@ async function carregarDadosCandidatura(candidaturaId) {
 }
 
 function renderDadosCandidatura(candidaturaId, apiData) {
-  // Fontes de dados
-  const c      = candidatos.find(x => (x.candidatura_id || x.candidato_id) === candidaturaId) || {};
-  const cand   = apiData?.candidato || {};
-  const tri    = apiData?.triagem_ia || {};
-  const testes = Array.isArray(apiData?.testes_realizados) ? apiData.testes_realizados : [];
+  const c    = candidatos.find(x => (x.candidatura_id || x.candidato_id) === candidaturaId) || {};
+  const cand = (apiData && apiData.candidato) ? apiData.candidato : {};
+  const tri  = (apiData && apiData.triagem_ia) ? apiData.triagem_ia : {};
 
-  // ── helpers ──────────────────────────────────────────────────────
-  const esc  = s => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  const val  = (...vs) => vs.map(v => v ?? '').find(v => v !== '') || null;
-  const arr  = v => Array.isArray(v) ? v : (v ? [v] : []);
+  // helpers
+  const esc = s => String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const get = (...vs) => { for (const v of vs) { if (v != null && v !== '') return v; } return null; };
+  const naInfo = `<span style="color:var(--muted);font-style:italic">Não informado</span>`;
+  const arr = v => Array.isArray(v) ? v : (v ? [v] : []);
 
-  const chip = (label, color) =>
-    `<span style="display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;background:${color}22;color:${color};border:1px solid ${color}44;margin:2px">${esc(label)}</span>`;
-
-  const campo = (label, valor) => {
-    const v = val(valor); if (!v) return '';
-    return `<div style="margin-bottom:12px">
-      <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">${label}</div>
-      <div style="font-size:13px;color:var(--text);background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;line-height:1.5">${esc(v)}</div>
+  const sec = (titulo, html) => `
+    <div style="margin-bottom:22px">
+      <div style="font-size:11px;font-weight:700;color:var(--accent2);text-transform:uppercase;letter-spacing:.08em;padding-bottom:7px;margin-bottom:12px;border-bottom:1px solid var(--border)">${titulo}</div>
+      ${html}
     </div>`;
-  };
 
-  const campoLong = (label, valor) => {
-    const v = val(valor); if (!v) return '';
-    return `<div style="margin-bottom:12px">
-      <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">${label}</div>
-      <div style="font-size:13px;color:var(--text);background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;line-height:1.65;white-space:pre-wrap">${esc(v)}</div>
+  const row = (label, html) => `
+    <div style="display:flex;gap:0;margin-bottom:10px">
+      <div style="font-size:11px;font-weight:600;color:var(--muted);min-width:140px;padding-top:2px;flex-shrink:0">${label}</div>
+      <div style="font-size:13px;color:var(--text);flex:1;line-height:1.5">${html}</div>
     </div>`;
-  };
 
-  const lista = (items, icon, color) => {
-    const a = arr(items).filter(Boolean);
-    if (!a.length) return '';
-    return a.map(i => `<div style="display:flex;gap:8px;padding:5px 0;font-size:13px;color:var(--text);border-bottom:1px solid var(--border);line-height:1.5">
-      <span style="color:${color};flex-shrink:0">${icon}</span>
-      <span>${esc(String(i))}</span>
-    </div>`).join('');
-  };
+  // ── 1. Dados Pessoais ─────────────────────────────────────────────
+  const nome     = get(c.candidato_nome, c.nome, cand.nome);
+  const email    = get(c.email, cand.email);
+  const tel      = get(c.telefone, cand.telefone);
+  const linkedin = get(c.linkedin, cand.linkedin);
+  const cidade   = get(c.cidade, cand.cidade);
+  const estado   = get(c.estado, cand.estado);
+  const locStr   = [cidade, estado].filter(Boolean).join(' / ') || null;
+  const dtRaw    = get(c.data_candidatura, cand.data_candidatura);
+  const dtFmt    = dtRaw ? new Date(dtRaw).toLocaleDateString('pt-BR') : null;
 
-  const perguntasSec = (label, items) => {
-    const a = arr(items).filter(Boolean);
-    if (!a.length) return '';
-    return `<div style="margin-bottom:10px">
-      <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px">${label}</div>
-      ${a.map((p,i) => `<div style="display:flex;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px;color:var(--text)">
-        <span style="color:var(--accent2);font-weight:700;flex-shrink:0">${i+1}.</span>
-        <span style="line-height:1.5">${esc(String(p))}</span>
-      </div>`).join('')}
-    </div>`;
-  };
-
-  const sec = (titulo, html) => {
-    const h = (html || '').trim(); if (!h) return '';
-    return `<div style="margin-bottom:22px">
-      <div style="font-size:11px;font-weight:700;color:var(--accent2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border)">${titulo}</div>
-      ${h}
-    </div>`;
-  };
-
-  // ── 1. Dados Pessoais ────────────────────────────────────────────
-  const dtCand = val(c.data_candidatura, cand.data_candidatura);
-  const dtFmt  = dtCand ? new Date(dtCand).toLocaleDateString('pt-BR') : null;
   const s1 = [
-    campo('Nome completo',       val(c.candidato_nome, c.nome, cand.nome)),
-    campo('E-mail',              val(c.email, cand.email)),
-    campo('Telefone',            val(c.telefone, cand.telefone)),
-    campo('LinkedIn',            val(c.linkedin, cand.linkedin)),
-    campo('Área de atuação',     val(c.area_atuacao, cand.area_atuacao)),
-    campo('Senioridade',         val(c.nivel_experiencia, cand.nivel_experiencia, c.senioridade)),
-    campo('Anos de experiência', val(c.experiencia_anos, cand.experiencia_anos)),
-    campo('Modalidade preferida',val(c.modalidade, cand.modalidade)),
-    campo('Pretensão salarial',  val(c.pretensao_salarial, cand.pretensao_salarial)),
-    campo('Nível de inglês',     val(c.nivel_ingles, cand.nivel_ingles)),
-    campo('Data da candidatura', dtFmt),
+    row('Nome',               nome     ? esc(nome)  : naInfo),
+    row('E-mail',             email    ? esc(email) : naInfo),
+    row('Telefone',           tel      ? esc(tel)   : naInfo),
+    row('LinkedIn',           linkedin ? `<a href="${esc(linkedin.startsWith('http') ? linkedin : 'https://'+linkedin)}" target="_blank" rel="noopener" style="color:var(--accent2);word-break:break-all">${esc(linkedin)}</a>` : naInfo),
+    row('Cidade / Estado',    locStr   ? esc(locStr)  : naInfo),
+    row('Data candidatura',   dtFmt    ? esc(dtFmt)   : naInfo),
   ].join('');
 
-  // ── 2. Análise IA — Triagem ──────────────────────────────────────
+  // ── 2. Perfil Profissional ────────────────────────────────────────
+  const area       = get(c.area_atuacao,        cand.area_atuacao);
+  const senior     = get(c.senioridade_declarada,cand.senioridade_declarada, c.nivel_experiencia, cand.nivel_experiencia);
+  const expAnos    = get(c.experiencia_anos,     cand.experiencia_anos);
+  const modal      = get(c.modalidade_preferida, cand.modalidade_preferida, c.modalidade, cand.modalidade);
+  const ingles     = get(c.nivel_ingles,         cand.nivel_ingles);
+  const stackArr   = arr(cand.stack_declarada || c.stack_declarada);
+
+  const salMin = parseFloat(get(c.pretensao_salarial_min, cand.pretensao_salarial_min));
+  const salMax = parseFloat(get(c.pretensao_salarial_max, cand.pretensao_salarial_max));
+  const salTxt = get(c.pretensao_salarial, cand.pretensao_salarial);
+  let salHtml;
+  if (!isNaN(salMin) && !isNaN(salMax) && salMin > 0 && salMax > 0) {
+    salHtml = `R$ ${salMin.toLocaleString('pt-BR')} – R$ ${salMax.toLocaleString('pt-BR')}`;
+  } else if (!isNaN(salMin) && salMin > 0) {
+    salHtml = `R$ ${salMin.toLocaleString('pt-BR')}`;
+  } else if (salTxt) {
+    salHtml = esc(salTxt);
+  } else {
+    salHtml = naInfo;
+  }
+
+  const stackHtml = stackArr.length
+    ? stackArr.map(t => `<span style="display:inline-block;padding:2px 9px;border-radius:5px;font-size:11px;font-weight:600;background:var(--surface3);color:var(--accent2);border:1px solid var(--border);margin:2px">${esc(String(t))}</span>`).join('')
+    : naInfo;
+
   const s2 = [
-    campoLong('Resumo executivo', val(tri.resumo_executivo, c.resumo_executivo)),
-    lista(tri.pontos_fortes  || c.pontos_fortes,  '✅', 'var(--success)') ? `<div style="margin-bottom:10px"><div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Pontos Fortes</div>${lista(tri.pontos_fortes || c.pontos_fortes,'✅','var(--success)')}</div>` : '',
-    lista(tri.pontos_atencao || c.pontos_atencao, '⚠️','var(--warn)')    ? `<div style="margin-bottom:10px"><div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Pontos de Atenção</div>${lista(tri.pontos_atencao||c.pontos_atencao,'⚠️','var(--warn)')}</div>` : '',
-    lista(tri.red_flags,                          '🚩','var(--danger)')   ? `<div style="margin-bottom:10px"><div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Red Flags</div>${lista(tri.red_flags,'🚩','var(--danger)')}</div>` : '',
-    campo('Evidências de fit cultural', val(tri.evidencias_fit_cultural)),
-    campo('Alinhamento de valores',     val(tri.alinhamento_valores)),
+    row('Área de atuação',      area    ? esc(area)    : naInfo),
+    row('Senioridade',          senior  ? esc(senior)  : naInfo),
+    row('Anos de experiência',  expAnos ? esc(expAnos) : naInfo),
+    row('Modalidade preferida', modal   ? esc(modal)   : naInfo),
+    row('Pretensão salarial',   salHtml),
+    row('Nível de inglês',      ingles  ? esc(ingles)  : naInfo),
+    row('Stack declarada',      stackHtml),
   ].join('');
 
-  // ── 3. Análise STAR ──────────────────────────────────────────────
-  const star = tri.analise_star || {};
-  const s3 = Object.entries(star).map(([comp, dados]) => {
-    const label = esc(comp.replace(/_/g,' '));
-    if (typeof dados === 'string') {
-      return `<div style="margin-bottom:12px">
-        <div style="font-size:12px;font-weight:700;color:var(--accent2);margin-bottom:5px">${label}</div>
-        <div style="font-size:13px;color:var(--text);line-height:1.6;padding-left:10px;border-left:2px solid var(--accent)">${esc(dados)}</div>
-      </div>`;
-    }
-    const subItems = ['situacao','tarefa','acao','resultado'].map(k => {
-      const v = dados[k] || dados[k.charAt(0).toUpperCase()+k.slice(1)];
-      return v ? `<div style="margin-bottom:6px">
-        <span style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">${k}: </span>
-        <span style="font-size:13px;color:var(--text)">${esc(String(v))}</span>
-      </div>` : '';
-    }).join('');
-    const fallback = subItems || campoLong('', JSON.stringify(dados, null, 2));
-    return `<div style="margin-bottom:14px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px">
-      <div style="font-size:12px;font-weight:700;color:var(--accent2);margin-bottom:8px">${label}</div>
-      ${fallback}
-    </div>`;
-  }).join('');
+  // ── 3. Apresentação ───────────────────────────────────────────────
+  const resumo = get(c.resumo_texto, cand.resumo_texto);
+  const s3 = `<div style="font-size:13px;color:${resumo ? 'var(--text)' : 'var(--muted)'};line-height:1.7;white-space:pre-wrap;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px">${resumo ? esc(resumo) : 'Candidato não preencheu apresentação.'}</div>`;
 
-  // ── 4. Competências identificadas ────────────────────────────────
-  const comps = arr(tri.competencias_identificadas);
-  const s4 = comps.length
-    ? `<div style="display:flex;flex-wrap:wrap;gap:4px">${comps.map(cp => chip(cp,'#a78bfa')).join('')}</div>`
-    : '';
-
-  // ── 5. Perguntas sugeridas ───────────────────────────────────────
-  const s5 = [
-    perguntasSec('Perguntas para RH',            tri.perguntas_rh),
-    perguntasSec('Perguntas Técnicas',           tri.perguntas_tecnicas),
-    perguntasSec('Perguntas Comportamentais',    tri.perguntas_comportamentais),
-  ].join('');
-
-  // ── 6. Briefing do entrevistador ────────────────────────────────
-  const s6 = campoLong('', val(tri.briefing_entrevistador));
-
-  // ── 7. Testes realizados ────────────────────────────────────────
-  const s7 = testes.map(t => {
-    const score     = t.score != null ? ` · Score: <strong>${Number(t.score).toFixed(1)}</strong>` : '';
-    const respostas = arr(t.respostas).map(r => {
-      const tipo    = String(r.tipo || '').toLowerCase();
-      const multi   = tipo.includes('multipla') || tipo.includes('múltipla') || r.correta != null;
-      const icCorr  = r.correta === true ? '✅' : r.correta === false ? '❌' : '';
-      const pts     = r.pontos != null ? `<span style="font-size:11px;color:var(--muted);margin-left:6px">(${r.pontos} pt${r.pontos !== 1 ? 's' : ''})</span>` : '';
-      return `<div style="border-top:1px solid var(--border);padding:8px 0">
-        <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:4px;line-height:1.4">${esc(r.enunciado||r.pergunta||'')}</div>
-        <div style="font-size:12px;color:var(--muted);line-height:1.4">
-          ${multi ? `${icCorr} ` : ''}<span style="color:var(--text)">${esc(r.resposta_candidato||r.resposta||'—')}</span>${pts}
-        </div>
+  // ── 4. Análise STAR ───────────────────────────────────────────────
+  const star    = (tri.analise_star && typeof tri.analise_star === 'object') ? tri.analise_star : {};
+  const starEntries = Object.entries(star);
+  let s4 = '<div style="font-size:12px;color:var(--muted);margin-bottom:14px">Análise gerada pela IA com base nas respostas do candidato</div>';
+  if (!starEntries.length) {
+    s4 += `<div style="font-size:13px;color:var(--muted);font-style:italic">Análise STAR não disponível.</div>`;
+  } else {
+    s4 += starEntries.map(([key, d]) => {
+      const titulo = esc(key.replace(/_/g,' '));
+      if (typeof d === 'string') {
+        return `<div style="margin-bottom:12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px">
+          <div style="font-size:12px;font-weight:700;color:var(--accent2);margin-bottom:6px">${titulo}</div>
+          <div style="font-size:13px;color:var(--text);line-height:1.6">${esc(d)}</div>
+        </div>`;
+      }
+      const qual = d.qualidade != null ? `<span style="float:right;font-size:12px;color:var(--accent2);font-weight:700">⭐ ${d.qualidade}/10</span>` : '';
+      const subRow = (lbl, val) => val
+        ? `<div style="margin-bottom:7px"><span style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:2px">${lbl}</span><span style="font-size:13px;color:var(--text);line-height:1.55">${esc(String(val))}</span></div>`
+        : '';
+      return `<div style="margin-bottom:12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px">
+        <div style="font-size:12px;font-weight:700;color:var(--accent2);margin-bottom:10px">${titulo}${qual}</div>
+        ${subRow('Situação', d.situacao)}
+        ${subRow('Tarefa',   d.tarefa)}
+        ${subRow('Ação',     d.acao)}
+        ${subRow('Resultado',d.resultado)}
       </div>`;
     }).join('');
-    return `<div style="margin-bottom:14px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap">
-        <span style="font-size:13px;font-weight:700;color:var(--text)">${esc(t.titulo||t.nome||'Teste')}</span>
-        <span style="font-size:12px;color:var(--muted)">${esc(t.status||'')}${score}</span>
-      </div>
-      ${respostas || '<div style="font-size:12px;color:var(--muted)">Sem respostas registradas.</div>'}
-    </div>`;
-  }).join('');
+  }
 
-  // ── 8. Currículo ────────────────────────────────────────────────
-  const nomeCurr = val(c.curriculo_nome, cand.curriculo_nome);
-  const s8 = nomeCurr
-    ? `<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-size:13px">
-        📄 <span style="flex:1;color:var(--text)">${esc(nomeCurr)}</span>
-        <button class="btn btn-ghost btn-sm" onclick="baixarCurriculo('${candidaturaId}')">Baixar</button>
-       </div>` : '';
+  // ── 5. Competências identificadas ─────────────────────────────────
+  const comps = arr(tri.competencias_identificadas).filter(Boolean);
+  const s5 = comps.length
+    ? `<div style="display:flex;flex-wrap:wrap;gap:5px">${comps.map(cp => `<span style="padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;background:rgba(167,139,250,.12);color:#a78bfa;border:1px solid rgba(167,139,250,.3)">${esc(String(cp))}</span>`).join('')}</div>`
+    : `<div style="font-size:13px;color:var(--muted);font-style:italic">Nenhuma competência identificada.</div>`;
 
-  const tudo = s1||s2||s3||s4||s5||s6||s7||s8;
-  if (!tudo) return `<div style="text-align:center;padding:40px 0;color:var(--muted);font-size:13px">
-    <div style="font-size:32px;margin-bottom:12px">📋</div>
-    Dados da candidatura não disponíveis.
-  </div>`;
+  // ── 6. Currículo ──────────────────────────────────────────────────
+  const nomeCurr = get(c.curriculo_nome, cand.curriculo_nome);
+  const s6 = nomeCurr
+    ? `<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px">
+        <span style="font-size:20px">📄</span>
+        <span style="flex:1;font-size:13px;color:var(--text)">${esc(nomeCurr)}</span>
+        <button class="btn btn-ghost btn-sm" onclick="baixarCurriculo('${candidaturaId}')">📥 Baixar</button>
+       </div>`
+    : `<div style="font-size:13px;color:var(--muted);font-style:italic">Currículo não enviado.</div>`;
 
   return [
-    sec('👤 Dados Pessoais', s1),
-    sec('🤖 Análise IA — Triagem', s2),
-    s3 ? sec('🎯 Análise STAR', s3) : '',
-    sec('💡 Competências Identificadas', s4),
-    sec('❓ Perguntas Sugeridas pela IA', s5),
-    sec('📝 Briefing do Entrevistador', s6),
-    s7 ? sec('🧪 Testes Realizados', s7) : '',
-    s8 ? sec('📎 Currículo', s8) : '',
+    sec('👤 Dados Pessoais',            s1),
+    sec('💼 Perfil Profissional',        s2),
+    sec('📝 Apresentação do Candidato',  s3),
+    sec('🎯 Análise STAR das Respostas', s4),
+    sec('💡 Competências Identificadas', s5),
+    sec('📎 Currículo',                  s6),
   ].join('');
 }
 
