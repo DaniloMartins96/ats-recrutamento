@@ -3765,10 +3765,22 @@ async function carregarDocsAdmissao(admissaoId) {
   try {
     const r    = await fetch(`${BASE_URL}/ats-get-docs-admissao?admissao_id=${admissaoId}&t=${Date.now()}`);
     const data = await r.json();
+    console.log('[carregarDocsAdmissao] resposta:', data);
+    if (data.success === false) {
+      console.error('[carregarDocsAdmissao] success=false:', data.message || data);
+      el.innerHTML = '<div style="color:var(--danger);font-size:13px;text-align:center;padding:20px">Erro ao carregar documentos.</div>';
+      return;
+    }
+    const docs = data.documentos || [];
+    if (!docs.length) {
+      el.innerHTML = '<div style="color:var(--muted);font-size:13px;text-align:center;padding:20px 0">Nenhum documento configurado. Clique em ⚙️ <strong>Configurar Documentos</strong> para selecionar os documentos necessários.</div>';
+      renderProgressoDocsAdmin({ documentos: [] });
+      return;
+    }
     el.innerHTML = renderListaDocsAdmissao(data, admissaoId);
     renderProgressoDocsAdmin(data);
   } catch(e) {
-    console.error('[carregarDocsAdmissao]', e);
+    console.error('[carregarDocsAdmissao] erro de rede/parse:', e);
     el.innerHTML = '<div style="color:var(--danger);font-size:13px;text-align:center;padding:20px">Erro ao carregar documentos.</div>';
   }
 }
@@ -3852,7 +3864,18 @@ async function abrirConfigDocumentos() {
     ]);
     const [dataCat, dataCfg] = await Promise.all([rCat.json(), rCfg.json()]);
     console.log('Resposta catalogo:', dataCat);
-    const documentos      = dataCat.catalogo || [];
+    if (dataCat.success === false) {
+      const msg = dataCat.message || 'Erro desconhecido ao carregar catálogo';
+      console.error('[abrirConfigDocumentos] catálogo retornou success=false:', msg);
+      catalogoEl.innerHTML = `<div style="color:var(--danger);font-size:13px;padding:10px">Erro ao carregar catálogo: ${msg}</div>`;
+      return;
+    }
+    const documentos = dataCat.catalogo || [];
+    if (!documentos.length) {
+      console.warn('[abrirConfigDocumentos] Catálogo vazio — nenhum documento retornado pelo servidor');
+      catalogoEl.innerHTML = '<div style="color:var(--muted);font-size:13px;padding:10px">Nenhum documento no catálogo. Verifique a configuração do sistema.</div>';
+      return;
+    }
     const configuradosIds = (dataCfg.documentos || []).map(x => x.documento_id || x.id);
 
     const LABELS_CAT = {
@@ -3873,10 +3896,10 @@ async function abrirConfigDocumentos() {
             <div><div style="font-size:13px;font-weight:500">${d.nome}</div>${d.descricao ? `<div style="font-size:11px;color:var(--muted)">${d.descricao}</div>` : ''}</div>
           </label>`;
         }).join('')}
-      </div>`).join('') || '<div style="color:var(--muted);font-size:13px">Nenhum documento no catálogo.</div>';
+      </div>`).join('');
   } catch(e) {
-    console.error('[abrirConfigDocumentos]', e);
-    catalogoEl.innerHTML = '<div style="color:var(--danger);font-size:13px;padding:10px">Erro ao carregar catálogo.</div>';
+    console.error('[abrirConfigDocumentos] erro de rede/parse:', e);
+    catalogoEl.innerHTML = `<div style="color:var(--danger);font-size:13px;padding:10px">Erro ao carregar catálogo: ${e.message || e}</div>`;
   }
 }
 
