@@ -1749,7 +1749,10 @@ async function carregarVagas() {
     const data = await r.json();
     console.log('[carregarVagas] resposta bruta da API:', data);
     vagas = Array.isArray(data) ? data : (Array.isArray(data.vagas) ? data.vagas : []);
-    if (vagas.length) console.log('[carregarVagas] exemplo de vaga (campo 0):', vagas[0]);
+    if (vagas.length) {
+      console.log('[carregarVagas] exemplo de vaga (índice 0):', vagas[0]);
+      if (!vagas[0].codigo) console.warn('[carregarVagas] ⚠️ Campo "codigo" ausente na resposta da API — edições não farão upsert correto!');
+    }
   } catch {
     vagas = [];
     showToast('Erro ao carregar vagas da API.', 'error');
@@ -1889,13 +1892,15 @@ document.getElementById('mv-cancel').onclick = fecharModalVaga;
 function abrirModalVaga(id) {
   currentVagaId = id;
   vagaEditandoCodigo = '';
+  window.vagaAtual = null;
   tagData = { stack: [], comp: [] };
 
   if (id) {
     const v = vagas.find(x => x.id === id);
     if (!v) return;
+    window.vagaAtual = v;
     vagaEditandoCodigo = v.codigo || '';
-    console.log('[editarVaga] objeto completo:', v);
+    console.log('[editarVaga] objeto completo (window.vagaAtual):', window.vagaAtual);
     console.log('[editarVaga] codigo da vaga:', vagaEditandoCodigo);
     document.getElementById('modal-vaga-title').textContent = 'Editar Vaga';
     document.getElementById('mv-save').textContent = 'Salvar Alterações';
@@ -1957,6 +1962,7 @@ function fecharModalVaga() {
   document.getElementById('modal-vaga').classList.remove('open');
   currentVagaId = null;
   vagaEditandoCodigo = '';
+  window.vagaAtual = null;
 }
 
 function toggleNivelIngles() {
@@ -1978,11 +1984,11 @@ async function salvarVaga(statusOverride) {
   }
 
   const isNova = !currentVagaId;
-  const vagaExistente = currentVagaId ? (vagas.find(v => v.id === currentVagaId) || {}) : {};
+  const vagaExistente = window.vagaAtual || (currentVagaId ? (vagas.find(v => v.id === currentVagaId) || {}) : {});
 
   const payload = {
-    // ── chave de upsert ─────────────────────────────────────────────
-    codigo:                   vagaEditandoCodigo || vagaExistente.codigo || '',
+    // ── chave de upsert (obrigatória para ON CONFLICT (codigo)) ──────
+    codigo:                   window.vagaAtual?.codigo || vagaEditandoCodigo || vagaExistente.codigo || '',
     id:                       currentVagaId || ('v' + Date.now()),
     // ── identificação ────────────────────────────────────────────────
     titulo,
@@ -2018,8 +2024,7 @@ async function salvarVaga(statusOverride) {
     recrutador_responsavel:   document.getElementById('mv-recrutador').value.trim(),
   };
 
-  console.log('[salvarVaga] codigo enviado:', payload.codigo);
-  console.log('[salvarVaga] body completo:', JSON.stringify(payload, null, 2));
+  console.log('PAYLOAD ENVIADO:', payload);
 
   const btnSave = document.getElementById('mv-save');
   const btnRasc = document.getElementById('mv-rascunho');
