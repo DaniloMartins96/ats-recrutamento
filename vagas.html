@@ -563,9 +563,11 @@ function renderCard(v, idx) {
   const vagasAbertas = Number(v.vagas_abertas) || 0;
   const stack        = safeParseArray(v.stack_tecnica || v.stack || v.tecnologias).slice(0, 6);
 
-  const salarioTxt = salMin > 0
-    ? 'R$ ' + salMin.toLocaleString('pt-BR') + (salMax > 0 ? ' – R$ ' + salMax.toLocaleString('pt-BR') : '+')
-    : 'A combinar';
+  const fmt = n => 'R$ ' + n.toLocaleString('pt-BR');
+  const salarioTxt = (salMin > 0 && salMax > 0) ? fmt(salMin) + ' – ' + fmt(salMax)
+                   : salMin > 0                  ? fmt(salMin) + '+'
+                   : salMax > 0                  ? 'até ' + fmt(salMax)
+                   :                              'A combinar';
 
   const modalBadge = modal === 'Remoto'     ? 'badge-remote'
                    : modal === 'Híbrido'    ? 'badge-hybrid'
