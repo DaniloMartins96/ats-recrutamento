@@ -491,7 +491,7 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
       <div class="stats-row" id="vagas-stats"></div>
       <div class="table-wrap">
         <div class="table-toolbar">
-          <input class="search-input" type="search" id="input-busca-vagas" placeholder="Buscar vagas..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" value="">
+          <input class="search-input" type="search" id="input-busca-vagas" name="busca-vagas-input" placeholder="Buscar vagas..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" value="">
           <div style="margin-left:auto;display:flex;gap:8px" id="vagas-filters"></div>
         </div>
         <div id="vagas-table-body"></div>
@@ -1672,8 +1672,8 @@ function showApp() {
 }
 
 function doLogout() {
-  sessionStorage.removeItem('ats_token');
-  sessionStorage.removeItem('ats_session');
+  sessionStorage.clear();
+  localStorage.removeItem('ats_token');
   window.location.replace('/login');
 }
 
@@ -3757,7 +3757,8 @@ async function reprovarDoc(docId) {
 // ─── DOCUMENTOS ADMISSÃO ─────────────────────────────────────────
 
 async function carregarDocsAdmissao(admissaoId) {
-  if (!admissaoId) return;
+  if (!admissaoId) { console.warn('[carregarDocsAdmissao] admissaoId indefinido'); return; }
+  console.log('Carregando documentos para admissao_id:', admissaoId);
   const el = document.getElementById('dp-docs-content');
   if (!el) return;
   el.innerHTML = '<div style="text-align:center;padding:24px;color:var(--muted);font-size:13px">Carregando documentos...</div>';
@@ -3818,7 +3819,7 @@ function renderListaDocsAdmissao(data, admissaoId) {
       </div>` :
       `<div style="margin-top:8px"><button class="btn btn-outline btn-sm" onclick="visualizarDocumento('${d.enviado_id}')">👁️ Visualizar</button></div>`;
 
-    return `<div style="border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:10px">
+    return `<div id="doc-item-${d.enviado_id}" style="border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:10px">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap">
         <div style="flex:1;min-width:160px">
           <div style="font-weight:600;font-size:13px;margin-bottom:3px">${d.nome || '—'}</div>
@@ -3826,9 +3827,9 @@ function renderListaDocsAdmissao(data, admissaoId) {
           ${enviado ? `<div style="font-size:11px;color:var(--muted);margin-top:4px">${d.nome_arquivo || ''}${d.tamanho_kb ? ' · ' + d.tamanho_kb + ' KB' : ''}${dataEnvio ? ' · ' + dataEnvio : ''}</div>` : ''}
           ${status === 'rejeitado' && d.observacao_admin ? `<div style="font-size:12px;color:var(--danger);margin-top:6px">⚠️ ${d.observacao_admin}</div>` : ''}
         </div>
-        <div>${badgeHtml}</div>
+        <div class="doc-badge">${badgeHtml}</div>
       </div>
-      ${acoesHtml}
+      <div class="doc-acoes">${acoesHtml}</div>
     </div>`;
   }).join('');
 }
@@ -3850,7 +3851,8 @@ async function abrirConfigDocumentos() {
       fetch(`${BASE_URL}/ats-get-docs-admissao?admissao_id=${admId}&t=${Date.now()}`)
     ]);
     const [dataCat, dataCfg] = await Promise.all([rCat.json(), rCfg.json()]);
-    const documentos      = dataCat.documentos || dataCat.catalogo || [];
+    console.log('Resposta catalogo:', dataCat);
+    const documentos      = dataCat.catalogo || [];
     const configuradosIds = (dataCfg.documentos || []).map(x => x.documento_id || x.id);
 
     const LABELS_CAT = {
@@ -3867,7 +3869,7 @@ async function abrirConfigDocumentos() {
         ${docs.map(d => {
           const checked = configuradosIds.includes(d.id) || d.obrigatorio_padrao;
           return `<label style="display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:6px;cursor:pointer" onmouseover="this.style.background='var(--surface3)'" onmouseout="this.style.background=''">
-            <input type="checkbox" id="doc-cb-${d.id}" value="${d.id}" ${checked ? 'checked' : ''} style="width:16px;height:16px;accent-color:var(--accent);flex-shrink:0">
+            <input type="checkbox" class="doc-checkbox" id="doc-cb-${d.id}" value="${d.id}" ${checked ? 'checked' : ''} style="width:16px;height:16px;accent-color:var(--accent);flex-shrink:0">
             <div><div style="font-size:13px;font-weight:500">${d.nome}</div>${d.descricao ? `<div style="font-size:11px;color:var(--muted)">${d.descricao}</div>` : ''}</div>
           </label>`;
         }).join('')}
@@ -3881,12 +3883,12 @@ async function abrirConfigDocumentos() {
 async function salvarConfiguracaoDocumentos() {
   const admId = window.dpAdmissaoAtual?.admissao_id || window.dpAdmissaoAtual?.id;
   if (!admId) { showToast('ID da admissão não encontrado.', 'warn'); return; }
-  const documentosIds = Array.from(document.querySelectorAll('#dp-docs-catalogo-content input[type="checkbox"]:checked')).map(cb => parseInt(cb.value));
+  const documentosIds = Array.from(document.querySelectorAll('#dp-docs-catalogo-content .doc-checkbox:checked')).map(cb => parseInt(cb.value));
   if (!documentosIds.length) { showToast('Selecione ao menos um documento.', 'warn'); return; }
   try {
     const r = await fetch(`${BASE_URL}/ats-docs-admissao`, {
       method: 'POST', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ action: 'configurar', admissao_id: admId, documentos_ids: documentosIds })
+      body: JSON.stringify({ action: 'configurar', admissao_id: admId, documentos_ids: documentosIds.join(',') })
     });
     const data = await r.json();
     if (data.success === false) throw new Error(data.message || 'Erro');
@@ -3908,16 +3910,36 @@ async function validarDocumentoAdmissao(documentoEnviadoId, status, observacao, 
     const data = await r.json();
     if (data.success === false) throw new Error();
     showToast(status === 'aprovado' ? 'Documento aprovado!' : 'Documento rejeitado.', status === 'aprovado' ? 'success' : 'warn');
-    const admId = admissaoId || window.dpAdmissaoAtual?.admissao_id || window.dpAdmissaoAtual?.id;
-    carregarDocsAdmissao(admId);
+    const item = document.getElementById('doc-item-' + documentoEnviadoId);
+    if (item) {
+      const badgeEl = item.querySelector('.doc-badge');
+      const acoesEl = item.querySelector('.doc-acoes');
+      if (status === 'aprovado') {
+        if (badgeEl) badgeEl.innerHTML = '<span style="padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;background:rgba(16,185,129,.15);color:var(--success);border:1px solid rgba(16,185,129,.3)">🟢 Aprovado</span>';
+        if (acoesEl) acoesEl.innerHTML = `<div style="margin-top:8px"><button class="btn btn-outline btn-sm" onclick="visualizarDocumento('${documentoEnviadoId}')">👁️ Visualizar</button></div>`;
+      } else {
+        if (badgeEl) badgeEl.innerHTML = '<span style="padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;background:rgba(255,77,109,.15);color:var(--danger);border:1px solid rgba(255,77,109,.3)">🔴 Rejeitado</span>';
+        if (acoesEl) acoesEl.innerHTML = observacao ? `<div style="font-size:12px;color:var(--danger);margin-top:6px">⚠️ ${observacao}</div>` : '';
+      }
+    }
   } catch(e) {
     showToast('Erro ao validar documento.', 'error');
   }
 }
 
 async function visualizarDocumento(documentoEnviadoId) {
-  console.log('[visualizarDocumento] id:', documentoEnviadoId);
-  alert('Visualização em breve. O endpoint GET /ats-get-arquivo será implementado em breve.');
+  try {
+    const r = await fetch(`${BASE_URL}/ats-get-arquivo?id=${documentoEnviadoId}`);
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const data = await r.json();
+    if (!data.base64 || !data.mime_type) throw new Error('Arquivo não encontrado');
+    const blob = base64ToBlob(data.base64, data.mime_type);
+    const url = URL.createObjectURL(blob);
+    window.open(url, '_blank');
+  } catch(e) {
+    console.error('[visualizarDocumento]', e);
+    showToast('Erro ao visualizar documento.', 'error');
+  }
 }
 
 function base64ToBlob(base64, mimeType) {
