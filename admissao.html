@@ -406,6 +406,48 @@ document.getElementById('form-admissao').addEventListener('submit', async e => {
   }
 });
 
+// ─── PRÉ-PREENCHIMENTO DO FORMULÁRIO ─────────────────────────────
+function preencherFormulario(admissao) {
+  const campos = {
+    'f-nome':        admissao.nome_completo,
+    'f-cpf':         admissao.cpf,
+    'f-rg':          admissao.rg,
+    'f-nascimento':  admissao.data_nascimento,
+    'f-estado-civil':admissao.estado_civil,
+    'f-nacionalidade':admissao.nacionalidade,
+    'f-naturalidade':admissao.naturalidade,
+    'f-mae':         admissao.nome_mae,
+    'f-pai':         admissao.nome_pai,
+    'f-endereco':    admissao.endereco,
+    'f-cep':         admissao.cep,
+    'f-cidade':      admissao.cidade,
+    'f-estado':      admissao.estado,
+    'f-banco':       admissao.banco,
+    'f-tipo-conta':  admissao.tipo_conta,
+    'f-agencia':     admissao.agencia,
+    'f-conta':       admissao.conta,
+    'f-pix':         admissao.pix,
+    'f-data-inicio': admissao.data_inicio,
+    'f-carga-horaria':admissao.carga_horaria,
+    'f-observacoes': admissao.observacoes,
+  };
+  Object.entries(campos).forEach(([id, valor]) => {
+    if (valor == null || valor === '') return;
+    const el = document.getElementById(id);
+    if (el) el.value = valor;
+  });
+}
+
+async function carregarDadosSalvos() {
+  try {
+    const resp = await fetch(`https://webhook.danns.com.br/webhook/ats-get-admissao?admissao_id=${admissaoId}`);
+    const text = await resp.text();
+    if (!text || !text.trim()) return;
+    const data = JSON.parse(text);
+    if (data && data.admissao) preencherFormulario(data.admissao);
+  } catch(e) { /* silencioso — formulário fica em branco */ }
+}
+
 // ─── DOCUMENTOS (upload direto) ───────────────────────────────────
 const BASE_URL_DOCS = 'https://webhook.danns.com.br/webhook';
 
@@ -576,8 +618,9 @@ async function enviarDocumento(docId) {
   }
 }
 
-// Carregar docs ao abrir a página (se admissaoId presente)
+// Carregar docs e pré-preencher formulário ao abrir a página (se admissaoId presente)
 if (admissaoId && admissaoId !== 'undefined' && admissaoId !== 'null') {
+  carregarDadosSalvos();
   carregarDocsParaUpload();
 }
 </script>
