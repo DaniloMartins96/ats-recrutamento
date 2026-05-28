@@ -3882,7 +3882,8 @@ async function docsAdmissao_carregar(admissaoId, containerEl) {
       html += '<button onclick="docsAdmissao_visualizar(\'' + doc.enviado_id + '\')" style="font-size:0.75rem;padding:0.25rem 0.75rem;background:#1e293b;border:1px solid #334155;border-radius:6px;color:#e2e8f0;cursor:pointer">👁️ Ver</button>';
       if (status === 'rejeitado') {
         html += '<button onclick="docsAdmissao_validar(\'' + doc.enviado_id + '\',\'aprovado\',\'\')" style="font-size:0.75rem;padding:0.25rem 0.75rem;background:#16a34a;border:none;border-radius:6px;color:white;cursor:pointer">✅ Aprovar</button>';
-        html += '<button onclick="docsAdmissao_notificarReenvio(\'' + doc.enviado_id + '\',\'' + (doc.documento_id || '') + '\')" style="font-size:0.75rem;padding:0.25rem 0.75rem;background:#7c3aed;border:none;border-radius:6px;color:white;cursor:pointer">📨 Notificar Reenvio</button>';
+        html += '<button onclick="docsAdmissao_rejeitar(\'' + doc.enviado_id + '\')" style="font-size:0.75rem;padding:0.25rem 0.75rem;background:#dc2626;border:none;border-radius:6px;color:white;cursor:pointer">❌ Rejeitar</button>';
+        html += '<button onclick="docsAdmissao_notificarReenvio(\'' + (doc.documento_id || '') + '\')" style="font-size:0.75rem;padding:0.25rem 0.75rem;background:#7c3aed;border:none;border-radius:6px;color:white;cursor:pointer">📤 Notificar Reenvio</button>';
       } else if (status !== 'aprovado') {
         html += '<button onclick="docsAdmissao_validar(\'' + doc.enviado_id + '\',\'aprovado\',\'\')" style="font-size:0.75rem;padding:0.25rem 0.75rem;background:#16a34a;border:none;border-radius:6px;color:white;cursor:pointer">✅ Aprovar</button>';
         html += '<button onclick="docsAdmissao_rejeitar(\'' + doc.enviado_id + '\')" style="font-size:0.75rem;padding:0.25rem 0.75rem;background:#dc2626;border:none;border-radius:6px;color:white;cursor:pointer">❌ Rejeitar</button>';
@@ -3914,7 +3915,7 @@ function docsAdmissao_rejeitar(documentoEnviadoId) {
   if (motivo !== null) docsAdmissao_validar(documentoEnviadoId, 'rejeitado', motivo);
 }
 
-async function docsAdmissao_notificarReenvio(documentoEnviadoId, documentoId) {
+async function docsAdmissao_notificarReenvio(documentoId) {
   try {
     var resp = await fetch(BASE_URL + '/ats-upload-documento', {
       method: 'POST',
@@ -3922,14 +3923,12 @@ async function docsAdmissao_notificarReenvio(documentoEnviadoId, documentoId) {
       body: JSON.stringify({
         action: 'notificar_reenvio',
         admissao_id: window._admissaoIdAtual,
-        documento_id: documentoId,
-        documento_enviado_id: documentoEnviadoId
+        documento_id: documentoId
       })
     });
     var text = await resp.text();
-    var data;
-    try { data = JSON.parse(text); } catch(e) { data = {}; }
-    showToast('Candidato notificado para reenviar o documento!', 'success');
+    try { JSON.parse(text); } catch(e) {}
+    showToast('WhatsApp enviado! Candidato será notificado para reenviar apenas este documento.', 'success');
   } catch(e) {
     alert('Erro ao notificar candidato: ' + e.message);
   }
