@@ -1,144 +1,169 @@
 # CONTEXT.md — ATS TechRecruit AI
-> Atualizado: 2026-05-26
+> Atualizado: 2026-05-28
 
 ## COMO INICIAR UMA NOVA CONVERSA
-
 Cole exatamente isso no início do chat:
-
 ---
 Continuando projeto ATS TechRecruit. Leia o CONTEXT.md
 ---
 
 ## SISTEMA
-
 **ATS TechRecruit AI** — funcionando em produção em `ats.danns.com.br`
 
-### Ciclo completo funcionando
-1. Candidato preenche formulário em `candidatura.html`
-2. **WF01 Triagem** (GPT-4o) analisa e pontua o currículo automaticamente
-3. Resultado aparece no painel admin (`admin.html`)
-4. Admin agenda entrevista → cria evento no **Google Calendar** automaticamente + envia WhatsApp ao candidato
-5. Admin reprova ou aprova o candidato
-6. Aprovado → módulo DP (`admissao.html`) para coleta de documentos
-7. DP libera admissão → admissão registrada no banco
-
-### Módulo DP (admissao.html)
-- Candidato enviado pelo admin após aprovação
-- Formulário de dados pessoais completo
-- Upload de documentos (CPF, RG, CNH, etc.)
-- Admin valida cada documento individualmente
-- Observações por documento
-- Liberação de admissão registra no banco
-
----
+### Páginas do sistema
+- `ats.danns.com.br` → index.html (página inicial)
+- `ats.danns.com.br/login` → login.html
+- `ats.danns.com.br/vagas` → vagas.html (portal público de vagas)
+- `ats.danns.com.br/candidatura` → candidatura.html (formulário)
+- `ats.danns.com.br/admin` → admin.html (painel admin)
+- `ats.danns.com.br/admissao` → admissao.html (módulo DP candidato)
+- `ats.danns.com.br/teste` → teste.html (testes técnicos)
+- `ats.danns.com.br/avaliacao` → avaliacao.html (avaliações comportamentais)
 
 ## FORMA DE TRABALHO
-
-### Código (admin.html, admissao.html, candidatura.html)
-- Editado com **Claude Code no VS Code**
+- Código editado com **Claude Code no VS Code**
 - `git push` → **EasyPanel** faz redeploy automático
-- Repositório GitHub conectado ao EasyPanel
+- Repositório: DaniloMartins96/ats-recrutamento
+- n8n alterado via **MCP pelo Claude.ai**
+- URLs sem .html (nginx try_files configurado)
 
-### n8n (workflows)
-- Alterado via **MCP pelo Claude.ai** (não Claude Code)
-- Ferramenta: `mcp__claude_ai_n8n__*`
-- Sempre publicar após atualizar (`publish_workflow`)
+## CREDENCIAIS
+- **Login admin:** danilo_santiago96@hotmail.com / admin123
+- **n8n Postgres:** ID `GGiSHBVIkgMdXboT` (PostgreSQL — ATS)
+- **n8n OpenAI:** ID `tQFBNLElNNuvshjI` (OpenAI — ATS)
+- **Evolution API:** https://evolution.danns.com.br, instância: ats-recrutamento, apikey: 429683C4C977415CAAFCCE10F7D57E11
+- **n8n URL:** https://n8n.danns.com.br
+- **Webhook base:** https://webhook.danns.com.br/webhook
 
----
+## WORKFLOWS N8N (todos publicados)
 
-## CREDENCIAIS N8N
+| ID | Nome | Endpoint |
+|----|------|----------|
+| FwiPkcJ72u636AUR | WF01 Triagem GPT-4o | POST /ats-candidatura |
+| PjDkMlETX6LQYdap | WF09 Admin Candidatos | GET /ats-admin-candidatos |
+| 3L1ZEDy8ykWQsUsJ | WF16 Atualizar Etapa | POST /ats-atualizar-etapa |
+| 5PL1gPhSf11XZj1V | WF Resposta WhatsApp | — |
+| xsOJX5x5pJRvqHQD | WF22 Upload Contrato Modelo | POST /ats-upload-contrato-modelo |
+| UqWvNt67qEktYLlP | WF23 Get Info Contrato | GET /ats-get-contrato-modelo |
+| YRVXi3WTXCjVPCr3 | WF24 Get Contrato Completo | GET /ats-get-contrato-modelo-completo |
+| ZD2PhutUiq2Ex9To | WF25 Assistente Planilha IA | POST /ats-assistente-planilha |
+| 7McEclEKdvmOSTxi | WF26 Métricas | GET /ats-metricas |
+| g1ageYwKkJJ04fHc | WF27 Marca | POST /ats-marca |
+| lSgBYICBx3xhh7nQ | WF28 Migração Multi-tenant | manual |
+| TXNvmO9Psj3Mk8pR | WF29 Login | POST /ats-login |
+| rYZyV4OsUXOrkjCq | WF30 Vagas Públicas | GET /ats-vagas-publicas |
+| 2lkOZciN29WyxNhU | WF31 WhatsApp Reprovado | POST /ats-whatsapp-reprovado |
+| pprnXhFZ6cNGrYl9 | WF32 Gerenciar Testes | POST /ats-testes |
+| cZpMB5sZPnrEfroI | WF33 Submeter Teste | POST /ats-submeter-teste |
+| 2QZeYT1FUi0hBJvt | WF34 Enviar Teste WhatsApp | POST /ats-enviar-teste |
+| ZreB2Xx02Unf7fl2 | WF35 Get Teste por Token | GET /ats-get-teste |
+| ONMXpYO54Zs1kEFm | WF36 Listar Testes | GET /ats-testes-lista |
+| 4KoXDQZehpiQzSha | WF37 Enviar Avaliação | POST /ats-enviar-avaliacao |
+| NFfWwDkgf5ASG9qB | WF38 Perfil Candidato | GET /ats-perfil-candidato |
+| HcVYj0wqhtXpIQPc | WF39 Análise Consolidada | POST /ats-analise-consolidada |
+| hKkEVrgsK9yBfBn5 | WF40 Docs Admissão | POST /ats-docs-admissao |
+| UBSXAGVGEAFWF2GH | WF41 Upload Documento | POST /ats-upload-documento |
+| BWdCUkcg0sGZzZdM | WF42 Get Docs Admissão | GET /ats-get-docs-admissao |
+| 6vSHD78JOHiFy6Y5 | WF43 Get Arquivo | GET /ats-get-arquivo |
+| 0NG6GyOKwWiiMlFR | WF21 Gerar Contrato DP | POST /ats-dp-gerar-contrato |
 
-| Nome | ID |
-|------|----|
-| PostgreSQL — ATS | `GGiSHBVIkgMdXboT` |
-| OpenAI — ATS | (verificar no n8n) |
-| Google Calendar ATS | (verificar no n8n) |
+## BANCO DE DADOS (PostgreSQL — ats_db)
 
----
+### Tabelas principais
+- `empresas` — multi-tenant, empresa_id em todas as tabelas
+- `vagas` — vagas com todos os campos (titulo, departamento, modalidade, salario_min/max, etc)
+- `candidatos` — dados + curriculo_base64
+- `candidaturas` — vínculo candidato↔vaga, etapa_atual, empresa_id
+- `avaliacoes` — triagem GPT-4o com scores por dimensão, análise STAR
+- `admissoes` — dados pessoais completos do candidato
+- `entrevistas` — agendamentos
+- `testes_vaga` — testes técnicos por vaga
+- `testes_perguntas` — perguntas dos testes
+- `testes_tentativas` — tentativas dos candidatos com scores
+- `testes_respostas` — respostas individuais
+- `avaliacoes_comportamentais` — resultados DISC, Big Five, etc
+- `analises_consolidadas` — análise GPT cruzando tudo
+- `testes_sugeridos_cargo` — sugestões por departamento
+- `contratos_modelo` — template .docx da empresa
+- `empresa_marca` — logo, cores, nome
+- `empresa_sessoes` — tokens de autenticação
+- `documentos_catalogo` — 17 tipos de documentos disponíveis
+- `documentos_requeridos` — documentos configurados por admissão
+- `documentos_enviados` — arquivos enviados pelos candidatos
 
-## WORKFLOWS (IDs n8n)
+### Etapas (candidatura.etapa_atual)
+triagem → entrevista_rh → entrevista_tecnica → aprovado / reprovado / arquivado / admissao
 
-| WF | Nome | ID |
-|----|------|----|
-| WF01 | Triagem GPT-4o | `FwiPkcJ72u636AUR` |
-| WF09 | Admin Candidatos (lista) | `PjDkMlETX6LQYdap` |
-| WF16 | Atualizar Etapa | `3L1ZEDy8ykWQsUsJ` |
-| WF21 | Gerar Contrato via IA | (atualizado para usar template do banco) |
-| WF22 | Upload Template Contrato | `xsOJX5x5pJRvqHQD` |
-| WF23 | Info Template Contrato | `UqWvNt67qEktYLlP` |
-| WF24 | Download Template Completo | `YRVXi3WTXCjVPCr3` |
-| WF25 | Assistente Planilhas IA | `ZD2PhutUiq2Ex9To` |
-| WF26 | Métricas | `7McEclEKdvmOSTxi` |
-| WF Resposta WA | Resposta WhatsApp | `5PL1gPhSf11XZj1V` |
+### empresa_id padrão
+ID: 1 (TechRecruit AI)
 
-### Endpoints principais (base: `https://webhook.danns.com.br/webhook`)
-- `POST /ats-candidatura` — WF01, recebe candidatura + currículo base64
-- `GET /ats-admin-candidatos` — WF09, lista todos os candidatos com dados completos
-- `POST /ats-atualizar-etapa` — WF16, avança/reprova candidato, agenda entrevista
-- `POST /ats-formulario-admissao` — WF18, salva dados de admissão
-- `POST /ats-upload-contrato-modelo` — WF22, salva template .docx no banco
-- `GET /ats-get-contrato-modelo` — WF23, retorna info do template (sem base64)
-- `GET /ats-get-contrato-modelo-completo` — WF24, retorna template com base64
-- `POST /ats-assistente-planilha` — WF25, assistente IA para planilhas
-- `GET /ats-metricas` — WF26, retorna todas as métricas
+## FUNCIONALIDADES IMPLEMENTADAS
 
----
+### Ciclo principal ✅
+1. Candidato preenche candidatura.html
+2. WF01 triagem GPT-4o com score, análise STAR, pontos fortes/fracos
+3. Admin vê painel com ranking por score
+4. Admin envia avaliações comportamentais (DISC, Big Five, Raciocínio, Liderança, Vendas, Criatividade)
+5. Admin envia testes técnicos (gerados manualmente ou por IA)
+6. Admin acessa Perfil & Avaliações: 3 abas (Perfil Completo, Entrevista, Dados Brutos)
+7. Admin gera Análise Consolidada (GPT cruza tudo + perguntas STAR personalizadas)
+8. Admin agenda entrevista → Google Calendar + WhatsApp
+9. Admin reprova → WhatsApp personalizado gerado por GPT
+10. Admin aprova → módulo DP
+11. DP configura documentos necessários → candidato faz upload pelo sistema
+12. Admin valida cada documento
 
-## ESTRUTURA DO BANCO (PostgreSQL)
+### Módulo Admin ✅
+- Login com sessão persistente
+- 5 seções: Vagas, Candidatos, Testes, Métricas, Depto. Pessoal
+- Configurações com abas: Empresa/Marca, Contrato, IA & Triagem, Integrações, Segurança, Planilhas
+- Painel de Métricas completo com funil atual + histórico, KPIs, gráficos
 
-Tabelas principais:
-- `vagas` — vagas abertas
-- `candidatos` — dados do candidato + `curriculo_base64`, `curriculo_nome`
-- `candidaturas` — vínculo candidato↔vaga, campo `etapa_atual`
-- `entrevistas` — agendamentos de entrevistas
-- `documentos_admissao` — documentos enviados pelo DP
+### Avaliações Comportamentais ✅
+6 tipos: DISC, Big Five, Raciocínio Lógico, Liderança, Perfil Comercial, Criatividade
+Resultados vinculados ao perfil do candidato
 
-Identificador único de linha: **`candidatura_id`** (não `candidato_id`)
+### Documentos DP ✅ (parcial)
+- Admin configura quais documentos são necessários
+- Catálogo com 17 tipos agrupados por categoria
+- Upload pelo sistema (não pelo WhatsApp)
+- Admin valida cada documento
 
-Etapas (`etapa_atual`): `triagem` → `entrevista_rh` → `entrevista_tecnica` → `aprovado` / `reprovado` / `arquivado`
+## PENDENTES / PRÓXIMAS MELHORIAS
 
----
+### Bugs conhecidos
+1. Catálogo de documentos no DP mostrando vazio (corrigindo)
+2. Modal de editar vaga com campos vazios (responsabilidades, requisitos, salário)
+3. Botão Sair não funciona em alguns casos
+4. Salário nas vagas.html mostrando R$0-R$0
 
-## REGRAS TÉCNICAS IMPORTANTES
+### Funcionalidades planejadas
+1. **Upload documentos DP completo** — finalizar integração admissao.html com novo sistema
+2. **Email para candidatos** — integração SendGrid
+3. **Painel master** — gerenciar múltiplas empresas + cadastro de novas
+4. **Tela de cadastro** — novas empresas se cadastrarem
+5. **Divulgação automática de vagas** — WhatsApp ao banco de talentos ao publicar
+6. **Integração LinkedIn** — capturar candidatos (complexo, deixar por último)
+7. **Módulo psicológico** — quando Danilo tiver CRP em avaliação psicológica
+8. **Contrato modelo** — melhorar preenchimento com template real
+9. **Planilhas** — edição mais inteligente preservando formatação
+10. **Análise consolidada automática** — gerar automaticamente após candidato submeter teste
 
-1. **n8n via MCP** — nunca editar workflows manualmente no n8n UI; usar MCP
-2. **Publicar sempre** após update de workflow
-3. **Credencial Postgres**: ID `GGiSHBVIkgMdXboT`
-4. **Base64 longo**: usar dollar-quoting `$cv$...$cv$` no SQL do n8n para evitar escape de aspas
-5. **Sem re-fetch após ação**: atualizar estado local para evitar bug de deduplicação da API
-6. **candidatura_id** é o identificador correto — não usar candidato_id como chave
-7. Agendar entrevista: etapa máxima é `entrevista_tecnica` (não avança para `aprovado` ao agendar)
-8. Botão "Agendar" some apenas quando etapa é `aprovado`, `reprovado` ou `arquivado`
+## ARQUITETURA MULTI-TENANT
+- Banco compartilhado com empresa_id em todas as tabelas
+- Empresa padrão ID: 1
+- Sessões com expiração de 8h
+- Pronto para adicionar novas empresas
 
----
-
-## STATUS ATUAL (2026-05-26)
-
-### Concluído nesta sessão
-- Seção Configurações refatorada com abas internas: Empresa, Contrato, IA & Triagem, Integrações, Segurança, Planilhas
-- WF22 `POST /ats-upload-contrato-modelo` (ID: `xsOJX5x5pJRvqHQD`) — salva template .docx no banco
-- WF23 `GET /ats-get-contrato-modelo` (ID: `UqWvNt67qEktYLlP`) — retorna info do template
-- WF24 `GET /ats-get-contrato-modelo-completo` (ID: `YRVXi3WTXCjVPCr3`) — retorna template com base64
-- WF21 atualizado para usar template do banco ao gerar contrato
-- Tabela `contratos_modelo` criada no banco
-- Fix: nome "undefined" no modal de Admissão corrigido
-- WF25 `POST /ats-assistente-planilha` (ID: `ZD2PhutUiq2Ex9To`) — assistente IA para planilhas
-- Aba Planilhas nas Configurações com suporte a Excel e Google Sheets (SheetJS)
-- WF26 `GET /ats-metricas` (ID: `7McEclEKdvmOSTxi`) — retorna todas as métricas
-- Painel de Métricas completo: KPIs, funil atual + histórico com toggle, evolução mensal, ranking por vaga, donuts de status/etapa
-
-### Pendente / Próximas melhorias
-1. Contrato modelo: melhorar preenchimento do template real
-2. Planilhas: edição mais inteligente preservando formatação do .xlsx original
-3. Personalização de marca (logo, cores, nome da empresa)
-4. Multi-tenant (múltiplas empresas no mesmo ATS)
-5. Modal de editar vaga no admin: campos vazios ao abrir (responsabilidades, requisitos, salário, benefícios, stack, cidade, sobre_empresa não preenchem corretamente)
-6. Botão Sair vermelho no sidebar do admin não funciona (onclick sobrescrito pelo forEach de nav-item)
-7. Navegação: ao entrar em candidatos pelo admin, o botão Voltar do navegador não retorna para vagas (SPA sem histórico)
-8. Página vagas.html: salário exibindo "R$ 0 - R$ 0" quando deveria mostrar "A combinar" (campos salario_min/max zerados)
-
----
+## STACK TÉCNICA
+- Frontend: HTML/CSS/JS vanilla (sem framework)
+- Backend: n8n (workflows como API)
+- Banco: PostgreSQL
+- IA: GPT-4o (OpenAI)
+- WhatsApp: Evolution API
+- Calendar: Google Calendar API
+- Deploy: EasyPanel + Docker + nginx
+- VPS: Hostinger
 
 ## ATUALIZAR ESTE ARQUIVO
-
-Ao final de cada sessão, atualizar a seção "Status Atual" com o que foi feito e o que ficou pendente.
+Ao final de cada sessão, atualizar com o que foi feito e o que ficou pendente.
