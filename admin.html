@@ -1313,6 +1313,7 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
       <button class="tab-btn active" id="so-tab-perfil-completo" onclick="setSoTab('perfil-completo')">📋 Perfil Completo</button>
       <button class="tab-btn" id="so-tab-entrevista" onclick="setSoTab('entrevista')">🎯 Entrevista</button>
       <button class="tab-btn" id="so-tab-dados-brutos" onclick="setSoTab('dados-brutos')">📊 Dados Brutos</button>
+      <button class="tab-btn" id="so-tab-candidatura" onclick="setSoTab('candidatura')">📝 Candidatura</button>
     </div>
 
     <!-- ── Pane 1: Perfil Completo ── -->
@@ -1330,6 +1331,13 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
       <div id="so-accordions"></div>
       <div id="so-competencias-pane"></div>
       <div id="so-alertas-entrevista"></div>
+    </div>
+
+    <!-- ── Pane 4: Candidatura ── -->
+    <div id="so-pane-candidatura" style="display:none;padding-top:16px">
+      <div id="so-candidatura-content">
+        <div style="text-align:center;padding:40px 0;color:var(--muted);font-size:13px">Clique em "Candidatura" para carregar.</div>
+      </div>
     </div>
 
     <!-- ── Pane 3: Dados Brutos ── -->
@@ -2808,7 +2816,8 @@ function abrirCandidato(candidaturaId) {
     cvEl.innerHTML += `<br><span style="font-size:12px;color:var(--muted);margin-top:4px;display:inline-block">Currículo não enviado</span>`;
   }
 
-  _historicoCarregadoId = null;
+  _historicoCarregadoId    = null;
+  _candidaturaCarregadaId  = null;
   setSoTab('perfil-completo');
   document.getElementById('slideover-cand').classList.add('open');
   document.getElementById('so-backdrop').classList.add('open');
@@ -3033,7 +3042,7 @@ async function carregarPerfilCompleto(candidaturaId) {
 
 // ─── TABS DO SLIDEOVER ────────────────────────────────────────────
 function setSoTab(tab) {
-  ['perfil-completo', 'entrevista', 'dados-brutos'].forEach(t => {
+  ['perfil-completo', 'entrevista', 'dados-brutos', 'candidatura'].forEach(t => {
     const pane = document.getElementById('so-pane-' + t);
     const btn  = document.getElementById('so-tab-' + t);
     if (pane) pane.style.display = t === tab ? '' : 'none';
@@ -3052,6 +3061,131 @@ function setSoTab(tab) {
   if (tab === 'dados-brutos') {
     carregarHistoricoTestes(currentCandidaturaId);
   }
+  if (tab === 'candidatura') {
+    carregarDadosCandidatura(currentCandidaturaId);
+  }
+}
+
+// ─── ABA CANDIDATURA ──────────────────────────────────────────────
+let _candidaturaCarregadaId = null;
+
+async function carregarDadosCandidatura(candidaturaId) {
+  const id  = candidaturaId || currentCandidaturaId;
+  const el  = document.getElementById('so-candidatura-content');
+  if (!el || !id) return;
+  if (_candidaturaCarregadaId === id) return; // já renderizado
+
+  el.innerHTML = '<div style="text-align:center;padding:32px 0;color:var(--muted);font-size:13px">Carregando dados da candidatura...</div>';
+
+  // Usa cache da triagem se já disponível (carregada pelo tab Perfil Completo)
+  if (_triagemCache[id]) {
+    el.innerHTML = renderDadosCandidatura(id, _triagemCache[id]);
+    _candidaturaCarregadaId = id;
+    return;
+  }
+
+  try {
+    const r    = await fetch(`${BASE_URL}/ats-perfil-candidato?candidatura_id=${id}&t=${Date.now()}`);
+    const data = await r.json();
+    _triagemCache[id] = data;
+    _candidaturaCarregadaId = id;
+    const elNow = document.getElementById('so-candidatura-content');
+    if (elNow) elNow.innerHTML = renderDadosCandidatura(id, data);
+  } catch(e) {
+    console.error('[carregarDadosCandidatura] erro:', e);
+    const elNow = document.getElementById('so-candidatura-content');
+    if (elNow) elNow.innerHTML = renderDadosCandidatura(id, null);
+  }
+}
+
+function renderDadosCandidatura(candidaturaId, apiData) {
+  // Candidato do array local (dados básicos)
+  const c = candidatos.find(x => (x.candidatura_id || x.candidato_id) === candidaturaId) || {};
+  // Dados da triagem (contém os campos do formulário de candidatura)
+  const raw = apiData ? (apiData.candidato || apiData.dados_candidatura || apiData.triagem_ia || apiData) : {};
+
+  const campo = (label, valor) => {
+    const v = valor != null && valor !== '' ? String(valor).trim() : null;
+    if (!v) return '';
+    return `<div style="margin-bottom:14px">
+      <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">${label}</div>
+      <div style="font-size:13px;color:var(--text);line-height:1.55;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 12px">${v}</div>
+    </div>`;
+  };
+
+  const campoTexto = (label, valor) => {
+    const v = valor != null && valor !== '' ? String(valor).trim() : null;
+    if (!v) return '';
+    return `<div style="margin-bottom:14px">
+      <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">${label}</div>
+      <div style="font-size:13px;color:var(--text);line-height:1.65;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 12px;white-space:pre-wrap">${v}</div>
+    </div>`;
+  };
+
+  const sec = (titulo, html) => html.trim()
+    ? `<div style="margin-bottom:20px">
+        <div style="font-size:11px;font-weight:700;color:var(--accent2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border)">${titulo}</div>
+        ${html}
+       </div>`
+    : '';
+
+  // ── Dados Pessoais ──────────────────────────────────────────────
+  const nomeCand  = c.candidato_nome || c.nome || raw.nome || '';
+  const pessoais  = [
+    campo('Nome completo', nomeCand),
+    campo('E-mail', c.email || raw.email),
+    campo('Telefone', c.telefone || raw.telefone),
+    campo('Cidade / Estado', c.cidade || raw.cidade),
+    campo('LinkedIn', c.linkedin || raw.linkedin),
+  ].join('');
+
+  // ── Informações Profissionais ────────────────────────────────────
+  const profissional = [
+    campo('Nível de experiência', c.nivel_experiencia || raw.nivel_experiencia),
+    campo('Área de atuação', c.area_atuacao || raw.area_atuacao),
+    campo('Anos de experiência', c.experiencia_anos || raw.experiencia_anos),
+    campo('Modalidade preferida', c.modalidade || raw.modalidade),
+    campo('Pretensão salarial', c.pretensao_salarial || raw.pretensao_salarial),
+    campo('Nível de inglês', c.nivel_ingles || raw.nivel_ingles),
+  ].join('');
+
+  // ── Texto livre / Resumo / Carta ────────────────────────────────
+  const resumo = campoTexto(
+    'Experiência & Motivação',
+    c.resumo_texto || raw.resumo_texto || c.resumo_executivo || raw.resumo_executivo
+  );
+
+  // ── Respostas Comportamentais ────────────────────────────────────
+  const comp1  = campoTexto('Resposta comportamental 1', c.comportamental_1 || raw.comportamental_1);
+  const comp2  = campoTexto('Resposta comportamental 2', c.comportamental_2 || raw.comportamental_2);
+  const comp3  = campoTexto('Resposta comportamental 3', c.comportamental_3 || raw.comportamental_3);
+  const comps  = [comp1, comp2, comp3].join('');
+
+  // ── Currículo ────────────────────────────────────────────────────
+  const nomeCurr = c.curriculo_nome || raw.curriculo_nome;
+  const currHtml = nomeCurr
+    ? `<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-size:13px">
+        📄 <span style="flex:1;color:var(--text)">${nomeCurr}</span>
+        <button class="btn btn-ghost btn-sm" onclick="baixarCurriculo('${candidaturaId}')">Baixar</button>
+       </div>`
+    : '';
+
+  const hasData = pessoais || profissional || resumo || comps;
+
+  if (!hasData && !currHtml) {
+    return `<div style="text-align:center;padding:40px 0;color:var(--muted);font-size:13px">
+      <div style="font-size:32px;margin-bottom:12px">📋</div>
+      Dados do formulário de candidatura não disponíveis.
+    </div>`;
+  }
+
+  return [
+    sec('👤 Dados Pessoais', pessoais),
+    sec('💼 Perfil Profissional', profissional),
+    sec('📝 Experiência & Motivação', resumo),
+    comps ? sec('🎯 Respostas Comportamentais', comps) : '',
+    currHtml ? sec('📎 Currículo', currHtml) : '',
+  ].join('');
 }
 
 function setPerfilPill(pill) {
