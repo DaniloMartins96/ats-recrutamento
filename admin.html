@@ -1643,6 +1643,7 @@ let vagas = [];
 let candidatos = [];
 let admissoes = [];
 let currentVagaId = null;
+let vagaEditandoCodigo = '';
 let tagData = { stack: [], comp: [] };
 let currentCandidatoId = null;
 let currentCandidaturaId = null;
@@ -1887,12 +1888,15 @@ document.getElementById('mv-cancel').onclick = fecharModalVaga;
 
 function abrirModalVaga(id) {
   currentVagaId = id;
+  vagaEditandoCodigo = '';
   tagData = { stack: [], comp: [] };
 
   if (id) {
     const v = vagas.find(x => x.id === id);
     if (!v) return;
+    vagaEditandoCodigo = v.codigo || '';
     console.log('[editarVaga] objeto completo:', v);
+    console.log('[editarVaga] codigo da vaga:', vagaEditandoCodigo);
     document.getElementById('modal-vaga-title').textContent = 'Editar Vaga';
     document.getElementById('mv-save').textContent = 'Salvar Alterações';
     // Identificação
@@ -1952,6 +1956,7 @@ function abrirModalVaga(id) {
 function fecharModalVaga() {
   document.getElementById('modal-vaga').classList.remove('open');
   currentVagaId = null;
+  vagaEditandoCodigo = '';
 }
 
 function toggleNivelIngles() {
@@ -1975,79 +1980,46 @@ async function salvarVaga(statusOverride) {
   const isNova = !currentVagaId;
   const vagaExistente = currentVagaId ? (vagas.find(v => v.id === currentVagaId) || {}) : {};
 
-  const _local  = document.getElementById('mv-local').value.trim();
-  const _resp   = document.getElementById('mv-responsabilidades').value.trim();
-  const _reqObr = document.getElementById('mv-requisitos-obrig').value.trim();
-  const _reqDes = document.getElementById('mv-requisitos-desej').value.trim();
-  const _sobre  = document.getElementById('mv-sobre-empresa').value.trim();
-  const _valores = document.getElementById('mv-valores').value.trim();
-  const _benef  = document.getElementById('mv-beneficios').value.trim();
-  const _recru  = document.getElementById('mv-recrutador').value.trim();
-  const _descr  = document.getElementById('mv-descricao').value.trim();
-  const _expAnos = parseInt(document.getElementById('mv-exp-anos').value) || 0;
-  const _qtd    = parseInt(document.getElementById('mv-qtd-vagas').value) || 1;
-  const _salMin = parseFloat(document.getElementById('mv-salario-min').value) || null;
-  const _salMax = parseFloat(document.getElementById('mv-salario-max').value) || null;
-
   const payload = {
-    id: currentVagaId || ('v' + Date.now()),
-    codigo:     vagaExistente.codigo || '',
+    // ── chave de upsert ─────────────────────────────────────────────
+    codigo:                   vagaEditandoCodigo || vagaExistente.codigo || '',
+    id:                       currentVagaId || ('v' + Date.now()),
+    // ── identificação ────────────────────────────────────────────────
     titulo,
-    departamento: dept,
-    area: dept,
-    // nivel enviado com ambos os nomes para compatibilidade com a API
-    nivel,
-    senioridade: nivel,
-    modalidade: modal,
-    // cidade/local enviados com ambos os nomes
-    local:      _local,
-    cidade:     _local,
-    localizacao: _local,
-    descricao:  _descr,
-    descricao_vaga: _descr,
-    // stack enviado com ambos os nomes
-    stack:          tagData.stack,
-    stack_tecnica:  tagData.stack,
-    tecnologias:    tagData.stack,
-    // competências enviadas com ambos os nomes
-    competencias:                    tagData.comp,
-    competencias_comportamentais:    tagData.comp,
-    status:     statusOverride,
-    criado_em:  vagaExistente.criado_em || new Date().toISOString(),
-    // empresa
-    sobre_empresa: _sobre,
-    sobre:         _sobre,
-    valores_empresa: _valores,
-    valores:         _valores,
-    // descrição da vaga
-    responsabilidades:            _resp,
-    descricao_responsabilidades:  _resp,
-    requisitos_obrigatorios:      _reqObr,
-    requisitos:                   _reqObr,
-    requisitos_desejaveis:        _reqDes,
-    requisitos_desej:             _reqDes,
-    // remuneração
-    salario_min:     _salMin,
-    salario_max:     _salMax,
-    mostrar_salario: document.getElementById('mv-mostrar-salario').value,
-    beneficios:      _benef,
-    // detalhes
-    vagas_abertas:           _qtd,
-    num_vagas:               _qtd,
-    qtd_vagas:               _qtd,
-    tipo_contrato:           document.getElementById('mv-contrato').value,
-    contrato:                document.getElementById('mv-contrato').value,
-    experiencia_minima_anos: _expAnos,
-    experiencia_minima:      _expAnos,
-    ingles_obrigatorio:      document.getElementById('mv-ingles-obrig').value === 'sim',
-    nivel_ingles_minimo:     document.getElementById('mv-nivel-ingles').value,
-    data_limite:             document.getElementById('mv-data-limite').value || null,
-    recrutador_responsavel:  _recru,
-    recrutador:              _recru,
+    departamento:             dept,
+    senioridade:              nivel,
+    modalidade:               modal,
+    cidade:                   document.getElementById('mv-local').value.trim(),
+    tipo_contrato:            document.getElementById('mv-contrato').value,
+    status:                   statusOverride,
+    criado_em:                vagaExistente.criado_em || new Date().toISOString(),
+    // ── empresa ──────────────────────────────────────────────────────
+    sobre_empresa:            document.getElementById('mv-sobre-empresa').value.trim(),
+    valores_empresa:          document.getElementById('mv-valores').value.trim(),
+    // ── descrição e requisitos ───────────────────────────────────────
+    descricao:                document.getElementById('mv-descricao').value.trim(),
+    responsabilidades:        document.getElementById('mv-responsabilidades').value.trim(),
+    requisitos_obrigatorios:  document.getElementById('mv-requisitos-obrig').value.trim(),
+    requisitos_desejaveis:    document.getElementById('mv-requisitos-desej').value.trim(),
+    // ── stack e competências (arrays) ────────────────────────────────
+    stack_tecnica:                tagData.stack,
+    competencias_comportamentais: tagData.comp,
+    // ── remuneração ──────────────────────────────────────────────────
+    salario_min:              parseFloat(document.getElementById('mv-salario-min').value) || null,
+    salario_max:              parseFloat(document.getElementById('mv-salario-max').value) || null,
+    mostrar_salario:          document.getElementById('mv-mostrar-salario').value,
+    beneficios:               document.getElementById('mv-beneficios').value.trim(),
+    // ── detalhes adicionais ──────────────────────────────────────────
+    vagas_abertas:            parseInt(document.getElementById('mv-qtd-vagas').value) || 1,
+    experiencia_minima_anos:  parseInt(document.getElementById('mv-exp-anos').value) || 0,
+    ingles_obrigatorio:       document.getElementById('mv-ingles-obrig').value === 'sim',
+    nivel_ingles_minimo:      document.getElementById('mv-nivel-ingles').value,
+    data_limite:              document.getElementById('mv-data-limite').value || null,
+    recrutador_responsavel:   document.getElementById('mv-recrutador').value.trim(),
   };
 
-  console.log('[salvarVaga] status que será enviado:', payload.status);
-  console.log('[salvarVaga] payload completo:', JSON.stringify(payload, null, 2));
+  console.log('[salvarVaga] codigo enviado:', payload.codigo);
+  console.log('[salvarVaga] body completo:', JSON.stringify(payload, null, 2));
 
   const btnSave = document.getElementById('mv-save');
   const btnRasc = document.getElementById('mv-rascunho');
