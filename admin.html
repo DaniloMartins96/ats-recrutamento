@@ -3070,177 +3070,106 @@ function setSoTab(tab) {
 let _candidaturaCarregadaId = null;
 
 async function carregarDadosCandidatura(candidaturaId) {
-  const id  = candidaturaId || currentCandidaturaId;
-  const el  = document.getElementById('so-candidatura-content');
+  const id = candidaturaId || currentCandidaturaId;
+  const el = document.getElementById('so-candidatura-content');
   if (!el || !id) return;
-  if (_candidaturaCarregadaId === id) return; // já renderizado nesta sessão
-
-  el.innerHTML = '<div style="text-align:center;padding:32px 0;color:var(--muted);font-size:13px">Carregando dados da candidatura...</div>';
-
-  // Sempre faz fetch próprio — não reutiliza _triagemCache pois esse pode ter
-  // sido populado pelo tab Perfil Completo com estrutura parcial diferente
-  try {
-    const r    = await fetch(`${BASE_URL}/ats-perfil-candidato?candidatura_id=${id}&t=${Date.now()}`);
-    const data = await r.json();
-    console.log('[candidatura] dados recebidos:', JSON.stringify(data));
-    _candidaturaCarregadaId = id;
-    const elNow = document.getElementById('so-candidatura-content');
-    if (elNow) elNow.innerHTML = renderDadosCandidatura(id, data);
-  } catch(e) {
-    console.error('[carregarDadosCandidatura] erro:', e);
-    const elNow = document.getElementById('so-candidatura-content');
-    if (elNow) elNow.innerHTML = renderDadosCandidatura(id, null);
-  }
+  if (_candidaturaCarregadaId === id) return;
+  _candidaturaCarregadaId = id;
+  el.innerHTML = renderDadosCandidatura(id);
 }
 
-function renderDadosCandidatura(candidaturaId, apiData) {
-  const c    = candidatos.find(x => (x.candidatura_id || x.candidato_id) === candidaturaId) || {};
-  const cand = (apiData && apiData.candidato) ? apiData.candidato : {};
-  const tri  = (apiData && apiData.triagem_ia) ? apiData.triagem_ia : {};
-
-  // helpers
+function renderDadosCandidatura(candidaturaId) {
+  const c = candidatos.find(x => (x.candidatura_id || x.candidato_id) === candidaturaId) || {};
   const esc = s => String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  const get = (...vs) => { for (const v of vs) { if (v != null && v !== '') return v; } return null; };
-  const naInfo = `<span style="color:var(--muted);font-style:italic">Não informado</span>`;
-  const arr = v => Array.isArray(v) ? v : (v ? [v] : []);
+  const naInfo = '<span style="color:var(--muted);font-style:italic">Não informado</span>';
+  const get = (...vs) => { for (const v of vs) { if (v != null && v !== '' && v !== 'null') return v; } return null; };
 
-  const sec = (titulo, html) => `
-    <div style="margin-bottom:22px">
+  const sec = (titulo, html) =>
+    `<div style="margin-bottom:22px">
       <div style="font-size:11px;font-weight:700;color:var(--accent2);text-transform:uppercase;letter-spacing:.08em;padding-bottom:7px;margin-bottom:12px;border-bottom:1px solid var(--border)">${titulo}</div>
       ${html}
     </div>`;
 
-  const row = (label, html) => `
-    <div style="display:flex;gap:0;margin-bottom:10px">
-      <div style="font-size:11px;font-weight:600;color:var(--muted);min-width:140px;padding-top:2px;flex-shrink:0">${label}</div>
+  const row = (label, html) =>
+    `<div style="display:flex;gap:0;margin-bottom:10px">
+      <div style="font-size:11px;font-weight:600;color:var(--muted);min-width:145px;padding-top:2px;flex-shrink:0">${label}</div>
       <div style="font-size:13px;color:var(--text);flex:1;line-height:1.5">${html}</div>
     </div>`;
 
   // ── 1. Dados Pessoais ─────────────────────────────────────────────
-  const nome     = get(c.candidato_nome, c.nome, cand.nome);
-  const email    = get(c.email, cand.email);
-  const tel      = get(c.telefone, cand.telefone);
-  const linkedin = get(c.linkedin, cand.linkedin);
-  const cidade   = get(c.cidade, cand.cidade);
-  const estado   = get(c.estado, cand.estado);
+  const nome     = get(c.nome);
+  const email    = get(c.email);
+  const tel      = get(c.telefone);
+  const linkedin = get(c.linkedin);
+  const cidade   = get(c.cidade);
+  const estado   = get(c.estado);
   const locStr   = [cidade, estado].filter(Boolean).join(' / ') || null;
-  const dtRaw    = get(c.data_candidatura, cand.data_candidatura);
+  const dtRaw    = get(c.data_candidatura);
   const dtFmt    = dtRaw ? new Date(dtRaw).toLocaleDateString('pt-BR') : null;
 
   const s1 = [
-    row('Nome',               nome     ? esc(nome)  : naInfo),
-    row('E-mail',             email    ? esc(email) : naInfo),
-    row('Telefone',           tel      ? esc(tel)   : naInfo),
-    row('LinkedIn',           linkedin ? `<a href="${esc(linkedin.startsWith('http') ? linkedin : 'https://'+linkedin)}" target="_blank" rel="noopener" style="color:var(--accent2);word-break:break-all">${esc(linkedin)}</a>` : naInfo),
-    row('Cidade / Estado',    locStr   ? esc(locStr)  : naInfo),
-    row('Data candidatura',   dtFmt    ? esc(dtFmt)   : naInfo),
+    row('Nome completo',   nome     ? esc(nome)  : naInfo),
+    row('E-mail',          email    ? esc(email) : naInfo),
+    row('Telefone',        tel      ? esc(tel)   : naInfo),
+    row('LinkedIn',        linkedin ? `<a href="${esc(linkedin.startsWith('http') ? linkedin : 'https://'+linkedin)}" target="_blank" rel="noopener" style="color:var(--accent2);word-break:break-all">${esc(linkedin)}</a>` : naInfo),
+    row('Cidade / Estado', locStr   ? esc(locStr) : naInfo),
+    row('Data da candidatura', dtFmt ? esc(dtFmt) : naInfo),
   ].join('');
 
   // ── 2. Perfil Profissional ────────────────────────────────────────
-  const area       = get(c.area_atuacao,        cand.area_atuacao);
-  const senior     = get(c.senioridade_declarada,cand.senioridade_declarada, c.nivel_experiencia, cand.nivel_experiencia);
-  const expAnos    = get(c.experiencia_anos,     cand.experiencia_anos);
-  const modal      = get(c.modalidade_preferida, cand.modalidade_preferida, c.modalidade, cand.modalidade);
-  const ingles     = get(c.nivel_ingles,         cand.nivel_ingles);
-  const stackArr   = arr(cand.stack_declarada || c.stack_declarada);
+  const area    = get(c.area_atuacao);
+  const senior  = get(c.senioridade_declarada);
+  const expAnos = get(c.experiencia_anos);
+  const modal   = get(c.modalidade_preferida);
+  const ingles  = get(c.nivel_ingles);
 
-  const salMin = parseFloat(get(c.pretensao_salarial_min, cand.pretensao_salarial_min));
-  const salMax = parseFloat(get(c.pretensao_salarial_max, cand.pretensao_salarial_max));
-  const salTxt = get(c.pretensao_salarial, cand.pretensao_salarial);
-  let salHtml;
-  if (!isNaN(salMin) && !isNaN(salMax) && salMin > 0 && salMax > 0) {
-    salHtml = `R$ ${salMin.toLocaleString('pt-BR')} – R$ ${salMax.toLocaleString('pt-BR')}`;
-  } else if (!isNaN(salMin) && salMin > 0) {
-    salHtml = `R$ ${salMin.toLocaleString('pt-BR')}`;
-  } else if (salTxt) {
-    salHtml = esc(salTxt);
-  } else {
-    salHtml = naInfo;
-  }
-
+  const stackRaw = c.stack_declarada;
+  const stackArr = Array.isArray(stackRaw) ? stackRaw
+    : (typeof stackRaw === 'string' ? (() => { try { const p = JSON.parse(stackRaw); return Array.isArray(p) ? p : []; } catch(e) { return []; } })()
+    : []);
   const stackHtml = stackArr.length
-    ? stackArr.map(t => `<span style="display:inline-block;padding:2px 9px;border-radius:5px;font-size:11px;font-weight:600;background:var(--surface3);color:var(--accent2);border:1px solid var(--border);margin:2px">${esc(String(t))}</span>`).join('')
+    ? stackArr.map(t => `<span style="display:inline-block;padding:2px 9px;border-radius:5px;font-size:11px;font-weight:600;background:var(--surface2);color:var(--accent2);border:1px solid var(--border);margin:2px">${esc(String(t))}</span>`).join('')
     : naInfo;
 
+  const salMin = parseFloat(c.pretensao_salarial_min);
+  const salMax = parseFloat(c.pretensao_salarial_max);
+  let salHtml;
+  if (!isNaN(salMin) && !isNaN(salMax) && salMin > 0 && salMax > 0)
+    salHtml = `R$ ${salMin.toLocaleString('pt-BR')} – R$ ${salMax.toLocaleString('pt-BR')}`;
+  else if (!isNaN(salMin) && salMin > 0)
+    salHtml = `R$ ${salMin.toLocaleString('pt-BR')}`;
+  else
+    salHtml = naInfo;
+
   const s2 = [
-    row('Área de atuação',      area    ? esc(area)    : naInfo),
-    row('Senioridade',          senior  ? esc(senior)  : naInfo),
-    row('Anos de experiência',  expAnos ? esc(expAnos) : naInfo),
-    row('Modalidade preferida', modal   ? esc(modal)   : naInfo),
-    row('Pretensão salarial',   salHtml),
-    row('Nível de inglês',      ingles  ? esc(ingles)  : naInfo),
-    row('Stack declarada',      stackHtml),
+    row('Área de atuação',     area    ? esc(area)    : naInfo),
+    row('Senioridade',         senior  ? esc(senior)  : naInfo),
+    row('Anos de experiência', expAnos != null && expAnos !== '' ? esc(expAnos) + ' anos' : naInfo),
+    row('Modalidade preferida',modal   ? esc(modal)   : naInfo),
+    row('Pretensão salarial',  salHtml),
+    row('Nível de inglês',     ingles  ? esc(ingles)  : naInfo),
+    row('Stack / Tecnologias', stackHtml),
   ].join('');
 
   // ── 3. Apresentação ───────────────────────────────────────────────
-  const resumo = get(c.resumo_texto, cand.resumo_texto);
-  const s3 = `<div style="font-size:13px;color:${resumo ? 'var(--text)' : 'var(--muted)'};line-height:1.7;white-space:pre-wrap;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px">${resumo ? esc(resumo) : 'Candidato não preencheu apresentação.'}</div>`;
+  const resumo = get(c.resumo_texto);
+  const s3 = `<div style="font-size:13px;color:${resumo ? 'var(--text)' : 'var(--muted)'};line-height:1.7;white-space:pre-wrap;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px;min-height:60px">${resumo ? esc(resumo) : 'Candidato não preencheu apresentação pessoal.'}</div>`;
 
-  // ── 4. Análise STAR ───────────────────────────────────────────────
-  let _starRaw = (tri.analise_star && typeof tri.analise_star === 'object' && !Array.isArray(tri.analise_star) && Object.keys(tri.analise_star).length > 0)
-    ? tri.analise_star
-    : c.analise_star || null;
-  if (typeof _starRaw === 'string') { try { _starRaw = JSON.parse(_starRaw); } catch(e) { _starRaw = null; } }
-  if (Array.isArray(_starRaw)) { _starRaw = null; }
-  const star = (_starRaw && typeof _starRaw === 'object') ? _starRaw : {};
-  const starEntries = Object.entries(star);
-  let s4 = '<div style="font-size:12px;color:var(--muted);margin-bottom:14px">Análise gerada pela IA com base nas respostas do candidato</div>';
-  if (!starEntries.length) {
-    s4 += `<div style="font-size:13px;color:var(--muted);font-style:italic">Análise STAR não disponível.</div>`;
-  } else {
-    s4 += starEntries.map(([key, d]) => {
-      const titulo = esc(key.replace(/_/g,' '));
-      if (typeof d === 'string') {
-        return `<div style="margin-bottom:12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px">
-          <div style="font-size:12px;font-weight:700;color:var(--accent2);margin-bottom:6px">${titulo}</div>
-          <div style="font-size:13px;color:var(--text);line-height:1.6">${esc(d)}</div>
-        </div>`;
-      }
-      const qual = d.qualidade != null ? `<span style="float:right;font-size:12px;color:var(--accent2);font-weight:700">⭐ ${d.qualidade}/10</span>` : '';
-      const subRow = (lbl, val) => val
-        ? `<div style="margin-bottom:7px"><span style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:2px">${lbl}</span><span style="font-size:13px;color:var(--text);line-height:1.55">${esc(String(val))}</span></div>`
-        : '';
-      return `<div style="margin-bottom:12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px">
-        <div style="font-size:12px;font-weight:700;color:var(--accent2);margin-bottom:10px">${titulo}${qual}</div>
-        ${subRow('Situação', d.situacao)}
-        ${subRow('Tarefa',   d.tarefa)}
-        ${subRow('Ação',     d.acao)}
-        ${subRow('Resultado',d.resultado)}
-      </div>`;
-    }).join('');
-  }
-
-  // ── 5. Competências identificadas ─────────────────────────────────
-  const _compsApi = arr(tri.competencias_identificadas);
-  const _compsC = (() => {
-    const raw = c.competencias_identificadas;
-    if (!raw) return [];
-    if (Array.isArray(raw)) return raw;
-    if (typeof raw === 'string') { try { const p = JSON.parse(raw); return Array.isArray(p) ? p : []; } catch(e) { return []; } }
-    return [];
-  })();
-  const comps = (_compsApi.length ? _compsApi : _compsC).filter(Boolean);
-  const s5 = comps.length
-    ? `<div style="display:flex;flex-wrap:wrap;gap:5px">${comps.map(cp => `<span style="padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;background:rgba(167,139,250,.12);color:#a78bfa;border:1px solid rgba(167,139,250,.3)">${esc(String(cp))}</span>`).join('')}</div>`
-    : `<div style="font-size:13px;color:var(--muted);font-style:italic">Nenhuma competência identificada.</div>`;
-
-  // ── 6. Currículo ──────────────────────────────────────────────────
-  const nomeCurr = get(c.curriculo_nome, cand.curriculo_nome);
-  const s6 = nomeCurr
-    ? `<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px">
-        <span style="font-size:20px">📄</span>
+  // ── 4. Currículo ──────────────────────────────────────────────────
+  const nomeCurr = get(c.curriculo_nome);
+  const s4 = nomeCurr
+    ? `<div style="display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:8px">
+        <span style="font-size:22px">📄</span>
         <span style="flex:1;font-size:13px;color:var(--text)">${esc(nomeCurr)}</span>
         <button class="btn btn-ghost btn-sm" onclick="baixarCurriculo('${candidaturaId}')">📥 Baixar</button>
        </div>`
-    : `<div style="font-size:13px;color:var(--muted);font-style:italic">Currículo não enviado.</div>`;
+    : `<div style="font-size:13px;color:var(--muted);font-style:italic;padding:8px 0">Currículo não enviado.</div>`;
 
   return [
-    sec('👤 Dados Pessoais',            s1),
-    sec('💼 Perfil Profissional',        s2),
-    sec('📝 Apresentação do Candidato',  s3),
-    sec('🎯 Análise STAR das Respostas', s4),
-    sec('💡 Competências Identificadas', s5),
-    sec('📎 Currículo',                  s6),
+    sec('👤 Dados Pessoais',         s1),
+    sec('💼 Perfil Profissional',     s2),
+    sec('📝 Apresentação Pessoal',    s3),
+    sec('📎 Currículo',               s4),
   ].join('');
 }
 
@@ -3274,15 +3203,13 @@ async function carregarHistoricoTestes(candidaturaId) {
     const r    = await fetch(`${BASE_URL}/ats-perfil-candidato?candidatura_id=${id}&t=${Date.now()}`);
     const data = await r.json();
     _historicoCarregadoId = id;
-    try {
-      el.innerHTML = renderHistoricoTestes(data);
-    } catch(renderErr) {
-      console.error('[renderHistoricoTestes] erro de render:', renderErr);
-      el.innerHTML = '<div style="text-align:center;padding:40px 0;color:var(--muted);font-size:13px">Sem histórico de testes disponível.</div>';
+    try { el.innerHTML = renderHistoricoTestes(data); }
+    catch(renderErr) {
+      el.innerHTML = '<div style="text-align:center;padding:32px 0;color:var(--muted);font-size:13px">Sem histórico de testes disponível.</div>';
     }
   } catch(e) {
     console.error('[historicoTestes] erro:', e);
-    el.innerHTML = '<div style="text-align:center;padding:40px 0;color:var(--muted);font-size:13px">Sem histórico de testes disponível.</div>';
+    el.innerHTML = '<div style="text-align:center;padding:32px 0;color:var(--muted);font-size:13px">Sem histórico de testes disponível.</div>';
   }
 }
 
