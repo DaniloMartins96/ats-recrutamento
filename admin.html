@@ -1955,6 +1955,8 @@ function abrirModalVaga(id) {
 
   renderTags('stack');
   renderTags('comp');
+  setupTagInput('stack');
+  setupTagInput('comp');
   document.getElementById('modal-vaga').classList.add('open');
 }
 
@@ -2137,7 +2139,9 @@ function initTagInputs() {
 }
 
 function setupTagInput(store) {
-  const inp = document.getElementById('tag-input-' + store);
+  const old = document.getElementById('tag-input-' + store);
+  const inp = old.cloneNode(true);
+  old.parentNode.replaceChild(inp, old);
   inp.addEventListener('keydown', e => {
     if (e.key === 'Enter' || e.key === ',') {
       e.preventDefault();
