@@ -1716,8 +1716,8 @@ function mostrarSecao(nav) {
   if (nav === 'testes') carregarTestes();
 }
 
-document.querySelectorAll('.nav-item').forEach(el => {
-  el.onclick = () => { if (el.dataset.nav) mostrarSecao(el.dataset.nav); };
+document.querySelectorAll('.nav-item[data-nav]').forEach(el => {
+  el.onclick = () => mostrarSecao(el.dataset.nav);
 });
 
 window.addEventListener('hashchange', () => {
