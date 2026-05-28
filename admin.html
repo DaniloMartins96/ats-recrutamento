@@ -3861,82 +3861,90 @@ async function abrirConfigDocumentos() {
   panel.style.display = isOpen ? 'none' : '';
   if (isOpen) return;
 
-  const catalogoEl = document.getElementById('dp-docs-catalogo-content');
-  catalogoEl.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);font-size:13px">Carregando catálogo...</div>';
+  const container = document.getElementById('dp-docs-catalogo-content');
+  if (!container) { console.error('Container do catálogo não encontrado'); return; }
+
+  container.innerHTML = '<p style="color:var(--muted);font-size:13px;text-align:center;padding:20px">Carregando...</p>';
 
   const admId = window.dpAdmissaoAtual?.admissao_id || window.dpAdmissaoAtual?.id;
+
   try {
-    // ── 1. Catálogo ──────────────────────────────────────────────
-    const rCat = await fetch(`${BASE_URL}/ats-docs-admissao`, {
+    const response = await fetch(`${BASE_URL}/ats-docs-admissao`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'catalogo' })
     });
-    if (!rCat.ok) throw new Error('HTTP ' + rCat.status);
-    const textCat = await rCat.text();
-    console.log('Resposta raw catalogo:', textCat.substring(0, 200));
-    if (!textCat || textCat.trim() === '') throw new Error('Resposta vazia do servidor (catálogo)');
-    const dataCat = JSON.parse(textCat);
-    console.log('Catálogo carregado:', dataCat);
-    if (dataCat.success === false) {
-      const msg = dataCat.message || 'Erro desconhecido';
-      console.error('[abrirConfigDocumentos] catálogo retornou success=false:', msg);
-      catalogoEl.innerHTML = `<div style="color:var(--danger);font-size:13px;padding:10px">Erro ao carregar catálogo: ${msg}</div>`;
-      return;
-    }
-    const catalogo = dataCat.catalogo || [];
-    if (!catalogo.length) {
-      console.warn('[abrirConfigDocumentos] Catálogo vazio — nenhum documento retornado pelo servidor');
-      catalogoEl.innerHTML = '<div style="color:var(--muted);font-size:13px;padding:10px">Nenhum documento no catálogo. Verifique a configuração do sistema.</div>';
+
+    const text = await response.text();
+    console.log('Catalogo raw response:', text.substring(0, 500));
+
+    const data = JSON.parse(text);
+    console.log('Catalogo parsed:', data.total, 'docs, success:', data.success);
+    console.log('Catalogo array:', data.catalogo ? data.catalogo.length : 'UNDEFINED');
+
+    if (!data.success || !data.catalogo || data.catalogo.length === 0) {
+      container.innerHTML = '<p style="color:#ef4444;font-size:13px;padding:10px">Erro: catálogo vazio. Total: ' + (data.total || 0) + '</p>';
       return;
     }
 
-    // ── 2. Documentos já configurados (tolerante a resposta vazia) ──
+    // Documentos já configurados para esta admissão (tolerante a resposta vazia)
     let configuradosIds = [];
     try {
       const rCfg = await fetch(`${BASE_URL}/ats-get-docs-admissao?admissao_id=${admId}&t=${Date.now()}`);
       const textCfg = await rCfg.text();
       if (textCfg && textCfg.trim()) {
         const dataCfg = JSON.parse(textCfg);
-        configuradosIds = (dataCfg.documentos || []).map(x => x.documento_id || x.id);
+        configuradosIds = (dataCfg.documentos || []).map(function(x) { return x.documento_id || x.id; });
       }
     } catch(e2) {
       console.warn('[abrirConfigDocumentos] não foi possível carregar docs configurados:', e2.message);
     }
 
-    // ── 3. Renderizar ─────────────────────────────────────────────
-    renderizarCatalogo(catalogo, dataCat.categorias || {}, configuradosIds, catalogoEl);
+    renderizarCatalogo(data.catalogo, configuradosIds, container);
 
-  } catch(e) {
-    console.error('[abrirConfigDocumentos] erro:', e);
-    catalogoEl.innerHTML = `<div style="color:var(--danger);font-size:13px;padding:10px">Erro ao carregar catálogo: ${e.message || e}</div>`;
+  } catch (err) {
+    console.error('Erro catalogo:', err);
+    container.innerHTML = '<p style="color:#ef4444;font-size:13px;padding:10px">Erro: ' + err.message + '</p>';
   }
 }
 
-function renderizarCatalogo(catalogo, categorias, configuradosIds, containerEl) {
-  const LABELS_CAT = {
-    identidade:'🪪 Identidade', trabalhista:'💼 Trabalhista', residencia:'🏠 Residência',
-    pessoal:'👤 Pessoal', civil:'📜 Civil', escolaridade:'🎓 Escolaridade',
-    financeiro:'💰 Financeiro', legal:'⚖️ Legal', dependentes:'👨‍👩‍👧 Dependentes', saude:'🏥 Saúde'
+function renderizarCatalogo(catalogo, configuradosIds, container) {
+  const nomesCategorias = {
+    identidade: '🪪 Identidade',
+    trabalhista: '💼 Trabalhista',
+    residencia: '🏠 Residência',
+    pessoal: '👤 Pessoal',
+    civil: '💍 Estado Civil',
+    escolaridade: '🎓 Escolaridade',
+    financeiro: '💰 Financeiro',
+    legal: '⚖️ Legal',
+    saude: '🏥 Saúde',
+    dependentes: '👨‍👩‍👧 Dependentes'
   };
+
   const grupos = {};
-  catalogo.forEach(d => {
-    const c = d.categoria || 'outros';
-    if (!grupos[c]) grupos[c] = [];
-    grupos[c].push(d);
+  catalogo.forEach(function(doc) {
+    var cat = doc.categoria || 'outros';
+    if (!grupos[cat]) grupos[cat] = [];
+    grupos[cat].push(doc);
   });
-  const catKeys = Object.keys(categorias).length ? Object.keys(categorias) : Object.keys(grupos);
-  containerEl.innerHTML = catKeys.filter(k => grupos[k]).map(cat => `
-    <div style="margin-bottom:16px">
-      <div style="font-size:11px;font-weight:700;color:var(--accent2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">${LABELS_CAT[cat] || String(categorias[cat] || cat).toUpperCase()}</div>
-      ${grupos[cat].map(d => {
-        const checked = (configuradosIds || []).includes(d.id) || d.obrigatorio_padrao;
-        return `<label style="display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:6px;cursor:pointer" onmouseover="this.style.background='var(--surface3)'" onmouseout="this.style.background=''">
-          <input type="checkbox" class="doc-checkbox" id="doc-cb-${d.id}" value="${d.id}" ${checked ? 'checked' : ''} style="width:16px;height:16px;accent-color:var(--accent);flex-shrink:0">
-          <div><div style="font-size:13px;font-weight:500">${d.nome}</div>${d.descricao ? `<div style="font-size:11px;color:var(--muted)">${d.descricao}</div>` : ''}</div>
-        </label>`;
-      }).join('')}
-    </div>`).join('');
+
+  var html = '';
+  Object.keys(grupos).forEach(function(cat) {
+    html += '<div style="margin-bottom:1rem">';
+    html += '<p style="font-weight:600;font-size:0.8rem;color:#94a3b8;text-transform:uppercase;margin-bottom:0.5rem">' + (nomesCategorias[cat] || cat) + '</p>';
+    grupos[cat].forEach(function(doc) {
+      var checked = (configuradosIds || []).includes(doc.id) || doc.obrigatorio_padrao;
+      html += '<label style="display:flex;align-items:flex-start;gap:0.5rem;padding:0.4rem 0;cursor:pointer">';
+      html += '<input type="checkbox" class="doc-checkbox" id="doc-cb-' + doc.id + '" value="' + doc.id + '" ' + (checked ? 'checked' : '') + ' style="margin-top:3px;cursor:pointer">';
+      html += '<span><span style="font-size:0.9rem">' + doc.nome + '</span>';
+      if (doc.descricao) html += '<br><span style="font-size:0.75rem;color:#94a3b8">' + doc.descricao + '</span>';
+      html += '</span></label>';
+    });
+    html += '</div>';
+  });
+
+  container.innerHTML = html;
 }
 
 async function salvarConfiguracaoDocumentos() {
