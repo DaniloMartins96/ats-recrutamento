@@ -3763,8 +3763,16 @@ async function carregarDocsAdmissao(admissaoId) {
   if (!el) return;
   el.innerHTML = '<div style="text-align:center;padding:24px;color:var(--muted);font-size:13px">Carregando documentos...</div>';
   try {
-    const r    = await fetch(`${BASE_URL}/ats-get-docs-admissao?admissao_id=${admissaoId}&t=${Date.now()}`);
-    const data = await r.json();
+    const response = await fetch(`${BASE_URL}/ats-get-docs-admissao?admissao_id=${admissaoId}&t=${Date.now()}`);
+    if (!response.ok) throw new Error('HTTP ' + response.status);
+    const text = await response.text();
+    console.log('Resposta raw docs:', text.substring(0, 200));
+    if (!text || text.trim() === '') {
+      el.innerHTML = '<div style="color:var(--muted);font-size:13px;text-align:center;padding:20px 0">Nenhum documento configurado. Clique em ⚙️ <strong>Configurar Documentos</strong> para selecionar os documentos necessários.</div>';
+      renderProgressoDocsAdmin({ documentos: [] });
+      return;
+    }
+    const data = JSON.parse(text);
     console.log('[carregarDocsAdmissao] resposta:', data);
     if (data.success === false) {
       console.error('[carregarDocsAdmissao] success=false:', data.message || data);
@@ -3858,49 +3866,77 @@ async function abrirConfigDocumentos() {
 
   const admId = window.dpAdmissaoAtual?.admissao_id || window.dpAdmissaoAtual?.id;
   try {
-    const [rCat, rCfg] = await Promise.all([
-      fetch(`${BASE_URL}/ats-docs-admissao`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ action: 'catalogo' }) }),
-      fetch(`${BASE_URL}/ats-get-docs-admissao?admissao_id=${admId}&t=${Date.now()}`)
-    ]);
-    const [dataCat, dataCfg] = await Promise.all([rCat.json(), rCfg.json()]);
-    console.log('Resposta catalogo:', dataCat);
+    // ── 1. Catálogo ──────────────────────────────────────────────
+    const rCat = await fetch(`${BASE_URL}/ats-docs-admissao`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'catalogo' })
+    });
+    if (!rCat.ok) throw new Error('HTTP ' + rCat.status);
+    const textCat = await rCat.text();
+    console.log('Resposta raw catalogo:', textCat.substring(0, 200));
+    if (!textCat || textCat.trim() === '') throw new Error('Resposta vazia do servidor (catálogo)');
+    const dataCat = JSON.parse(textCat);
+    console.log('Catálogo carregado:', dataCat);
     if (dataCat.success === false) {
-      const msg = dataCat.message || 'Erro desconhecido ao carregar catálogo';
+      const msg = dataCat.message || 'Erro desconhecido';
       console.error('[abrirConfigDocumentos] catálogo retornou success=false:', msg);
       catalogoEl.innerHTML = `<div style="color:var(--danger);font-size:13px;padding:10px">Erro ao carregar catálogo: ${msg}</div>`;
       return;
     }
-    const documentos = dataCat.catalogo || [];
-    if (!documentos.length) {
+    const catalogo = dataCat.catalogo || [];
+    if (!catalogo.length) {
       console.warn('[abrirConfigDocumentos] Catálogo vazio — nenhum documento retornado pelo servidor');
       catalogoEl.innerHTML = '<div style="color:var(--muted);font-size:13px;padding:10px">Nenhum documento no catálogo. Verifique a configuração do sistema.</div>';
       return;
     }
-    const configuradosIds = (dataCfg.documentos || []).map(x => x.documento_id || x.id);
 
-    const LABELS_CAT = {
-      identidade:'🪪 Identidade', trabalhista:'💼 Trabalhista', residencia:'🏠 Residência',
-      pessoal:'👤 Pessoal', civil:'📜 Civil', escolaridade:'🎓 Escolaridade',
-      financeiro:'💰 Financeiro', legal:'⚖️ Legal', dependentes:'👨‍👩‍👧 Dependentes', saude:'🏥 Saúde'
-    };
-    const grupos = {};
-    documentos.forEach(d => { const c = d.categoria || 'outros'; if (!grupos[c]) grupos[c] = []; grupos[c].push(d); });
+    // ── 2. Documentos já configurados (tolerante a resposta vazia) ──
+    let configuradosIds = [];
+    try {
+      const rCfg = await fetch(`${BASE_URL}/ats-get-docs-admissao?admissao_id=${admId}&t=${Date.now()}`);
+      const textCfg = await rCfg.text();
+      if (textCfg && textCfg.trim()) {
+        const dataCfg = JSON.parse(textCfg);
+        configuradosIds = (dataCfg.documentos || []).map(x => x.documento_id || x.id);
+      }
+    } catch(e2) {
+      console.warn('[abrirConfigDocumentos] não foi possível carregar docs configurados:', e2.message);
+    }
 
-    catalogoEl.innerHTML = Object.entries(grupos).map(([cat, docs]) => `
-      <div style="margin-bottom:16px">
-        <div style="font-size:11px;font-weight:700;color:var(--accent2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">${LABELS_CAT[cat] || cat}</div>
-        ${docs.map(d => {
-          const checked = configuradosIds.includes(d.id) || d.obrigatorio_padrao;
-          return `<label style="display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:6px;cursor:pointer" onmouseover="this.style.background='var(--surface3)'" onmouseout="this.style.background=''">
-            <input type="checkbox" class="doc-checkbox" id="doc-cb-${d.id}" value="${d.id}" ${checked ? 'checked' : ''} style="width:16px;height:16px;accent-color:var(--accent);flex-shrink:0">
-            <div><div style="font-size:13px;font-weight:500">${d.nome}</div>${d.descricao ? `<div style="font-size:11px;color:var(--muted)">${d.descricao}</div>` : ''}</div>
-          </label>`;
-        }).join('')}
-      </div>`).join('');
+    // ── 3. Renderizar ─────────────────────────────────────────────
+    renderizarCatalogo(catalogo, dataCat.categorias || {}, configuradosIds, catalogoEl);
+
   } catch(e) {
-    console.error('[abrirConfigDocumentos] erro de rede/parse:', e);
+    console.error('[abrirConfigDocumentos] erro:', e);
     catalogoEl.innerHTML = `<div style="color:var(--danger);font-size:13px;padding:10px">Erro ao carregar catálogo: ${e.message || e}</div>`;
   }
+}
+
+function renderizarCatalogo(catalogo, categorias, configuradosIds, containerEl) {
+  const LABELS_CAT = {
+    identidade:'🪪 Identidade', trabalhista:'💼 Trabalhista', residencia:'🏠 Residência',
+    pessoal:'👤 Pessoal', civil:'📜 Civil', escolaridade:'🎓 Escolaridade',
+    financeiro:'💰 Financeiro', legal:'⚖️ Legal', dependentes:'👨‍👩‍👧 Dependentes', saude:'🏥 Saúde'
+  };
+  const grupos = {};
+  catalogo.forEach(d => {
+    const c = d.categoria || 'outros';
+    if (!grupos[c]) grupos[c] = [];
+    grupos[c].push(d);
+  });
+  const catKeys = Object.keys(categorias).length ? Object.keys(categorias) : Object.keys(grupos);
+  containerEl.innerHTML = catKeys.filter(k => grupos[k]).map(cat => `
+    <div style="margin-bottom:16px">
+      <div style="font-size:11px;font-weight:700;color:var(--accent2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">${LABELS_CAT[cat] || String(categorias[cat] || cat).toUpperCase()}</div>
+      ${grupos[cat].map(d => {
+        const checked = (configuradosIds || []).includes(d.id) || d.obrigatorio_padrao;
+        return `<label style="display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:6px;cursor:pointer" onmouseover="this.style.background='var(--surface3)'" onmouseout="this.style.background=''">
+          <input type="checkbox" class="doc-checkbox" id="doc-cb-${d.id}" value="${d.id}" ${checked ? 'checked' : ''} style="width:16px;height:16px;accent-color:var(--accent);flex-shrink:0">
+          <div><div style="font-size:13px;font-weight:500">${d.nome}</div>${d.descricao ? `<div style="font-size:11px;color:var(--muted)">${d.descricao}</div>` : ''}</div>
+        </label>`;
+      }).join('')}
+    </div>`).join('');
 }
 
 async function salvarConfiguracaoDocumentos() {
