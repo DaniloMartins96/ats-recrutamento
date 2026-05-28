@@ -3177,7 +3177,13 @@ function renderDadosCandidatura(candidaturaId, apiData) {
   const s3 = `<div style="font-size:13px;color:${resumo ? 'var(--text)' : 'var(--muted)'};line-height:1.7;white-space:pre-wrap;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px">${resumo ? esc(resumo) : 'Candidato não preencheu apresentação.'}</div>`;
 
   // ── 4. Análise STAR ───────────────────────────────────────────────
-  const star    = (tri.analise_star && typeof tri.analise_star === 'object') ? tri.analise_star : {};
+  // analise_star: tenta triagem_ia primeiro, depois objeto candidato (c)
+  let starRaw = (tri.analise_star && typeof tri.analise_star === 'object')
+    ? tri.analise_star
+    : (c.analise_star || null);
+  if (typeof starRaw === 'string') { try { starRaw = JSON.parse(starRaw); } catch { starRaw = null; } }
+  if (Array.isArray(starRaw)) { starRaw = null; } // array inválido
+  const star = (starRaw && typeof starRaw === 'object') ? starRaw : {};
   const starEntries = Object.entries(star);
   let s4 = '<div style="font-size:12px;color:var(--muted);margin-bottom:14px">Análise gerada pela IA com base nas respostas do candidato</div>';
   if (!starEntries.length) {
@@ -3206,7 +3212,11 @@ function renderDadosCandidatura(candidaturaId, apiData) {
   }
 
   // ── 5. Competências identificadas ─────────────────────────────────
-  const comps = arr(tri.competencias_identificadas).filter(Boolean);
+  // competencias: tenta triagem_ia primeiro, depois objeto candidato (c)
+  const compsRawCand = c.competencias_identificadas;
+  const compsFromC = Array.isArray(compsRawCand) ? compsRawCand
+    : (typeof compsRawCand === 'string' ? (() => { try { const p = JSON.parse(compsRawCand); return Array.isArray(p) ? p : []; } catch { return []; } })() : []);
+  const comps = arr(tri.competencias_identificadas || []).concat(compsFromC).filter(Boolean);
   const s5 = comps.length
     ? `<div style="display:flex;flex-wrap:wrap;gap:5px">${comps.map(cp => `<span style="padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;background:rgba(167,139,250,.12);color:#a78bfa;border:1px solid rgba(167,139,250,.3)">${esc(String(cp))}</span>`).join('')}</div>`
     : `<div style="font-size:13px;color:var(--muted);font-style:italic">Nenhuma competência identificada.</div>`;
@@ -3261,10 +3271,15 @@ async function carregarHistoricoTestes(candidaturaId) {
     const r    = await fetch(`${BASE_URL}/ats-perfil-candidato?candidatura_id=${id}&t=${Date.now()}`);
     const data = await r.json();
     _historicoCarregadoId = id;
-    el.innerHTML = renderHistoricoTestes(data);
+    try {
+      el.innerHTML = renderHistoricoTestes(data);
+    } catch(renderErr) {
+      console.error('[renderHistoricoTestes] erro de render:', renderErr);
+      el.innerHTML = '<div style="text-align:center;padding:40px 0;color:var(--muted);font-size:13px">Sem histórico de testes disponível.</div>';
+    }
   } catch(e) {
     console.error('[historicoTestes] erro:', e);
-    el.innerHTML = '<div style="text-align:center;padding:40px 0;color:var(--muted);font-size:13px">Erro ao carregar histórico. Tente novamente.</div>';
+    el.innerHTML = '<div style="text-align:center;padding:40px 0;color:var(--muted);font-size:13px">Sem histórico de testes disponível.</div>';
   }
 }
 
