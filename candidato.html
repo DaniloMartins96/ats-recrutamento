@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Acompanhe sua candidatura — TechRecruit AI">
+<title>Acompanhe sua Candidatura — TechRecruit AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0a0f;--surface:#13131a;--surface2:#1a1a24;--surface3:#22222f;
+  --border:#2a2a3a;--accent:#6c63ff;--accent2:#a78bfa;--accent-dim:#6c63ff1a;
+  --text:#e2e2f0;--muted:#6b6b8a;--danger:#ff4d6d;--success:#10b981;--warn:#f59e0b;
+  --header-h:72px;
+}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased;min-height:100vh}
+
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(ellipse 80% 60% at 10% 0%,#6c63ff14 0%,transparent 55%),
+             radial-gradient(ellipse 60% 50% at 90% 100%,#a78bfa0e 0%,transparent 55%)}
+body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:radial-gradient(circle,#2a2a3a 1px,transparent 1px);
+  background-size:36px 36px;opacity:.25}
+
+/* ── HEADER ── */
+.site-header{
+  position:fixed;top:0;left:0;right:0;height:var(--header-h);z-index:100;
+  background:rgba(10,10,15,.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border-bottom:1px solid rgba(108,99,255,.18);
+  display:flex;align-items:center;padding:0 32px;gap:16px;
+}
+.header-brand{display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit;flex-shrink:0}
+.header-logo-icon{
+  width:36px;height:36px;border-radius:10px;flex-shrink:0;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 0 16px #6c63ff44;
+}
+.header-logo-icon svg{width:18px;height:18px;fill:#fff}
+.header-brand-name{font-size:16px;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1.2}
+.header-brand-slogan{font-size:11px;color:var(--muted);line-height:1.2}
+.header-spacer{flex:1}
+.btn-vagas{
+  padding:9px 20px;background:transparent;border:1px solid var(--border);border-radius:10px;
+  color:var(--text);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;
+  text-decoration:none;display:flex;align-items:center;gap:6px;white-space:nowrap;
+  transition:border-color .2s,color .2s;
+}
+.btn-vagas:hover{border-color:var(--accent2);color:var(--accent2)}
+
+/* ── MAIN ── */
+.main{position:relative;z-index:1;min-height:calc(100vh - var(--header-h));padding:calc(var(--header-h) + 48px) 24px 64px;display:flex;flex-direction:column;align-items:center}
+
+/* ── SEARCH SCREEN ── */
+.search-screen{width:100%;max-width:480px;text-align:center}
+.hero-tag{display:inline-flex;align-items:center;gap:6px;padding:5px 14px;background:var(--accent-dim);border:1px solid rgba(108,99,255,.3);border-radius:20px;font-size:12px;font-weight:600;color:var(--accent2);margin-bottom:20px}
+.search-screen h1{font-size:clamp(1.8rem,5vw,2.6rem);font-weight:900;letter-spacing:-.04em;line-height:1.1;margin-bottom:12px}
+.search-screen h1 .grad{background:linear-gradient(135deg,var(--accent),var(--accent2),#ec4899);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.search-sub{font-size:15px;color:var(--muted);margin-bottom:36px;line-height:1.6}
+.search-box{display:flex;gap:10px;width:100%}
+.search-input{
+  flex:1;padding:14px 18px;background:var(--surface);border:1px solid var(--border);
+  border-radius:12px;color:var(--text);font-size:15px;font-family:inherit;outline:none;
+  transition:border-color .2s,box-shadow .2s;
+}
+.search-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(108,99,255,.15)}
+.search-input::placeholder{color:var(--muted)}
+.btn-buscar{
+  padding:14px 24px;background:linear-gradient(135deg,var(--accent),var(--accent2));
+  border:none;border-radius:12px;color:#fff;font-size:14px;font-weight:700;
+  cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0;
+  box-shadow:0 4px 16px #6c63ff33;transition:opacity .2s,transform .1s;
+}
+.btn-buscar:hover{opacity:.88}
+.btn-buscar:active{transform:scale(.97)}
+.btn-buscar:disabled{opacity:.5;cursor:not-allowed;transform:none}
+
+/* ── LOADING ── */
+.loading{display:none;align-items:center;gap:12px;margin-top:32px;color:var(--muted);font-size:14px}
+.loading.active{display:flex}
+.spinner{width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── ERROR ── */
+.error-screen{display:none;text-align:center;max-width:420px}
+.error-screen.active{display:block}
+.error-icon{font-size:48px;margin-bottom:16px}
+.error-screen h2{font-size:20px;font-weight:700;margin-bottom:8px}
+.error-screen p{color:var(--muted);font-size:14px;margin-bottom:24px;line-height:1.6}
+.btn-retry{padding:10px 24px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;transition:border-color .2s}
+.btn-retry:hover{border-color:var(--accent2)}
+
+/* ── RESULTS ── */
+.results-screen{display:none;width:100%;max-width:680px}
+.results-screen.active{display:block}
+.greeting{font-size:24px;font-weight:800;margin-bottom:6px}
+.greeting .name{background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.greeting-sub{color:var(--muted);font-size:14px;margin-bottom:32px}
+.btn-nova-busca{padding:8px 18px;background:transparent;border:1px solid var(--border);border-radius:8px;color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;margin-bottom:28px;transition:border-color .2s,color .2s}
+.btn-nova-busca:hover{border-color:var(--accent2);color:var(--accent2)}
+
+/* ── CARD ── */
+.cand-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:20px;transition:border-color .2s}
+.cand-card:hover{border-color:rgba(108,99,255,.35)}
+.card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.card-vaga{font-size:18px;font-weight:800;line-height:1.2}
+.card-dept{font-size:12px;color:var(--muted);margin-top:3px}
+.card-data{font-size:12px;color:var(--muted);white-space:nowrap}
+.etapa-badge{display:inline-flex;align-items:center;gap:8px;padding:8px 16px;border-radius:10px;font-size:14px;font-weight:700;margin-bottom:16px}
+.etapa-verde{background:rgba(16,185,129,.15);color:#10b981;border:1px solid rgba(16,185,129,.3)}
+.etapa-vermelha{background:rgba(255,77,109,.12);color:#ff4d6d;border:1px solid rgba(255,77,109,.25)}
+.etapa-azul{background:rgba(108,99,255,.15);color:#a78bfa;border:1px solid rgba(108,99,255,.3)}
+.score-pill{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:20px;font-size:12px;font-weight:600;color:var(--accent2);margin-bottom:16px;margin-left:8px}
+
+/* ── ENTREVISTA BOX ── */
+.entrevista-box{background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.25);border-radius:12px;padding:14px 16px;margin-bottom:20px;display:flex;gap:12px;align-items:flex-start}
+.entrevista-icon{font-size:22px;flex-shrink:0;margin-top:1px}
+.entrevista-info{flex:1}
+.entrevista-titulo{font-size:13px;font-weight:700;color:var(--warn);margin-bottom:4px}
+.entrevista-detalhe{font-size:13px;color:var(--text);line-height:1.6}
+.entrevista-detalhe span{color:var(--muted)}
+
+/* ── TIMELINE ── */
+.timeline-label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px}
+.timeline{display:flex;flex-direction:column;gap:0}
+.tl-item{display:flex;gap:14px;align-items:flex-start;padding-bottom:16px;position:relative}
+.tl-item:last-child{padding-bottom:0}
+.tl-item:last-child .tl-line{display:none}
+.tl-dot-wrap{display:flex;flex-direction:column;align-items:center;flex-shrink:0;width:28px}
+.tl-dot{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;border:2px solid var(--border)}
+.tl-dot.done{background:rgba(16,185,129,.15);border-color:rgba(16,185,129,.4)}
+.tl-dot.pending{background:var(--surface2);border-color:var(--border)}
+.tl-line{width:2px;flex:1;min-height:16px;background:var(--border);margin-top:4px}
+.tl-done .tl-line{background:rgba(16,185,129,.3)}
+.tl-text{padding-top:4px;font-size:13px;line-height:1.4}
+.tl-text.done-text{color:var(--text);font-weight:500}
+.tl-text.pending-text{color:var(--muted)}
+
+/* ── MOBILE ── */
+@media(max-width:600px){
+  .site-header{padding:0 16px}
+  .main{padding:calc(var(--header-h) + 32px) 16px 48px}
+  .search-box{flex-direction:column}
+  .btn-buscar{width:100%}
+  .card-top{flex-direction:column}
+  .cand-card{padding:18px}
+}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <a href="/vagas" class="header-brand">
+    <div class="header-logo-icon">
+      <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+    </div>
+    <div class="header-brand-text">
+      <div class="header-brand-name">TechRecruit AI</div>
+      <div class="header-brand-slogan">Candidatura inteligente</div>
+    </div>
+  </a>
+  <div class="header-spacer"></div>
+  <a href="/vagas" class="btn-vagas">Ver vagas abertas</a>
+</header>
+
+<main class="main">
+
+  <!-- TELA 1 — BUSCA -->
+  <div class="search-screen" id="tela-busca">
+    <div class="hero-tag">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      Consulta de candidatura
+    </div>
+    <h1>Acompanhe sua<br><span class="grad">Candidatura</span></h1>
+    <p class="search-sub">Digite seu CPF ou e-mail para consultar o status das suas candidaturas.</p>
+    <div class="search-box">
+      <input
+        class="search-input"
+        type="text"
+        id="input-busca"
+        placeholder="CPF (000.000.000-00) ou e-mail"
+        autocomplete="off"
+        inputmode="email"
+      >
+      <button class="btn-buscar" id="btn-buscar" onclick="consultar()">Consultar</button>
+    </div>
+    <div class="loading" id="loading">
+      <div class="spinner"></div>
+      Buscando candidaturas...
+    </div>
+  </div>
+
+  <!-- TELA 2 — ERRO -->
+  <div class="error-screen" id="tela-erro">
+    <div class="error-icon">🔍</div>
+    <h2>Nenhuma candidatura encontrada</h2>
+    <p id="erro-msg">Não encontramos candidaturas com esses dados.<br>Verifique o CPF ou e-mail e tente novamente.</p>
+    <button class="btn-retry" onclick="voltarBusca()">Tentar novamente</button>
+  </div>
+
+  <!-- TELA 3 — RESULTADOS -->
+  <div class="results-screen" id="tela-resultado">
+    <div class="greeting">Olá, <span class="name" id="resultado-nome"></span>!</div>
+    <div class="greeting-sub" id="resultado-sub"></div>
+    <button class="btn-nova-busca" onclick="voltarBusca()">← Nova consulta</button>
+    <div id="lista-candidaturas"></div>
+  </div>
+
+</main>
+
+<script>
+const ENDPOINT = 'https://webhook.danns.com.br/webhook/ats-acompanhar-candidatura';
+
+function mostrar(id) {
+  ['tela-busca','tela-erro','tela-resultado'].forEach(t => {
+    const el = document.getElementById(t);
+    el.style.display = 'none';
+    el.classList.remove('active');
+  });
+  const alvo = document.getElementById(id);
+  alvo.style.display = '';
+  alvo.classList.add('active');
+}
+
+function setLoading(on) {
+  document.getElementById('loading').classList.toggle('active', on);
+  document.getElementById('btn-buscar').disabled = on;
+}
+
+function voltarBusca() {
+  mostrar('tela-busca');
+  document.getElementById('input-busca').focus();
+}
+
+document.getElementById('input-busca').addEventListener('keydown', e => {
+  if (e.key === 'Enter') consultar();
+});
+
+async function consultar() {
+  const raw = document.getElementById('input-busca').value.trim();
+  if (!raw) { document.getElementById('input-busca').focus(); return; }
+
+  const isEmail = raw.includes('@');
+  const param   = isEmail ? 'email=' + encodeURIComponent(raw) : 'cpf=' + encodeURIComponent(raw);
+  const url     = ENDPOINT + '?' + param;
+
+  setLoading(true);
+
+  try {
+    const resp = await fetch(url, { signal: AbortSignal.timeout(15000) });
+    const data = await resp.json();
+
+    setLoading(false);
+
+    if (!data.success || !Array.isArray(data.candidaturas) || data.candidaturas.length === 0) {
+      mostrar('tela-erro');
+      return;
+    }
+
+    renderResultado(data);
+    mostrar('tela-resultado');
+
+  } catch (err) {
+    setLoading(false);
+    mostrar('tela-erro');
+    document.getElementById('erro-msg').textContent = 'Erro ao consultar. Verifique sua conexão e tente novamente.';
+  }
+}
+
+function fmtData(str) {
+  if (!str) return '';
+  const d = new Date(str);
+  if (isNaN(d)) {
+    // tenta formato dd/mm/yyyy ou yyyy-mm-dd bruto
+    const p = str.split(/[-\/T]/);
+    if (p.length >= 3) {
+      const [a, b, c] = str.includes('-') && str.indexOf('-') === 4
+        ? [p[2], p[1], p[0]] : [p[0], p[1], p[2]];
+      return `${String(a).padStart(2,'0')}/${String(b).padStart(2,'0')}/${c}`;
+    }
+    return str;
+  }
+  return d.toLocaleDateString('pt-BR');
+}
+
+function corEtapa(c) {
+  if (!c) return 'etapa-azul';
+  const l = c.toLowerCase();
+  if (l.includes('aprovado') || l.includes('admiss') || l.includes('contrat')) return 'etapa-verde';
+  if (l.includes('reprov') || l.includes('arquiv') || l.includes('encerr') || l.includes('recus')) return 'etapa-vermelha';
+  return 'etapa-azul';
+}
+
+function renderResultado(data) {
+  const nome = data.nome || '';
+  document.getElementById('resultado-nome').textContent = nome;
+  const n = data.candidaturas.length;
+  document.getElementById('resultado-sub').textContent =
+    n === 1 ? 'Encontramos 1 candidatura para você.' : `Encontramos ${n} candidaturas para você.`;
+
+  document.getElementById('lista-candidaturas').innerHTML =
+    data.candidaturas.map(renderCard).join('');
+}
+
+function renderCard(c) {
+  const cor    = corEtapa(c.etapa_atual || c.etapa_label);
+  const icon   = c.etapa_icon || '📋';
+  const label  = c.etapa_label || c.etapa_atual || '—';
+  const score  = c.score != null ? `<span class="score-pill">🤖 Score IA: <strong>${Number(c.score).toFixed(1)}</strong></span>` : '';
+  const data   = fmtData(c.data_candidatura);
+  const dept   = [c.departamento, c.modalidade].filter(Boolean).join(' · ');
+
+  // Entrevista agendada
+  let entrevista = '';
+  if (c.entrevista_agendada) {
+    const e = c.entrevista_agendada;
+    const dataE = fmtData(e.data);
+    const tipo  = e.tipo ? ` · ${e.tipo}` : '';
+    const local = e.local ? `<br><span>Local/Link:</span> ${e.local}` : '';
+    entrevista = `
+      <div class="entrevista-box">
+        <div class="entrevista-icon">📅</div>
+        <div class="entrevista-info">
+          <div class="entrevista-titulo">Entrevista agendada</div>
+          <div class="entrevista-detalhe">
+            <span>Data:</span> ${dataE}${e.hora ? ' às ' + e.hora : ''}${tipo}
+            ${local}
+          </div>
+        </div>
+      </div>`;
+  }
+
+  // Timeline: histórico (concluído) + próximos passos (pendente)
+  const historico     = Array.isArray(c.historico)      ? c.historico      : [];
+  const proxPassos    = Array.isArray(c.proximos_passos) ? c.proximos_passos : [];
+  const todosPassos   = [
+    ...historico.map(h => ({ ...h, feito: h.concluido !== false })),
+    ...proxPassos.map(p => ({ ...p, feito: false })),
+  ];
+
+  let timeline = '';
+  if (todosPassos.length) {
+    const itens = todosPassos.map((p, i) => {
+      const done    = p.feito;
+      const dotCls  = done ? 'tl-dot done' : 'tl-dot pending';
+      const txtCls  = done ? 'tl-text done-text' : 'tl-text pending-text';
+      const icone   = p.icon || (done ? '✅' : '⭕');
+      const isLast  = i === todosPassos.length - 1;
+      return `
+        <div class="tl-item ${done ? 'tl-done' : ''}">
+          <div class="tl-dot-wrap">
+            <div class="${dotCls}">${icone}</div>
+            ${!isLast ? '<div class="tl-line"></div>' : ''}
+          </div>
+          <div class="${txtCls}">${p.label || ''}</div>
+        </div>`;
+    }).join('');
+    timeline = `
+      <div class="timeline-label">Linha do tempo</div>
+      <div class="timeline">${itens}</div>`;
+  }
+
+  return `
+    <div class="cand-card">
+      <div class="card-top">
+        <div>
+          <div class="card-vaga">${c.vaga || 'Vaga'}</div>
+          ${dept ? `<div class="card-dept">${dept}</div>` : ''}
+        </div>
+        ${data ? `<div class="card-data">Candidatura em ${data}</div>` : ''}
+      </div>
+      <div>
+        <span class="etapa-badge ${cor}">${icon} ${label}</span>${score}
+      </div>
+      ${entrevista}
+      ${timeline}
+    </div>`;
+}
+
+// Inicializa mostrando tela de busca
+mostrar('tela-busca');
+</script>
+</body>
+</html>
