@@ -1746,7 +1746,9 @@ async function carregarVagas() {
     const r = await fetch(BASE_URL + '/ats-admin-vagas', { signal: AbortSignal.timeout(8000) });
     if (!r.ok) throw new Error('HTTP ' + r.status);
     const data = await r.json();
+    console.log('[carregarVagas] resposta bruta da API:', data);
     vagas = Array.isArray(data) ? data : (Array.isArray(data.vagas) ? data.vagas : []);
+    if (vagas.length) console.log('[carregarVagas] exemplo de vaga (campo 0):', vagas[0]);
   } catch {
     vagas = [];
     showToast('Erro ao carregar vagas da API.', 'error');
@@ -1895,22 +1897,22 @@ function abrirModalVaga(id) {
     document.getElementById('mv-save').textContent = 'Salvar Alterações';
     // Identificação
     document.getElementById('mv-titulo').value = v.titulo || '';
-    setSelectValue('mv-departamento', v.departamento || '');
+    setSelectValue('mv-departamento', v.departamento || v.area || '');
     setSelectValue('mv-nivel', v.senioridade || v.nivel || '');
     setSelectValue('mv-modalidade', v.modalidade || '');
-    document.getElementById('mv-local').value = v.cidade || v.local || '';
+    document.getElementById('mv-local').value = v.cidade || v.local || v.localizacao || '';
     document.getElementById('mv-status').value = v.status || 'ativa';
-    setSelectValue('mv-contrato', v.tipo_contrato || 'CLT');
+    setSelectValue('mv-contrato', v.tipo_contrato || v.contrato || 'CLT');
     // Empresa
-    document.getElementById('mv-sobre-empresa').value = v.sobre_empresa || '';
-    document.getElementById('mv-valores').value = v.valores_empresa || '';
+    document.getElementById('mv-sobre-empresa').value = v.sobre_empresa || v.sobre || '';
+    document.getElementById('mv-valores').value = v.valores_empresa || v.valores || '';
     // Descrição e requisitos
-    document.getElementById('mv-descricao').value = v.descricao || '';
-    document.getElementById('mv-responsabilidades').value = v.responsabilidades || '';
-    document.getElementById('mv-requisitos-obrig').value = v.requisitos_obrigatorios || '';
-    document.getElementById('mv-requisitos-desej').value = v.requisitos_desejaveis || '';
+    document.getElementById('mv-descricao').value = v.descricao || v.descricao_vaga || '';
+    document.getElementById('mv-responsabilidades').value = v.responsabilidades || v.descricao_responsabilidades || '';
+    document.getElementById('mv-requisitos-obrig').value = v.requisitos_obrigatorios || v.requisitos || '';
+    document.getElementById('mv-requisitos-desej').value = v.requisitos_desejaveis || v.requisitos_desej || '';
     // Stack e competências (array ou string JSON → array de tags)
-    tagData.stack = _parseTagArray(v.stack_tecnica || v.stack);
+    tagData.stack = _parseTagArray(v.stack_tecnica || v.stack || v.tecnologias);
     tagData.comp  = _parseTagArray(v.competencias_comportamentais || v.competencias);
     // Remuneração
     document.getElementById('mv-salario-min').value = Number(v.salario_min) > 0 ? v.salario_min : '';
@@ -1918,12 +1920,12 @@ function abrirModalVaga(id) {
     setSelectValue('mv-mostrar-salario', v.mostrar_salario || 'sim');
     document.getElementById('mv-beneficios').value = v.beneficios || '';
     // Detalhes adicionais
-    document.getElementById('mv-qtd-vagas').value = v.vagas_abertas || 1;
-    document.getElementById('mv-exp-anos').value = v.experiencia_minima_anos || '';
+    document.getElementById('mv-qtd-vagas').value = v.vagas_abertas || v.num_vagas || v.qtd_vagas || 1;
+    document.getElementById('mv-exp-anos').value = v.experiencia_minima_anos || v.experiencia_minima || '';
     setSelectValue('mv-ingles-obrig', v.ingles_obrigatorio ? 'sim' : 'nao');
     setSelectValue('mv-nivel-ingles', v.nivel_ingles_minimo || '');
     document.getElementById('mv-data-limite').value = v.data_limite ? v.data_limite.split('T')[0] : '';
-    document.getElementById('mv-recrutador').value = v.recrutador_responsavel || '';
+    document.getElementById('mv-recrutador').value = v.recrutador_responsavel || v.recrutador || '';
     toggleNivelIngles();
   } else {
     document.getElementById('modal-vaga-title').textContent = 'Nova Vaga';
@@ -1973,35 +1975,75 @@ async function salvarVaga(statusOverride) {
   const isNova = !currentVagaId;
   const vagaExistente = currentVagaId ? (vagas.find(v => v.id === currentVagaId) || {}) : {};
 
+  const _local  = document.getElementById('mv-local').value.trim();
+  const _resp   = document.getElementById('mv-responsabilidades').value.trim();
+  const _reqObr = document.getElementById('mv-requisitos-obrig').value.trim();
+  const _reqDes = document.getElementById('mv-requisitos-desej').value.trim();
+  const _sobre  = document.getElementById('mv-sobre-empresa').value.trim();
+  const _valores = document.getElementById('mv-valores').value.trim();
+  const _benef  = document.getElementById('mv-beneficios').value.trim();
+  const _recru  = document.getElementById('mv-recrutador').value.trim();
+  const _descr  = document.getElementById('mv-descricao').value.trim();
+  const _expAnos = parseInt(document.getElementById('mv-exp-anos').value) || 0;
+  const _qtd    = parseInt(document.getElementById('mv-qtd-vagas').value) || 1;
+  const _salMin = parseFloat(document.getElementById('mv-salario-min').value) || null;
+  const _salMax = parseFloat(document.getElementById('mv-salario-max').value) || null;
+
   const payload = {
     id: currentVagaId || ('v' + Date.now()),
     codigo:     vagaExistente.codigo || '',
     titulo,
     departamento: dept,
+    area: dept,
+    // nivel enviado com ambos os nomes para compatibilidade com a API
     nivel,
+    senioridade: nivel,
     modalidade: modal,
-    local:      document.getElementById('mv-local').value.trim(),
-    descricao:  document.getElementById('mv-descricao').value.trim(),
-    stack:      tagData.stack,
-    competencias: tagData.comp,
+    // cidade/local enviados com ambos os nomes
+    local:      _local,
+    cidade:     _local,
+    localizacao: _local,
+    descricao:  _descr,
+    descricao_vaga: _descr,
+    // stack enviado com ambos os nomes
+    stack:          tagData.stack,
+    stack_tecnica:  tagData.stack,
+    tecnologias:    tagData.stack,
+    // competências enviadas com ambos os nomes
+    competencias:                    tagData.comp,
+    competencias_comportamentais:    tagData.comp,
     status:     statusOverride,
     criado_em:  vagaExistente.criado_em || new Date().toISOString(),
-    sobre_empresa: document.getElementById('mv-sobre-empresa').value.trim(),
-    valores_empresa: document.getElementById('mv-valores').value.trim(),
-    responsabilidades: document.getElementById('mv-responsabilidades').value.trim(),
-    requisitos_obrigatorios: document.getElementById('mv-requisitos-obrig').value.trim(),
-    requisitos_desejaveis: document.getElementById('mv-requisitos-desej').value.trim(),
-    salario_min: parseFloat(document.getElementById('mv-salario-min').value) || null,
-    salario_max: parseFloat(document.getElementById('mv-salario-max').value) || null,
+    // empresa
+    sobre_empresa: _sobre,
+    sobre:         _sobre,
+    valores_empresa: _valores,
+    valores:         _valores,
+    // descrição da vaga
+    responsabilidades:            _resp,
+    descricao_responsabilidades:  _resp,
+    requisitos_obrigatorios:      _reqObr,
+    requisitos:                   _reqObr,
+    requisitos_desejaveis:        _reqDes,
+    requisitos_desej:             _reqDes,
+    // remuneração
+    salario_min:     _salMin,
+    salario_max:     _salMax,
     mostrar_salario: document.getElementById('mv-mostrar-salario').value,
-    beneficios: document.getElementById('mv-beneficios').value.trim(),
-    vagas_abertas: parseInt(document.getElementById('mv-qtd-vagas').value) || 1,
-    tipo_contrato: document.getElementById('mv-contrato').value,
-    experiencia_minima_anos: parseInt(document.getElementById('mv-exp-anos').value) || 0,
-    ingles_obrigatorio: document.getElementById('mv-ingles-obrig').value === 'sim',
-    nivel_ingles_minimo: document.getElementById('mv-nivel-ingles').value,
-    data_limite: document.getElementById('mv-data-limite').value || null,
-    recrutador_responsavel: document.getElementById('mv-recrutador').value.trim(),
+    beneficios:      _benef,
+    // detalhes
+    vagas_abertas:           _qtd,
+    num_vagas:               _qtd,
+    qtd_vagas:               _qtd,
+    tipo_contrato:           document.getElementById('mv-contrato').value,
+    contrato:                document.getElementById('mv-contrato').value,
+    experiencia_minima_anos: _expAnos,
+    experiencia_minima:      _expAnos,
+    ingles_obrigatorio:      document.getElementById('mv-ingles-obrig').value === 'sim',
+    nivel_ingles_minimo:     document.getElementById('mv-nivel-ingles').value,
+    data_limite:             document.getElementById('mv-data-limite').value || null,
+    recrutador_responsavel:  _recru,
+    recrutador:              _recru,
   };
 
   console.log('[salvarVaga] status que será enviado:', payload.status);
