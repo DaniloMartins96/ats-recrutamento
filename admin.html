@@ -1526,7 +1526,26 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
         <div id="dp-dados-content"></div>
       </div>
       <div class="tab-pane" id="dp-tab-docs" style="padding-top:16px">
-        <div id="dp-docs-content"></div>
+        <!-- Sub-painel configurar documentos (inline, oculto por padrão) -->
+        <div id="dp-docs-config-panel" style="display:none;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px">
+          <div style="font-size:13px;font-weight:700;margin-bottom:12px">Selecione os documentos necessários para esta admissão</div>
+          <div id="dp-docs-catalogo-content">
+            <div style="text-align:center;padding:20px;color:var(--muted);font-size:13px">Carregando catálogo...</div>
+          </div>
+          <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap">
+            <button class="btn btn-primary btn-sm" onclick="salvarConfiguracaoDocumentos()">💾 Salvar e Notificar Candidato</button>
+            <button class="btn btn-outline btn-sm" onclick="document.getElementById('dp-docs-config-panel').style.display='none'">Cancelar</button>
+          </div>
+        </div>
+        <!-- Cabeçalho: progresso + botão configurar -->
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:14px">
+          <div id="dp-docs-progress-bar-wrap" style="flex:1;min-width:160px"></div>
+          <button class="btn btn-outline btn-sm" onclick="abrirConfigDocumentos()">⚙️ Configurar Documentos</button>
+        </div>
+        <!-- Lista de documentos enviados -->
+        <div id="dp-docs-content">
+          <div style="text-align:center;padding:24px;color:var(--muted);font-size:13px">Carregue esta aba para ver os documentos.</div>
+        </div>
       </div>
       <div class="tab-pane" id="dp-tab-contrato" style="padding-top:16px">
         <div id="dp-template-info" style="padding:10px 14px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; margin-bottom:12px; font-size:12px; color:var(--muted)">
@@ -3649,27 +3668,10 @@ function abrirModalDP(a) {
       : '<div style="color:var(--muted);font-size:13px;padding:12px 0">Aguardando preenchimento do formulário.</div>';
   }
 
-  const docsRaw = a.documentos || [];
-  const docs = docsRaw.filter((d, i, arr) => arr.findIndex(x => x.id === d.id) === i);
-  document.getElementById('dp-docs-content').innerHTML = docs.length
-    ? docs.map(d => {
-        const [cls, lbl] = d.status === 'aprovado' ? ['badge-green','Aprovado'] : d.status === 'reprovado' ? ['badge-red','Reprovado'] : ['badge-gray','Pendente'];
-        return `
-          <div style="border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin-bottom:8px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-            <div style="flex:1;min-width:140px">
-              <div style="font-weight:600;font-size:13px">${d.nome_documento||d.nome||d.tipo||'—'}</div>
-              ${d.observacao?`<div style="font-size:11px;color:var(--muted);margin-top:2px">${d.observacao}</div>`:''}
-            </div>
-            ${d.url?`<a href="${d.url}" target="_blank" class="btn btn-ghost btn-sm">Ver arquivo</a>`:''}
-            <span class="badge ${cls}">${lbl}</span>
-            ${d.status!=='aprovado'?`<button class="btn btn-primary btn-sm" onclick="aprovarDoc('${d.id}')">✅ Aprovar</button>`:''}
-            ${d.status!=='reprovado'?`<div style="display:flex;gap:6px;align-items:center">
-              <input class="form-input" type="text" id="obs-${d.id}" placeholder="Motivo" style="width:120px;padding:5px 8px;font-size:11px">
-              <button class="btn btn-danger btn-sm" onclick="reprovarDoc('${d.id}')">❌ Reprovar</button>
-            </div>`:''}
-          </div>`;
-      }).join('')
-    : '<div class="empty-state"><p>Nenhum documento enviado ainda.</p></div>';
+  // Docs são carregados sob demanda ao trocar para a aba
+  document.getElementById('dp-docs-content').innerHTML =
+    '<div style="text-align:center;padding:24px;color:var(--muted);font-size:13px">Clique em "Documentos" para carregar.</div>';
+  document.getElementById('dp-docs-progress-bar-wrap').innerHTML = '';
 
   document.getElementById('dp-contrato-text').value = a.contrato_texto || '';
   document.getElementById('dp-btn-admitir').style.display = a.status === 'contrato_gerado' ? '' : 'none';
@@ -3690,6 +3692,10 @@ function switchDPTab(btn, tabId) {
   document.querySelectorAll('#modal-dp .tab-pane').forEach(p => p.classList.remove('active'));
   document.getElementById(tabId).classList.add('active');
   if (tabId === 'dp-tab-contrato') atualizarInfoContratoModal();
+  if (tabId === 'dp-tab-docs') {
+    const admId = window.dpAdmissaoAtual?.admissao_id || window.dpAdmissaoAtual?.id;
+    carregarDocsAdmissao(admId);
+  }
 }
 
 async function atualizarInfoContratoModal() {
@@ -3746,6 +3752,183 @@ async function reprovarDoc(docId) {
     const updated = window.admissoesData.find(x => x.id === admissaoId);
     if (updated) abrirModalDP(updated);
   } catch { showToast('Erro ao reprovar documento.', 'error'); }
+}
+
+// ─── DOCUMENTOS ADMISSÃO ─────────────────────────────────────────
+
+async function carregarDocsAdmissao(admissaoId) {
+  if (!admissaoId) return;
+  const el = document.getElementById('dp-docs-content');
+  if (!el) return;
+  el.innerHTML = '<div style="text-align:center;padding:24px;color:var(--muted);font-size:13px">Carregando documentos...</div>';
+  try {
+    const r    = await fetch(`${BASE_URL}/ats-get-docs-admissao?admissao_id=${admissaoId}&t=${Date.now()}`);
+    const data = await r.json();
+    el.innerHTML = renderListaDocsAdmissao(data, admissaoId);
+    renderProgressoDocsAdmin(data);
+  } catch(e) {
+    console.error('[carregarDocsAdmissao]', e);
+    el.innerHTML = '<div style="color:var(--danger);font-size:13px;text-align:center;padding:20px">Erro ao carregar documentos.</div>';
+  }
+}
+
+function renderProgressoDocsAdmin(data) {
+  const wrap = document.getElementById('dp-docs-progress-bar-wrap');
+  if (!wrap) return;
+  const docs = data.documentos || [];
+  const total = docs.length;
+  if (!total) { wrap.innerHTML = ''; return; }
+  const aprovados = docs.filter(d => d.status_enviado === 'aprovado').length;
+  const pct = Math.round((aprovados / total) * 100);
+  wrap.innerHTML = `<div style="font-size:12px;color:var(--muted);margin-bottom:4px">${aprovados} de ${total} documentos aprovados (${pct}%)</div>
+    <div style="width:180px;height:6px;background:var(--border);border-radius:6px;overflow:hidden">
+      <div style="height:100%;width:${pct}%;background:linear-gradient(90deg,var(--success),var(--accent2));border-radius:6px;transition:width .4s"></div>
+    </div>`;
+}
+
+function renderListaDocsAdmissao(data, admissaoId) {
+  const docs = data.documentos || [];
+  if (!docs.length) return '<div style="color:var(--muted);font-size:13px;text-align:center;padding:20px 0">Nenhum documento configurado. Use "⚙️ Configurar Documentos" para selecionar os necessários.</div>';
+
+  return docs.map(d => {
+    const enviado = d.enviado_id != null;
+    const status  = d.status_enviado || '';
+    let badgeHtml = '';
+    if (!enviado) {
+      badgeHtml = '<span style="padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;background:rgba(255,77,109,.15);color:var(--danger);border:1px solid rgba(255,77,109,.3)">🔴 Pendente</span>';
+    } else if (status === 'aprovado') {
+      badgeHtml = '<span style="padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;background:rgba(16,185,129,.15);color:var(--success);border:1px solid rgba(16,185,129,.3)">🟢 Aprovado</span>';
+    } else if (status === 'rejeitado') {
+      badgeHtml = '<span style="padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;background:rgba(255,77,109,.15);color:var(--danger);border:1px solid rgba(255,77,109,.3)">🔴 Rejeitado</span>';
+    } else {
+      badgeHtml = '<span style="padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;background:rgba(245,158,11,.15);color:var(--warn);border:1px solid rgba(245,158,11,.3)">🟡 Aguardando validação</span>';
+    }
+    const dataEnvio = d.enviado_em ? new Date(d.enviado_em).toLocaleDateString('pt-BR') : '';
+    const rejId  = `rej-adm-${d.enviado_id}`;
+    const obsId  = `obs-adm-${d.enviado_id}`;
+    const acoesHtml = !enviado ? '' : status !== 'aprovado' ? `
+      <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:8px">
+        <button class="btn btn-outline btn-sm" onclick="visualizarDocumento('${d.enviado_id}')">👁️ Visualizar</button>
+        <button class="btn btn-primary btn-sm" onclick="validarDocumentoAdmissao('${d.enviado_id}','aprovado','','${admissaoId}')">✅ Aprovar</button>
+        <button class="btn btn-danger btn-sm" onclick="document.getElementById('${rejId}').style.display=document.getElementById('${rejId}').style.display==='none'?'flex':'none'">❌ Rejeitar</button>
+      </div>
+      <div id="${rejId}" style="display:none;gap:6px;margin-top:6px;align-items:center;flex-wrap:wrap">
+        <input class="form-input" type="text" id="${obsId}" placeholder="Motivo da rejeição" style="flex:1;min-width:140px;padding:5px 8px;font-size:11px">
+        <button class="btn btn-danger btn-sm" onclick="validarDocumentoAdmissao('${d.enviado_id}','rejeitado',document.getElementById('${obsId}').value,'${admissaoId}')">Confirmar</button>
+      </div>` :
+      `<div style="margin-top:8px"><button class="btn btn-outline btn-sm" onclick="visualizarDocumento('${d.enviado_id}')">👁️ Visualizar</button></div>`;
+
+    return `<div style="border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:10px">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap">
+        <div style="flex:1;min-width:160px">
+          <div style="font-weight:600;font-size:13px;margin-bottom:3px">${d.nome || '—'}</div>
+          <div style="font-size:11px;color:var(--muted)">${d.categoria || ''}</div>
+          ${enviado ? `<div style="font-size:11px;color:var(--muted);margin-top:4px">${d.nome_arquivo || ''}${d.tamanho_kb ? ' · ' + d.tamanho_kb + ' KB' : ''}${dataEnvio ? ' · ' + dataEnvio : ''}</div>` : ''}
+          ${status === 'rejeitado' && d.observacao_admin ? `<div style="font-size:12px;color:var(--danger);margin-top:6px">⚠️ ${d.observacao_admin}</div>` : ''}
+        </div>
+        <div>${badgeHtml}</div>
+      </div>
+      ${acoesHtml}
+    </div>`;
+  }).join('');
+}
+
+async function abrirConfigDocumentos() {
+  const panel = document.getElementById('dp-docs-config-panel');
+  if (!panel) return;
+  const isOpen = panel.style.display !== 'none';
+  panel.style.display = isOpen ? 'none' : '';
+  if (isOpen) return;
+
+  const catalogoEl = document.getElementById('dp-docs-catalogo-content');
+  catalogoEl.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);font-size:13px">Carregando catálogo...</div>';
+
+  const admId = window.dpAdmissaoAtual?.admissao_id || window.dpAdmissaoAtual?.id;
+  try {
+    const [rCat, rCfg] = await Promise.all([
+      fetch(`${BASE_URL}/ats-docs-admissao`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ action: 'catalogo' }) }),
+      fetch(`${BASE_URL}/ats-get-docs-admissao?admissao_id=${admId}&t=${Date.now()}`)
+    ]);
+    const [dataCat, dataCfg] = await Promise.all([rCat.json(), rCfg.json()]);
+    const documentos      = dataCat.documentos || dataCat.catalogo || [];
+    const configuradosIds = (dataCfg.documentos || []).map(x => x.documento_id || x.id);
+
+    const LABELS_CAT = {
+      identidade:'🪪 Identidade', trabalhista:'💼 Trabalhista', residencia:'🏠 Residência',
+      pessoal:'👤 Pessoal', civil:'📜 Civil', escolaridade:'🎓 Escolaridade',
+      financeiro:'💰 Financeiro', legal:'⚖️ Legal', dependentes:'👨‍👩‍👧 Dependentes', saude:'🏥 Saúde'
+    };
+    const grupos = {};
+    documentos.forEach(d => { const c = d.categoria || 'outros'; if (!grupos[c]) grupos[c] = []; grupos[c].push(d); });
+
+    catalogoEl.innerHTML = Object.entries(grupos).map(([cat, docs]) => `
+      <div style="margin-bottom:16px">
+        <div style="font-size:11px;font-weight:700;color:var(--accent2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">${LABELS_CAT[cat] || cat}</div>
+        ${docs.map(d => {
+          const checked = configuradosIds.includes(d.id) || d.obrigatorio_padrao;
+          return `<label style="display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:6px;cursor:pointer" onmouseover="this.style.background='var(--surface3)'" onmouseout="this.style.background=''">
+            <input type="checkbox" id="doc-cb-${d.id}" value="${d.id}" ${checked ? 'checked' : ''} style="width:16px;height:16px;accent-color:var(--accent);flex-shrink:0">
+            <div><div style="font-size:13px;font-weight:500">${d.nome}</div>${d.descricao ? `<div style="font-size:11px;color:var(--muted)">${d.descricao}</div>` : ''}</div>
+          </label>`;
+        }).join('')}
+      </div>`).join('') || '<div style="color:var(--muted);font-size:13px">Nenhum documento no catálogo.</div>';
+  } catch(e) {
+    console.error('[abrirConfigDocumentos]', e);
+    catalogoEl.innerHTML = '<div style="color:var(--danger);font-size:13px;padding:10px">Erro ao carregar catálogo.</div>';
+  }
+}
+
+async function salvarConfiguracaoDocumentos() {
+  const admId = window.dpAdmissaoAtual?.admissao_id || window.dpAdmissaoAtual?.id;
+  if (!admId) { showToast('ID da admissão não encontrado.', 'warn'); return; }
+  const documentosIds = Array.from(document.querySelectorAll('#dp-docs-catalogo-content input[type="checkbox"]:checked')).map(cb => parseInt(cb.value));
+  if (!documentosIds.length) { showToast('Selecione ao menos um documento.', 'warn'); return; }
+  try {
+    const r = await fetch(`${BASE_URL}/ats-docs-admissao`, {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ action: 'configurar', admissao_id: admId, documentos_ids: documentosIds })
+    });
+    const data = await r.json();
+    if (data.success === false) throw new Error(data.message || 'Erro');
+    showToast('Documentos configurados e candidato notificado!', 'success');
+    document.getElementById('dp-docs-config-panel').style.display = 'none';
+    carregarDocsAdmissao(admId);
+  } catch(e) {
+    console.error('[salvarConfiguracaoDocumentos]', e);
+    showToast('Erro ao salvar configuração.', 'error');
+  }
+}
+
+async function validarDocumentoAdmissao(documentoEnviadoId, status, observacao, admissaoId) {
+  try {
+    const r = await fetch(`${BASE_URL}/ats-upload-documento`, {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ action: 'validar', documento_enviado_id: documentoEnviadoId, status, observacao: observacao || '' })
+    });
+    const data = await r.json();
+    if (data.success === false) throw new Error();
+    showToast(status === 'aprovado' ? 'Documento aprovado!' : 'Documento rejeitado.', status === 'aprovado' ? 'success' : 'warn');
+    const admId = admissaoId || window.dpAdmissaoAtual?.admissao_id || window.dpAdmissaoAtual?.id;
+    carregarDocsAdmissao(admId);
+  } catch(e) {
+    showToast('Erro ao validar documento.', 'error');
+  }
+}
+
+async function visualizarDocumento(documentoEnviadoId) {
+  console.log('[visualizarDocumento] id:', documentoEnviadoId);
+  alert('Visualização em breve. O endpoint GET /ats-get-arquivo será implementado em breve.');
+}
+
+function base64ToBlob(base64, mimeType) {
+  const byteChars = atob(base64);
+  const byteArrays = [];
+  for (let i = 0; i < byteChars.length; i += 512) {
+    const slice = byteChars.slice(i, i + 512);
+    const byteNumbers = Array.from(slice).map(c => c.charCodeAt(0));
+    byteArrays.push(new Uint8Array(byteNumbers));
+  }
+  return new Blob(byteArrays, { type: mimeType || 'application/octet-stream' });
 }
 
 async function gerarContrato(admissaoId) {

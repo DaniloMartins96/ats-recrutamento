@@ -77,6 +77,12 @@ html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:'In
 .doc-num{width:24px;height:24px;border-radius:50%;background:var(--accent-dim);border:1px solid var(--accent);color:var(--accent2);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .doc-nome{flex:1;font-size:13px;font-weight:500}
 .doc-obs{font-size:11px;color:var(--muted);margin-top:2px}
+/* upload */
+.upload-card{border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:12px}
+.upload-label{display:flex;align-items:center;gap:10px;background:var(--surface2);border:1px dashed var(--border);border-radius:8px;padding:12px;cursor:pointer;margin-bottom:8px;transition:border-color .2s}
+.upload-label:hover{border-color:var(--accent)}
+.btn-upload{display:inline-block;padding:10px 20px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:8px;color:#fff;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;transition:opacity .2s}
+.btn-upload:disabled{opacity:.45;cursor:not-allowed}
 /* scrollbar */
 ::-webkit-scrollbar{width:6px}
 ::-webkit-scrollbar-track{background:transparent}
@@ -252,20 +258,29 @@ html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:'In
 
   </form>
 
-  <!-- SEÇÃO DOCUMENTOS -->
+  <!-- SEÇÃO DOCUMENTOS (upload direto) -->
   <div class="card" id="secao-documentos" style="display:none">
     <div class="section-title">Documentos Obrigatórios</div>
-    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:20px;display:flex;gap:14px;align-items:flex-start">
-      <div style="font-size:22px;flex-shrink:0">📎</div>
-      <div>
-        <div style="font-weight:600;font-size:14px;margin-bottom:4px">Como enviar seus documentos</div>
-        <div style="font-size:13px;color:var(--muted);line-height:1.6">Envie todos os documentos listados abaixo via WhatsApp para o número do RH, junto com o seu <strong style="color:var(--text)">nome completo</strong>. Um profissional irá analisar e confirmar o recebimento.</div>
-        <a id="link-whatsapp-rh" href="#" target="_blank" style="display:inline-flex;align-items:center;gap:8px;margin-top:12px;background:#25d366;color:#fff;padding:10px 16px;border-radius:8px;font-weight:600;font-size:14px;text-decoration:none">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.554 4.116 1.526 5.845L.057 23.617a.75.75 0 0 0 .921.921l5.772-1.469A11.952 11.952 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0m0 21.75a9.721 9.721 0 0 1-5.002-1.386l-.36-.214-3.424.872.888-3.33-.234-.373A9.721 9.721 0 0 1 2.25 12C2.25 6.615 6.615 2.25 12 2.25S21.75 6.615 21.75 12 17.385 21.75 12 21.75"/></svg>
-          Enviar documentos pelo WhatsApp
-        </a>
+
+    <!-- Barra de progresso -->
+    <div id="docs-progress-wrap" style="display:none;margin-bottom:16px">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:6px" id="docs-progress-text">0 de 0 documentos enviados</div>
+      <div style="height:8px;background:var(--surface2);border-radius:6px;overflow:hidden;border:1px solid var(--border)">
+        <div id="docs-progress-bar" style="height:100%;width:0%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:6px;transition:width .4s"></div>
       </div>
     </div>
+
+    <!-- Conclusão -->
+    <div id="docs-concluido" style="display:none;text-align:center;padding:20px 0 10px">
+      <div style="font-size:36px;margin-bottom:8px">✅</div>
+      <div style="font-weight:700;font-size:15px;margin-bottom:6px">Todos os documentos foram enviados!</div>
+      <div style="font-size:13px;color:var(--muted)">Aguarde a validação da equipe de RH.</div>
+    </div>
+
+    <!-- Estado vazio / carregando -->
+    <div id="docs-empty" style="text-align:center;padding:20px;color:var(--muted);font-size:13px">Carregando lista de documentos...</div>
+
+    <!-- Lista de upload -->
     <div id="lista-documentos"></div>
   </div>
 
@@ -381,8 +396,8 @@ document.getElementById('form-admissao').addEventListener('submit', async e => {
     document.getElementById('form-admissao').style.display = 'none';
     document.querySelector('.form-header').style.display = 'none';
     document.getElementById('tela-confirmacao').style.display = 'block';
-    document.getElementById('secao-documentos').style.display = 'block';
     window.scrollTo({ top: 0, behavior: 'smooth' });
+    carregarDocsParaUpload();
   } catch {
     showLoading(false);
     btn.disabled = false;
@@ -391,47 +406,157 @@ document.getElementById('form-admissao').addEventListener('submit', async e => {
   }
 });
 
-// ─── DOCUMENTOS ──────────────────────────────────────────────────
-const RH_WHATSAPP = '5511972901708';
+// ─── DOCUMENTOS (upload direto) ───────────────────────────────────
+const BASE_URL_DOCS = 'https://webhook.danns.com.br/webhook';
 
-const DOCS_OBRIGATORIOS = [
-  { nome: 'RG (Carteira de Identidade)', obs: 'Frente e verso' },
-  { nome: 'CPF', obs: 'Pode ser o próprio RG se constar o CPF' },
-  { nome: 'Carteira de Trabalho (CTPS)', obs: 'Física ou digital (print das páginas de identificação)' },
-  { nome: 'Comprovante de Residência', obs: 'Recente (últimos 3 meses): água, luz, telefone ou gás' },
-  { nome: 'Título de Eleitor', obs: 'Frente e verso' },
-  { nome: 'Foto 3×4 recente', obs: 'Fundo branco, colorida' },
-  { nome: 'Certidão de Nascimento ou Casamento', obs: null },
-  { nome: 'Comprovante de Escolaridade / Diploma', obs: 'Conforme exigido para a vaga' },
-  { nome: 'Cartão PIS/PASEP', obs: 'Se já possuir — caso contrário informe ao RH' },
-  { nome: 'Certificado de Reservista', obs: 'Somente para homens' },
-  { nome: 'Dados Bancários', obs: 'Comprovante ou print do aplicativo com agência e conta' },
-  { nome: 'Exame Médico Admissional', obs: 'Agendado pelo RH — aguarde orientação' },
-];
+async function carregarDocsParaUpload() {
+  const secao = document.getElementById('secao-documentos');
+  if (secao) secao.style.display = 'block';
+  if (!admissaoId) {
+    document.getElementById('docs-empty').textContent = 'Link inválido. Contate o RH.';
+    return;
+  }
+  try {
+    const r    = await fetch(`${BASE_URL_DOCS}/ats-get-docs-admissao?admissao_id=${admissaoId}&t=${Date.now()}`);
+    const data = await r.json();
+    renderDocumentosUpload(data);
+  } catch(e) {
+    const emptyEl = document.getElementById('docs-empty');
+    if (emptyEl) emptyEl.textContent = 'Erro ao carregar documentos. Verifique sua conexão.';
+  }
+}
 
-(function initDocs() {
-  const lista = document.getElementById('lista-documentos');
+function renderDocumentosUpload(data) {
+  const lista         = document.getElementById('lista-documentos');
+  const emptyEl       = document.getElementById('docs-empty');
+  const progressWrap  = document.getElementById('docs-progress-wrap');
+  const progressText  = document.getElementById('docs-progress-text');
+  const progressBar   = document.getElementById('docs-progress-bar');
+  const concluidoEl   = document.getElementById('docs-concluido');
+
+  const docs = data.documentos || [];
+
+  if (!docs.length) {
+    if (emptyEl) emptyEl.textContent = 'Nenhum documento foi solicitado ainda. Aguarde contato do RH.';
+    return;
+  }
+  if (emptyEl) emptyEl.style.display = 'none';
+
+  const total    = docs.length;
+  const enviados = docs.filter(d => d.enviado_id != null).length;
+  const pct      = Math.round((enviados / total) * 100);
+
+  if (progressWrap) progressWrap.style.display = '';
+  if (progressText) progressText.textContent = `${enviados} de ${total} documentos enviados`;
+  if (progressBar)  progressBar.style.width = pct + '%';
+  if (concluidoEl)  concluidoEl.style.display = (enviados === total) ? '' : 'none';
+
   if (!lista) return;
-  lista.innerHTML = DOCS_OBRIGATORIOS.map((d, i) => {
-    const txt = encodeURIComponent(`Olá, estou enviando meu documento: ${d.nome}`);
-    return `
-    <div class="doc-item">
-      <div class="doc-num">${i + 1}</div>
-      <div style="flex:1">
-        <div class="doc-nome">${d.nome}</div>
-        ${d.obs ? `<div class="doc-obs">${d.obs}</div>` : ''}
-      </div>
-      <a href="https://wa.me/${RH_WHATSAPP}?text=${txt}" target="_blank"
-         style="flex-shrink:0;background:#25d366;color:#fff;padding:6px 12px;border-radius:6px;font-size:12px;font-weight:600;text-decoration:none;white-space:nowrap">
-        📤 Enviar
-      </a>
+  lista.innerHTML = docs.map(d => {
+    const enviado  = d.enviado_id != null;
+    const aprovado = d.status_enviado === 'aprovado';
+    const rejeitado = d.status_enviado === 'rejeitado';
+    const pendente  = enviado && !aprovado && !rejeitado;
+    const inputId   = `file-${d.documento_id}`;
+    const previewId = `prev-${d.documento_id}`;
+    const btnId     = `btn-${d.documento_id}`;
+
+    if (aprovado) {
+      return `<div style="display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid rgba(16,185,129,.3);border-radius:10px;margin-bottom:10px;background:rgba(16,185,129,.05)">
+        <div style="font-size:22px;flex-shrink:0">✅</div>
+        <div>
+          <div style="font-weight:600;font-size:13px">${d.nome || '—'}</div>
+          <div style="font-size:11px;color:var(--success)">${d.nome_arquivo || 'Arquivo aprovado'}</div>
+        </div>
+      </div>`;
+    }
+
+    return `<div class="upload-card" id="card-${d.documento_id}">
+      <div style="font-weight:600;font-size:13px;margin-bottom:4px">${d.nome || '—'}</div>
+      ${d.descricao ? `<div style="font-size:11px;color:var(--muted);margin-bottom:8px">${d.descricao}</div>` : ''}
+      ${rejeitado && d.observacao_admin ? `<div style="font-size:12px;color:var(--danger);background:rgba(255,77,109,.1);border:1px solid rgba(255,77,109,.2);border-radius:6px;padding:8px 10px;margin-bottom:10px">
+        ⚠️ Motivo da rejeição: ${d.observacao_admin}<br><span style="color:var(--muted)">Por favor, envie novamente.</span>
+      </div>` : ''}
+      ${pendente ? `<div style="font-size:12px;color:var(--warn);margin-bottom:10px">⏳ Enviado — aguardando validação do RH.</div>` : ''}
+      ${!pendente ? `
+        <label class="upload-label" for="${inputId}">
+          <span style="font-size:20px;flex-shrink:0">📎</span>
+          <div>
+            <div style="font-size:13px;font-weight:500">Selecionar arquivo</div>
+            <div style="font-size:11px;color:var(--muted)">PDF, JPG, PNG ou qualquer formato</div>
+          </div>
+          <input type="file" id="${inputId}" style="display:none" onchange="previewArquivo('${d.documento_id}')">
+        </label>
+        <div id="${previewId}" style="display:none;font-size:12px;color:var(--muted);margin-bottom:8px;padding:6px 10px;background:var(--surface2);border-radius:6px"></div>
+        <button id="${btnId}" class="btn-upload" disabled onclick="enviarDocumento('${d.documento_id}')">📤 Enviar</button>
+      ` : ''}
     </div>`;
   }).join('');
+}
 
-  const link = document.getElementById('link-whatsapp-rh');
-  const txtGeral = encodeURIComponent('Olá, estou enviando meus documentos de admissão.');
-  if (link) link.href = `https://wa.me/${RH_WHATSAPP}?text=${txtGeral}`;
-})();
+function previewArquivo(docId) {
+  const input   = document.getElementById(`file-${docId}`);
+  const preview = document.getElementById(`prev-${docId}`);
+  const btn     = document.getElementById(`btn-${docId}`);
+  if (!input || !input.files.length) return;
+  const file = input.files[0];
+  if (preview) { preview.textContent = `${file.name} (${Math.round(file.size / 1024)} KB)`; preview.style.display = ''; }
+  if (btn) { btn.disabled = false; }
+}
+
+async function enviarDocumento(docId) {
+  const input = document.getElementById(`file-${docId}`);
+  const btn   = document.getElementById(`btn-${docId}`);
+  const card  = document.getElementById(`card-${docId}`);
+  if (!input || !input.files.length) return;
+  const file = input.files[0];
+  const docNome = card ? (card.querySelector('div')?.textContent || file.name) : file.name;
+
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Enviando...'; }
+
+  try {
+    const base64 = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload  = () => resolve(reader.result.split(',')[1]);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+
+    const r = await fetch(`${BASE_URL_DOCS}/ats-upload-documento`, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        action:        'upload',
+        admissao_id:   admissaoId,
+        documento_id:  docId,
+        nome_arquivo:  file.name,
+        tipo_arquivo:  file.type,
+        tamanho_kb:    Math.round(file.size / 1024),
+        arquivo_base64: base64
+      })
+    });
+    const data = await r.json();
+    if (data.success === false) throw new Error(data.message || 'Erro');
+
+    if (card) card.innerHTML = `<div style="display:flex;align-items:center;gap:12px">
+      <div style="font-size:22px">⏳</div>
+      <div>
+        <div style="font-weight:600;font-size:13px;margin-bottom:2px">${docNome}</div>
+        <div style="font-size:12px;color:var(--warn)">${file.name} enviado! Aguardando validação do RH.</div>
+      </div>
+    </div>`;
+
+    setTimeout(() => carregarDocsParaUpload(), 1200);
+  } catch(e) {
+    if (btn) { btn.disabled = false; btn.textContent = '📤 Enviar'; }
+    alert('Erro ao enviar arquivo. Verifique sua conexão e tente novamente.');
+  }
+}
+
+// Carregar docs ao abrir a página (se admissaoId presente)
+if (admissaoId && admissaoId !== 'undefined' && admissaoId !== 'null') {
+  carregarDocsParaUpload();
+}
 </script>
 </body>
 </html>
