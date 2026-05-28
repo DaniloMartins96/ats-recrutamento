@@ -416,23 +416,28 @@ async function carregarDocsParaUpload() {
     document.getElementById('docs-empty').textContent = 'Link inválido. Contate o RH.';
     return;
   }
+  const emptyEl = document.getElementById('docs-empty');
   try {
-    const r    = await fetch(`${BASE_URL_DOCS}/ats-get-docs-admissao?admissao_id=${admissaoId}&t=${Date.now()}`);
-    const data = await r.json();
+    const resp = await fetch(`${BASE_URL_DOCS}/ats-get-docs-admissao?admissao_id=${admissaoId}&t=${Date.now()}`);
+    const text = await resp.text();
+    if (!text || !text.trim()) {
+      if (emptyEl) emptyEl.textContent = 'Nenhum documento foi solicitado ainda. Aguarde contato do RH.';
+      return;
+    }
+    const data = JSON.parse(text);
     renderDocumentosUpload(data);
   } catch(e) {
-    const emptyEl = document.getElementById('docs-empty');
     if (emptyEl) emptyEl.textContent = 'Erro ao carregar documentos. Verifique sua conexão.';
   }
 }
 
 function renderDocumentosUpload(data) {
-  const lista         = document.getElementById('lista-documentos');
-  const emptyEl       = document.getElementById('docs-empty');
-  const progressWrap  = document.getElementById('docs-progress-wrap');
-  const progressText  = document.getElementById('docs-progress-text');
-  const progressBar   = document.getElementById('docs-progress-bar');
-  const concluidoEl   = document.getElementById('docs-concluido');
+  const lista        = document.getElementById('lista-documentos');
+  const emptyEl      = document.getElementById('docs-empty');
+  const progressWrap = document.getElementById('docs-progress-wrap');
+  const progressText = document.getElementById('docs-progress-text');
+  const progressBar  = document.getElementById('docs-progress-bar');
+  const concluidoEl  = document.getElementById('docs-concluido');
 
   const docs = data.documentos || [];
 
@@ -442,25 +447,27 @@ function renderDocumentosUpload(data) {
   }
   if (emptyEl) emptyEl.style.display = 'none';
 
-  const total    = docs.length;
-  const enviados = docs.filter(d => d.enviado_id != null).length;
-  const pct      = Math.round((enviados / total) * 100);
+  const total     = docs.length;
+  const aprovados = docs.filter(d => d.status_enviado === 'aprovado').length;
+  const pct       = Math.round((aprovados / total) * 100);
 
   if (progressWrap) progressWrap.style.display = '';
-  if (progressText) progressText.textContent = `${enviados} de ${total} documentos enviados`;
+  if (progressText) progressText.textContent = `${aprovados} de ${total} documentos aprovados`;
   if (progressBar)  progressBar.style.width = pct + '%';
-  if (concluidoEl)  concluidoEl.style.display = (enviados === total) ? '' : 'none';
+  if (concluidoEl)  concluidoEl.style.display = (aprovados === total && total > 0) ? '' : 'none';
 
   if (!lista) return;
   lista.innerHTML = docs.map(d => {
-    const enviado  = d.enviado_id != null;
-    const aprovado = d.status_enviado === 'aprovado';
-    const rejeitado = d.status_enviado === 'rejeitado';
-    const pendente  = enviado && !aprovado && !rejeitado;
-    const inputId   = `file-${d.documento_id}`;
-    const previewId = `prev-${d.documento_id}`;
-    const btnId     = `btn-${d.documento_id}`;
+    const enviado    = d.enviado_id != null;
+    const aprovado   = d.status_enviado === 'aprovado';
+    const rejeitado  = d.status_enviado === 'rejeitado';
+    const aguardando = enviado && !aprovado && !rejeitado;
+    const showUpload = !enviado || rejeitado;
+    const inputId    = `file-${d.documento_id}`;
+    const previewId  = `prev-${d.documento_id}`;
+    const btnId      = `btn-${d.documento_id}`;
 
+    // ── Aprovado ──
     if (aprovado) {
       return `<div style="display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid rgba(16,185,129,.3);border-radius:10px;margin-bottom:10px;background:rgba(16,185,129,.05)">
         <div style="font-size:22px;flex-shrink:0">✅</div>
@@ -474,21 +481,36 @@ function renderDocumentosUpload(data) {
     return `<div class="upload-card" id="card-${d.documento_id}">
       <div style="font-weight:600;font-size:13px;margin-bottom:4px">${d.nome || '—'}</div>
       ${d.descricao ? `<div style="font-size:11px;color:var(--muted);margin-bottom:8px">${d.descricao}</div>` : ''}
-      ${rejeitado && d.observacao_admin ? `<div style="font-size:12px;color:var(--danger);background:rgba(255,77,109,.1);border:1px solid rgba(255,77,109,.2);border-radius:6px;padding:8px 10px;margin-bottom:10px">
-        ⚠️ Motivo da rejeição: ${d.observacao_admin}<br><span style="color:var(--muted)">Por favor, envie novamente.</span>
-      </div>` : ''}
-      ${pendente ? `<div style="font-size:12px;color:var(--warn);margin-bottom:10px">⏳ Enviado — aguardando validação do RH.</div>` : ''}
-      ${!pendente ? `
+
+      ${rejeitado ? `
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap">
+          <span style="padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;background:rgba(255,77,109,.15);color:var(--danger);border:1px solid rgba(255,77,109,.3)">❌ Rejeitado</span>
+          ${d.nome_arquivo ? `<span style="font-size:11px;color:var(--muted)">${d.nome_arquivo}</span>` : ''}
+        </div>
+        <div style="font-size:12px;color:var(--danger);background:rgba(255,77,109,.08);border:1px solid rgba(255,77,109,.2);border-radius:6px;padding:8px 10px;margin-bottom:12px">
+          ${d.observacao_admin ? `⚠️ Motivo da rejeição: ${d.observacao_admin}<br>` : ''}
+          <span style="color:var(--muted)">Por favor, selecione o arquivo correto e reenvie.</span>
+        </div>
+      ` : ''}
+
+      ${aguardando ? `
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap">
+          <span style="padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;background:rgba(245,158,11,.15);color:var(--warn);border:1px solid rgba(245,158,11,.3)">⏳ Aguardando aprovação</span>
+          ${d.nome_arquivo ? `<span style="font-size:11px;color:var(--muted)">${d.nome_arquivo}</span>` : ''}
+        </div>
+      ` : ''}
+
+      ${showUpload ? `
         <label class="upload-label" for="${inputId}">
           <span style="font-size:20px;flex-shrink:0">📎</span>
           <div>
-            <div style="font-size:13px;font-weight:500">Selecionar arquivo</div>
+            <div style="font-size:13px;font-weight:500">${rejeitado ? 'Selecionar novo arquivo' : 'Selecionar arquivo'}</div>
             <div style="font-size:11px;color:var(--muted)">PDF, JPG, PNG ou qualquer formato</div>
           </div>
           <input type="file" id="${inputId}" style="display:none" onchange="previewArquivo('${d.documento_id}')">
         </label>
         <div id="${previewId}" style="display:none;font-size:12px;color:var(--muted);margin-bottom:8px;padding:6px 10px;background:var(--surface2);border-radius:6px"></div>
-        <button id="${btnId}" class="btn-upload" disabled onclick="enviarDocumento('${d.documento_id}')">📤 Enviar</button>
+        <button id="${btnId}" class="btn-upload" disabled onclick="enviarDocumento('${d.documento_id}')">${rejeitado ? '📤 Reenviar documento' : '📤 Enviar'}</button>
       ` : ''}
     </div>`;
   }).join('');
@@ -535,7 +557,8 @@ async function enviarDocumento(docId) {
         arquivo_base64: base64
       })
     });
-    const data = await r.json();
+    const respText = await r.text();
+    const data = respText ? JSON.parse(respText) : {};
     if (data.success === false) throw new Error(data.message || 'Erro');
 
     if (card) card.innerHTML = `<div style="display:flex;align-items:center;gap:12px">
