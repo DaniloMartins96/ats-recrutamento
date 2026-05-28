@@ -416,7 +416,7 @@ function preencherFormulario(admissao) {
   const enderecoCompleto = partes.filter(p => p != null && p !== '').join(', ');
 
   const campos = {
-    'f-nome':         admissao.nome_completo || admissao.nome,
+    'f-nome':         admissao.nome_completo || admissao.nome || admissao.candidato?.nome || '',
     'f-cpf':          admissao.cpf,
     'f-rg':           admissao.rg,
     'f-nascimento':   fmtData(admissao.data_nascimento),
