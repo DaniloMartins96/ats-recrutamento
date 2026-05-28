@@ -3073,21 +3073,16 @@ async function carregarDadosCandidatura(candidaturaId) {
   const id  = candidaturaId || currentCandidaturaId;
   const el  = document.getElementById('so-candidatura-content');
   if (!el || !id) return;
-  if (_candidaturaCarregadaId === id) return; // já renderizado
+  if (_candidaturaCarregadaId === id) return; // já renderizado nesta sessão
 
   el.innerHTML = '<div style="text-align:center;padding:32px 0;color:var(--muted);font-size:13px">Carregando dados da candidatura...</div>';
 
-  // Usa cache da triagem se já disponível (carregada pelo tab Perfil Completo)
-  if (_triagemCache[id]) {
-    el.innerHTML = renderDadosCandidatura(id, _triagemCache[id]);
-    _candidaturaCarregadaId = id;
-    return;
-  }
-
+  // Sempre faz fetch próprio — não reutiliza _triagemCache pois esse pode ter
+  // sido populado pelo tab Perfil Completo com estrutura parcial diferente
   try {
     const r    = await fetch(`${BASE_URL}/ats-perfil-candidato?candidatura_id=${id}&t=${Date.now()}`);
     const data = await r.json();
-    _triagemCache[id] = data;
+    console.log('[candidatura] dados recebidos:', JSON.stringify(data));
     _candidaturaCarregadaId = id;
     const elNow = document.getElementById('so-candidatura-content');
     if (elNow) elNow.innerHTML = renderDadosCandidatura(id, data);
