@@ -347,6 +347,23 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
 /* divider */
 .divider{height:1px;background:var(--border);margin:20px 0}
 
+/* dp section tabs */
+.dp-tab-bar{display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:1.25rem}
+.dp-tab-btn{background:transparent;border:none;border-bottom:3px solid transparent;margin-bottom:-2px;padding:0.75rem 1.25rem;cursor:pointer;font-size:0.875rem;font-weight:600;color:var(--muted);font-family:inherit;transition:all .15s;display:flex;align-items:center;gap:0.5rem}
+.dp-tab-btn:hover{color:var(--accent2)}
+.dp-tab-btn.active{color:var(--accent);border-bottom-color:var(--accent)}
+.dp-tab-cnt{background:var(--surface2);border-radius:10px;padding:2px 8px;font-size:0.75rem;font-weight:700;min-width:20px;text-align:center;transition:all .15s}
+.dp-tab-btn.active .dp-tab-cnt{background:var(--accent);color:#fff}
+.dp-func-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem;padding:0.25rem 0}
+.dp-func-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1rem 1.25rem;display:flex;align-items:center;gap:1rem;transition:border-color .15s}
+.dp-func-card:hover{border-color:var(--accent2)}
+.dp-func-avatar{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1rem;color:#fff;flex-shrink:0}
+.dp-func-info{flex:1;min-width:0}
+.dp-func-nome{font-weight:700;font-size:0.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dp-func-cargo{font-size:0.78rem;color:var(--muted);margin-top:2px}
+.dp-func-depto{font-size:0.75rem;margin-top:4px}
+.dp-func-data{font-size:0.72rem;color:var(--muted);margin-top:3px}
+
 /* scrollbar */
 ::-webkit-scrollbar{width:6px}
 ::-webkit-scrollbar-track{background:transparent}
@@ -765,11 +782,16 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
         </button>
       </div>
       <div class="stats-row" id="dp-stats"></div>
+      <div class="dp-tab-bar">
+        <button class="dp-tab-btn active" id="dp-tab-btn-em_processo" onclick="dpMudarAba('em_processo', this)">Em Processo <span class="dp-tab-cnt" id="dp-cnt-em_processo">0</span></button>
+        <button class="dp-tab-btn" id="dp-tab-btn-aguardando_assinatura" onclick="dpMudarAba('aguardando_assinatura', this)">Aguardando Assinatura <span class="dp-tab-cnt" id="dp-cnt-aguardando_assinatura">0</span></button>
+        <button class="dp-tab-btn" id="dp-tab-btn-funcionarios" onclick="dpMudarAba('funcionarios', this)">Funcionários ✅ <span class="dp-tab-cnt" id="dp-cnt-funcionarios">0</span></button>
+      </div>
       <div class="table-wrap">
         <div class="table-toolbar">
-          <input class="search-input" type="text" id="dp-search" placeholder="Buscar admissões..." oninput="renderDP()">
+          <input class="search-input" type="text" id="dp-search" placeholder="Buscar..." oninput="renderDP()">
         </div>
-        <div id="dp-table-body"><div class="empty-state"><p>Selecione a aba para carregar as admissões.</p></div></div>
+        <div id="dp-table-body"><div class="empty-state"><p>Carregando admissões...</p></div></div>
       </div>
     </section>
 
@@ -3567,68 +3589,139 @@ async function carregarDP() {
   renderDP();
 }
 
+var dpAbaAtual = 'em_processo';
+
+function dpMudarAba(aba, btn) {
+  dpAbaAtual = aba;
+  document.querySelectorAll('.dp-tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderDP();
+}
+
 function renderDP() {
   const q = (document.getElementById('dp-search')?.value || '').toLowerCase();
-  const filtered = admissoes.filter(a =>
-    (a.candidato_nome || '').toLowerCase().includes(q) ||
-    (a.vaga || '').toLowerCase().includes(q)
-  );
+  const STATUS_EM_PROCESSO        = ['formulario_enviado','formulario_preenchido','aguardando_documentos','documentos_pendentes','documentos_ok'];
+  const STATUS_AGUARDANDO_ASSIN   = ['contrato_gerado'];
+  const STATUS_FUNCIONARIOS       = ['admitido'];
 
-  const total      = admissoes.length;
-  const aguardando = admissoes.filter(a => a.status === 'formulario_enviado').length;
-  const pendentes  = admissoes.filter(a => a.status === 'documentos_pendentes').length;
-  const admitidos  = admissoes.filter(a => a.status === 'admitido').length;
+  const match = a => (a.candidato_nome||'').toLowerCase().includes(q) || (a.vaga||'').toLowerCase().includes(q);
 
+  const emProcesso      = admissoes.filter(a => STATUS_EM_PROCESSO.includes(a.status));
+  const aguardandoAssin = admissoes.filter(a => STATUS_AGUARDANDO_ASSIN.includes(a.status));
+  const funcionarios    = admissoes.filter(a => STATUS_FUNCIONARIOS.includes(a.status));
+
+  // Atualiza contadores nas abas
+  const setCount = (id, n) => { const el = document.getElementById(id); if (el) el.textContent = n; };
+  setCount('dp-cnt-em_processo',          emProcesso.length);
+  setCount('dp-cnt-aguardando_assinatura', aguardandoAssin.length);
+  setCount('dp-cnt-funcionarios',          funcionarios.length);
+
+  // KPIs
   const dpStats = document.getElementById('dp-stats');
   if (dpStats) dpStats.innerHTML = `
-    <div class="stat-card"><div class="stat-value">${total}</div><div class="stat-label">Total de Admissões</div></div>
-    <div class="stat-card"><div class="stat-value">${aguardando}</div><div class="stat-label">Aguardando Formulário</div></div>
-    <div class="stat-card"><div class="stat-value">${pendentes}</div><div class="stat-label">Documentos Pendentes</div></div>
-    <div class="stat-card"><div class="stat-value">${admitidos}</div><div class="stat-label">Admitidos</div></div>
+    <div class="stat-card"><div class="stat-value">${admissoes.length}</div><div class="stat-label">Total de Admissões</div></div>
+    <div class="stat-card"><div class="stat-value">${emProcesso.length}</div><div class="stat-label">Em Processo</div></div>
+    <div class="stat-card"><div class="stat-value">${aguardandoAssin.length}</div><div class="stat-label">Aguardando Assinatura</div></div>
+    <div class="stat-card"><div class="stat-value">${funcionarios.length}</div><div class="stat-label">Funcionários</div></div>
   `;
 
   const tbody = document.getElementById('dp-table-body');
-  if (!filtered.length) {
-    tbody.innerHTML = '<div class="empty-state"><p>Nenhuma admissão encontrada.</p></div>';
-    return;
-  }
+  if (!tbody) return;
 
+  if (dpAbaAtual === 'em_processo') {
+    _renderDP_emProcesso(emProcesso.filter(match), tbody);
+  } else if (dpAbaAtual === 'aguardando_assinatura') {
+    _renderDP_aguardandoAssinatura(aguardandoAssin.filter(match), tbody);
+  } else {
+    _renderDP_funcionarios(funcionarios.filter(match), tbody);
+  }
+}
+
+function _renderDP_emProcesso(lista, tbody) {
+  if (!lista.length) { tbody.innerHTML = '<div class="empty-state"><p>Nenhuma admissão em processo.</p></div>'; return; }
   const statusMap = {
     formulario_enviado:   ['badge-blue',   'Formulário Enviado'],
-    formulario_preenchido:['badge-yellow',  'Form. Preenchido'],
-    documentos_pendentes: ['badge-red',    'Docs. Pendentes'],
-    documentos_ok:        ['badge-green',  'Docs. OK'],
-    contrato_gerado:      ['badge-purple', 'Contrato Gerado'],
-    admitido:             ['badge-green',  'Admitido'],
+    formulario_preenchido:['badge-yellow', 'Form. Preenchido'],
+    aguardando_documentos:['badge-yellow', 'Aguard. Documentos'],
+    documentos_pendentes: ['badge-red',   'Docs. Pendentes'],
+    documentos_ok:        ['badge-green', 'Docs. OK'],
   };
-
   tbody.innerHTML = `
     <table>
-      <thead><tr>
-        <th>Candidato</th><th>Vaga</th><th>Status</th><th>Docs</th><th>Data Liberação</th><th></th>
-      </tr></thead>
+      <thead><tr><th>Candidato</th><th>Vaga</th><th>Status</th><th>Docs</th><th>Data Liberação</th><th></th></tr></thead>
       <tbody>
-        ${filtered.map((a) => {
+        ${lista.map(a => {
           const [cls, lbl] = statusMap[a.status] || ['badge-gray', a.status || '—'];
           const docs = a.documentos || [];
           const docsAprov = docs.filter(d => d.status === 'aprovado').length;
           const dataLib = a.data_liberacao ? new Date(a.data_liberacao).toLocaleDateString('pt-BR') : '—';
           const idx = window.admissoesData.indexOf(a);
-          return `
-          <tr onclick="abrirModalDP(window.admissoesData[${idx}])">
+          return `<tr onclick="abrirModalDP(window.admissoesData[${idx}])">
             <td><div style="font-weight:600">${a.candidato_nome||'—'}</div><div style="font-size:11px;color:var(--muted)">${a.email||''}</div></td>
             <td style="font-size:12px">${a.vaga||'—'}</td>
             <td><span class="badge ${cls}">${lbl}</span></td>
             <td style="font-size:12px">${docs.length ? docsAprov+'/'+docs.length : '—'}</td>
             <td style="font-size:12px;color:var(--muted)">${dataLib}</td>
+            <td onclick="event.stopPropagation()"><button class="btn btn-ghost btn-sm" onclick="abrirModalDP(window.admissoesData[${idx}])">Ver</button></td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>`;
+}
+
+function _renderDP_aguardandoAssinatura(lista, tbody) {
+  if (!lista.length) { tbody.innerHTML = '<div class="empty-state"><p>Nenhum candidato aguardando assinatura.</p></div>'; return; }
+  tbody.innerHTML = `
+    <table>
+      <thead><tr><th>Candidato</th><th>Vaga</th><th>Contrato Gerado</th><th></th></tr></thead>
+      <tbody>
+        ${lista.map(a => {
+          const dataContrato = a.data_contrato || a.updated_at || a.data_liberacao;
+          const dataFmt = dataContrato ? new Date(dataContrato).toLocaleDateString('pt-BR') : '—';
+          const idx = window.admissoesData.indexOf(a);
+          return `<tr>
+            <td><div style="font-weight:600">${a.candidato_nome||'—'}</div><div style="font-size:11px;color:var(--muted)">${a.email||''}</div></td>
+            <td style="font-size:12px">${a.vaga||'—'}</td>
+            <td style="font-size:12px;color:var(--muted)">${dataFmt}</td>
             <td onclick="event.stopPropagation()">
-              <button class="btn btn-ghost btn-sm" onclick="abrirModalDP(window.admissoesData[${idx}])">Ver</button>
+              <div style="display:flex;gap:0.5rem;justify-content:flex-end">
+                <button class="btn btn-ghost btn-sm" onclick="abrirModalDP(window.admissoesData[${idx}])">Ver</button>
+                <button class="btn btn-primary btn-sm" onclick="confirmarAdmissaoLista(window.admissoesData[${idx}])">✅ Confirmar Admissão</button>
+              </div>
             </td>
           </tr>`;
         }).join('')}
       </tbody>
-    </table>
-  `;
+    </table>`;
+}
+
+function _renderDP_funcionarios(lista, tbody) {
+  if (!lista.length) { tbody.innerHTML = '<div class="empty-state"><p>Nenhum funcionário admitido ainda.</p></div>'; return; }
+  tbody.innerHTML = `<div class="dp-func-grid">
+    ${lista.map(a => {
+      const inicial = (a.candidato_nome||'?')[0].toUpperCase();
+      const dataAdm = a.data_admissao || a.updated_at || a.data_liberacao;
+      const dataFmt = dataAdm ? new Date(dataAdm).toLocaleDateString('pt-BR') : '—';
+      const idx = window.admissoesData.indexOf(a);
+      return `<div class="dp-func-card">
+        <div class="dp-func-avatar">${inicial}</div>
+        <div class="dp-func-info">
+          <div class="dp-func-nome">${a.candidato_nome||'—'}</div>
+          <div class="dp-func-cargo">${a.vaga||'—'}</div>
+          ${a.departamento ? `<div class="dp-func-depto"><span class="badge badge-purple" style="font-size:0.7rem">${a.departamento}</span></div>` : ''}
+          <div class="dp-func-data">Admitido em ${dataFmt}</div>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="abrirModalDP(window.admissoesData[${idx}])" title="Ver Ficha">👁️</button>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+async function confirmarAdmissaoLista(a) {
+  if (!a) return;
+  window.dpAdmissaoAtual = a;
+  window._admissaoIdAtual = a.admissao_id || a.id;
+  await confirmarAdmissao(a.admissao_id || a.id);
 }
 
 function abrirModalDP(a) {
@@ -4027,6 +4120,10 @@ async function confirmarAdmissao(admissaoId) {
     if (!r.ok) throw new Error();
     showToast('Admissão confirmada! 🎉', 'success');
     fecharModalDP();
+    dpAbaAtual = 'funcionarios';
+    document.querySelectorAll('.dp-tab-btn').forEach(b => b.classList.remove('active'));
+    const btnFunc = document.getElementById('dp-tab-btn-funcionarios');
+    if (btnFunc) btnFunc.classList.add('active');
     await carregarDP();
   } catch { showToast('Erro ao confirmar admissão.', 'error'); }
 }
