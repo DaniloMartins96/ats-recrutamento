@@ -4226,13 +4226,14 @@ async function docsAdmissao_salvarConfig(admissaoId) {
       if (listaContainer) docsAdmissao_carregar(admissaoId, listaContainer);
       showToast('Documentos configurados! O candidato será notificado.', 'success');
       var _adm = window.dpAdmissaoAtual || {};
+      console.log('[email admissao_liberada] dados da admissão:', _adm);
       fetch(EMAIL_URL, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({
         tipo: 'admissao_liberada',
         nome: _adm.candidato_nome || _adm.nome || '',
-        email: _adm.email || '',
-        vaga: _adm.vaga || '',
-        candidatura_id: _adm.candidatura_id || '',
-        link_admissao: 'https://ats.danns.com.br/admissao?id=' + admissaoId
+        email: _adm.email || _adm.candidato_email || '',
+        vaga: _adm.vaga_titulo || _adm.vaga || '',
+        candidatura_id: _adm.candidatura_id || _adm.id || '',
+        link_admissao: 'https://ats.danns.com.br/admissao?id=' + (_adm.admissao_id || _adm.id || admissaoId)
       }) }).catch(function() {});
     } else {
       alert('Erro ao salvar: ' + (data.message || 'Tente novamente.'));
@@ -4526,6 +4527,16 @@ async function confirmarEnviarTeste() {
       if (!r.ok) throw new Error();
       fecharModalEnviarTeste();
       showToast('🧠 Avaliação enviada ao candidato!', 'success');
+      const _candAval = candidatos.find(x => (x.candidatura_id || x.candidato_id) === _enviarTesteParaCandidatura) || {};
+      fetch(EMAIL_URL, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({
+        tipo: 'teste_enviado',
+        nome: _candAval.nome || '',
+        email: _candAval.email || '',
+        vaga: _candAval.vaga_titulo || '',
+        candidatura_id: _enviarTesteParaCandidatura || '',
+        link_teste: '',
+        prazo: '48 horas'
+      }) }).catch(() => {});
     }
   } catch {
     showToast('Erro ao enviar. Tente novamente.', 'error');
@@ -4596,6 +4607,16 @@ async function enviarAvalSugestao(candidaturaId, btn) {
     btn.textContent = '✅ Enviado';
     btn.style.background = 'var(--success)';
     showToast('✅ Avaliação enviada via WhatsApp!', 'success');
+    const _candSug = candidatos.find(x => (x.candidatura_id || x.candidato_id) === candidaturaId) || {};
+    fetch(EMAIL_URL, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({
+      tipo: 'teste_enviado',
+      nome: _candSug.nome || '',
+      email: _candSug.email || '',
+      vaga: _candSug.vaga_titulo || '',
+      candidatura_id: candidaturaId || '',
+      link_teste: '',
+      prazo: '48 horas'
+    }) }).catch(() => {});
   } catch {
     btn.disabled = false; btn.textContent = 'Enviar';
     showToast('Erro ao enviar avaliação.', 'error');
