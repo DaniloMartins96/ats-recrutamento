@@ -1642,7 +1642,8 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
 
 <script>
 // ─── CONSTANTS ───────────────────────────────────────────────────
-const BASE_URL = 'https://webhook.danns.com.br/webhook';
+const BASE_URL   = 'https://webhook.danns.com.br/webhook';
+const EMAIL_URL  = 'https://webhook.danns.com.br/webhook/ats-enviar-email';
 const WF40_URL = 'https://webhook.danns.com.br/webhook/ats-docs-admissao';
 const WF42_URL = 'https://webhook.danns.com.br/webhook/ats-get-docs-admissao';
 
@@ -3541,6 +3542,13 @@ async function rejeitarCandidato(candidaturaId) {
     showToast('Candidato reprovado.', 'error');
     console.log('Enviando WhatsApp reprovado para candidatura:', candidaturaId);
     fetch('https://webhook.danns.com.br/webhook/ats-whatsapp-reprovado', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ candidatura_id: String(candidaturaId) }) });
+    fetch(EMAIL_URL, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({
+      tipo: 'reprovado',
+      nome: cand?.nome || '',
+      email: cand?.email || '',
+      vaga: cand?.vaga_titulo || '',
+      candidatura_id: candidaturaId
+    }) }).catch(() => {});
   } catch { showToast('Erro ao rejeitar candidato.', 'error'); }
 }
 
@@ -3613,6 +3621,17 @@ async function confirmarAgendamento() {
     calcularRankings();
     renderCandidatos();
     showToast('Entrevista agendada!', 'success');
+    fetch(EMAIL_URL, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({
+      tipo: 'entrevista_agendada',
+      nome: cand?.nome || '',
+      email: cand?.email || '',
+      vaga: cand?.vaga_titulo || '',
+      candidatura_id: candidaturaId,
+      data_entrevista: dataFormatada,
+      hora: hora,
+      tipo_entrevista: tipo,
+      local: local
+    }) }).catch(() => {});
   } catch { showToast('Erro ao agendar entrevista.', 'error'); }
 }
 
@@ -4206,6 +4225,15 @@ async function docsAdmissao_salvarConfig(admissaoId) {
       var listaContainer = document.getElementById('docs-lista-container');
       if (listaContainer) docsAdmissao_carregar(admissaoId, listaContainer);
       showToast('Documentos configurados! O candidato será notificado.', 'success');
+      var _adm = window.dpAdmissaoAtual || {};
+      fetch(EMAIL_URL, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({
+        tipo: 'admissao_liberada',
+        nome: _adm.candidato_nome || _adm.nome || '',
+        email: _adm.email || '',
+        vaga: _adm.vaga || '',
+        candidatura_id: _adm.candidatura_id || '',
+        link_admissao: 'https://ats.danns.com.br/admissao?id=' + admissaoId
+      }) }).catch(function() {});
     } else {
       alert('Erro ao salvar: ' + (data.message || 'Tente novamente.'));
     }
@@ -4473,8 +4501,19 @@ async function confirmarEnviarTeste() {
         body: JSON.stringify({ candidatura_id: _enviarTesteParaCandidatura, teste_id: testeId })
       });
       if (!r.ok) throw new Error();
+      const rTeste = await r.json().catch(() => ({}));
       fecharModalEnviarTeste();
       showToast('🧪 Teste enviado ao candidato!', 'success');
+      const _candTeste = candidatos.find(x => (x.candidatura_id || x.candidato_id) === _enviarTesteParaCandidatura) || {};
+      fetch(EMAIL_URL, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({
+        tipo: 'teste_enviado',
+        nome: _candTeste.nome || '',
+        email: _candTeste.email || '',
+        vaga: _candTeste.vaga_titulo || '',
+        candidatura_id: _enviarTesteParaCandidatura,
+        link_teste: rTeste.link || rTeste.link_teste || '',
+        prazo: '48 horas'
+      }) }).catch(() => {});
     } else {
       const sel  = document.getElementById('enviar-aval-lista');
       const tipo = sel.options[sel.selectedIndex]?.dataset?.tipo || sel.value;
