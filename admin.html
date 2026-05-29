@@ -4476,9 +4476,9 @@ async function enviarTeste(candidaturaId) {
   try {
     const r    = await fetch(BASE_URL + '/ats-testes-lista');
     const data = await r.json();
-    const arr  = Array.isArray(data) ? data : (data.testes || []);
+    const arr  = Array.isArray(data) ? data : (data.testes_tecnicos || data.testes || []);
     lista.innerHTML = arr.length
-      ? '<option value="">Selecione um teste...</option>' + arr.map(t => `<option value="${t.id}">${t.titulo}</option>`).join('')
+      ? '<option value="">Selecione um teste...</option>' + arr.map(t => `<option value="${t.id}">${t.titulo}${(t.total_perguntas != null && Number(t.total_perguntas) === 0) ? ' (sem perguntas)' : ''}</option>`).join('')
       : '<option value="">Nenhum teste criado ainda</option>';
   } catch {
     lista.innerHTML = '<option value="">Erro ao carregar testes</option>';
