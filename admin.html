@@ -4789,15 +4789,42 @@ function _vtRenderRespostas(respostas, perguntas, esc) {
   if (!esc) esc = s => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   if (!respostas.length) return '<div style="font-size:13px;color:var(--muted);padding:8px 0">Sem respostas registradas.</div>';
   return respostas.map(r => {
-    const perg    = perguntas.find(p => String(p.id) === String(r.pergunta_id)) || {};
-    const isMulti = perg.tipo !== 'dissertativa';
-    const resp    = r.opcao_escolhida || r.resposta_texto || '—';
-    const icone   = isMulti ? (r.correta === true ? '✅' : r.correta === false ? '❌' : '•') : '📝';
-    const ptsH    = r.pontos != null ? `<span style="font-size:11px;color:var(--muted);margin-left:8px">${r.pontos} pt</span>` : '';
-    const enunciado = perg.enunciado ? esc(String(perg.enunciado).slice(0, 100)) + (perg.enunciado.length > 100 ? '…' : '') : '';
-    return `<div style="padding:8px 0;border-bottom:1px solid var(--border)">
-      ${enunciado ? `<div style="font-size:11px;font-weight:600;color:var(--muted);margin-bottom:4px">${enunciado}</div>` : ''}
-      <div style="font-size:13px;color:var(--text)">${icone} ${esc(String(resp))}${ptsH}</div>
+    const perg     = perguntas.find(p => String(p.id) === String(r.pergunta_id)) || {};
+    const isMulti  = perg.tipo !== 'dissertativa';
+    const respRaw  = r.resposta_candidato ?? '—';
+    const enunciado = perg.enunciado ? esc(String(perg.enunciado).slice(0, 120)) + (perg.enunciado.length > 120 ? '…' : '') : '';
+
+    let respostaHtml = '';
+    if (isMulti) {
+      // Para múltipla escolha: mostrar letra + texto da opção se disponível
+      const letra     = String(respRaw).toUpperCase();
+      const textoOpc  = (perg.opcoes && perg.opcoes[letra]) ? ` — ${esc(perg.opcoes[letra])}` : '';
+      const icone     = r.correta === true ? '✅' : r.correta === false ? '❌' : '•';
+      const corColor  = r.correta === true ? '#10b981' : r.correta === false ? 'var(--danger)' : 'var(--text)';
+      respostaHtml = `<div style="font-size:13px;color:${corColor};margin-bottom:4px">${icone} <strong>${esc(respRaw)}</strong>${textoOpc}</div>`;
+      // Gabarito correto
+      if (perg.resposta_correta) {
+        const gabLetra = String(perg.resposta_correta).toUpperCase();
+        const gabTexto = (perg.opcoes && perg.opcoes[gabLetra]) ? esc(perg.opcoes[gabLetra]) : '';
+        respostaHtml += `<div style="font-size:11px;color:var(--muted)">Gabarito: <span style="color:#10b981;font-weight:600">${gabLetra}${gabTexto ? ' — ' + gabTexto : ''}</span></div>`;
+      }
+    } else {
+      // Para dissertativa: texto livre + nota IA + feedback
+      respostaHtml = `<div style="font-size:13px;color:var(--text);white-space:pre-wrap;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:8px 10px;margin-bottom:6px">📝 ${esc(String(respRaw))}</div>`;
+      if (r.score_ia != null) {
+        respostaHtml += `<div style="font-size:11px;color:var(--accent2);margin-bottom:3px;font-weight:600">Nota IA: ${Number(r.score_ia).toFixed(1)}/10</div>`;
+      }
+      if (r.feedback_ia) {
+        respostaHtml += `<div style="font-size:12px;color:var(--muted);font-style:italic">${esc(r.feedback_ia)}</div>`;
+      }
+      if (perg.resposta_correta) {
+        respostaHtml += `<div style="font-size:11px;color:var(--muted);margin-top:4px">Critérios: <span style="color:var(--text)">${esc(perg.resposta_correta)}</span></div>`;
+      }
+    }
+
+    return `<div style="padding:10px 0;border-bottom:1px solid var(--border)">
+      ${enunciado ? `<div style="font-size:11px;font-weight:600;color:var(--muted);margin-bottom:6px">${enunciado}</div>` : ''}
+      ${respostaHtml}
     </div>`;
   }).join('');
 }
