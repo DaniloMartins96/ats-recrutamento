@@ -290,7 +290,12 @@ function showScreen(id) {
     const r    = await fetch(`${BASE}/ats-get-teste?token=${encodeURIComponent(TOKEN)}`);
     if (!r.ok) throw new Error('not_found');
     const data = await r.json();
-    testeData  = data.teste || data;
+    console.log('[teste] resposta da API:', JSON.stringify(data));
+    testeData = data.teste || data;
+    // perguntas ficam na raiz da resposta, não dentro de data.teste
+    if (Array.isArray(data.perguntas) && data.perguntas.length > 0) {
+      testeData.perguntas = data.perguntas;
+    }
 
     if (testeData.candidato_nome) {
       const el = document.getElementById('teste-candidato');
@@ -350,11 +355,16 @@ function renderPergunta(p, idx) {
     </div>`;
   }
 
-  const opcoes = (p.opcoes || []).map((op, oi) => `
-    <label class="opcao" id="opcao-${p.id}-${oi}" onclick="selecionarOpcao('${p.id}', '${oi}', this.closest('.pergunta-card'))">
-      <input type="radio" name="q-${p.id}" value="${oi}">
-      <span class="opcao-letra">${letras[oi] || oi}</span>
-      <span class="opcao-texto">${esc(op)}</span>
+  // opcoes pode ser objeto {A:"...",B:"..."} ou array
+  const opcoesEntries = p.opcoes && typeof p.opcoes === 'object' && !Array.isArray(p.opcoes)
+    ? Object.entries(p.opcoes)
+    : (Array.isArray(p.opcoes) ? p.opcoes.map((v, i) => [letras[i] || String(i), v]) : []);
+
+  const opcoes = opcoesEntries.map(([letra, texto]) => `
+    <label class="opcao" id="opcao-${p.id}-${letra}" onclick="selecionarOpcao('${p.id}', '${letra}', this.closest('.pergunta-card'))">
+      <input type="radio" name="q-${p.id}" value="${letra}">
+      <span class="opcao-letra">${letra}</span>
+      <span class="opcao-texto">${esc(texto)}</span>
     </label>`).join('');
 
   return `
