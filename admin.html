@@ -1540,6 +1540,20 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
   </div>
 </div>
 
+<!-- ══════════════ MODAL VER TESTE ══════════════ -->
+<div class="modal-overlay" id="modal-ver-teste">
+  <div class="modal" role="dialog" aria-modal="true" style="max-width:520px">
+    <div class="modal-header">
+      <div class="modal-title" id="vt-titulo">Detalhes do Teste</div>
+      <button class="modal-close" onclick="fecharModalVerTeste()">&times;</button>
+    </div>
+    <div class="modal-body" id="vt-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="fecharModalVerTeste()">Fechar</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="modal-dp">
   <div class="modal" role="dialog" aria-modal="true" style="max-width:780px">
     <div class="modal-header">
@@ -4352,6 +4366,7 @@ function showToast(msg, type = 'info') {
 
 // ─── TESTES TÉCNICOS ──────────────────────────────────────────────
 let testes = [];
+let testeGeradoId = null;
 let _enviarTesteParaCandidatura = null;
 let _enviarTesteTab = 'teste';
 
@@ -4405,6 +4420,7 @@ function renderTestes() {
             <td style="text-align:center">${t.tentativas ?? '—'}</td>
             <td style="text-align:center">${t.concluidos ?? '—'}</td>
             <td style="white-space:nowrap">
+              <button class="btn btn-ghost btn-sm" onclick="verTeste('${t.id}')">👁 Ver</button>
               <button class="btn btn-ghost btn-sm" onclick="copiarLinkTeste('${t.id}')">🔗 Link</button>
               <button class="btn btn-outline btn-sm" style="border-color:var(--danger);color:var(--danger)" onclick="apagarTeste('${t.id}')">🗑️ Apagar</button>
             </td>
@@ -4478,9 +4494,18 @@ async function enviarTeste(candidaturaId) {
     const data = await r.json();
     const _todosArr = Array.isArray(data) ? data : (data.testes_tecnicos || data.testes || []);
     const arr = _todosArr.filter(t => t.ativo !== false);
-    lista.innerHTML = arr.length
-      ? '<option value="">Selecione um teste...</option>' + arr.map(t => `<option value="${t.id}">${t.titulo}</option>`).join('')
-      : '<option value="">Nenhum teste criado ainda</option>';
+    if (!arr.length) {
+      lista.innerHTML = '<option value="">Nenhum teste criado ainda</option>';
+    } else {
+      lista.innerHTML = '<option value="">Selecione um teste...</option>' + arr.map(t => {
+        const qtd = parseInt(t.total_perguntas || t.qtd_perguntas || 0);
+        const temPerguntas = qtd > 0;
+        const label = temPerguntas
+          ? `${t.titulo} (${qtd} pergunta${qtd !== 1 ? 's' : ''})`
+          : `${t.titulo} ⚠️ sem perguntas`;
+        return `<option value="${t.id}" ${temPerguntas ? '' : 'disabled'}>${label}</option>`;
+      }).join('');
+    }
   } catch {
     lista.innerHTML = '<option value="">Erro ao carregar testes</option>';
   }
@@ -4647,6 +4672,33 @@ function abrirModalCriarTeste() {
 
 function fecharModalCriarTeste() {
   document.getElementById('modal-criar-teste').classList.remove('open');
+  testeGeradoId = null;
+}
+
+function verTeste(testeId) {
+  const t = testes.find(x => String(x.id) === String(testeId));
+  if (!t) return;
+  document.getElementById('vt-titulo').textContent = t.titulo || 'Teste';
+  const qtd = t.total_perguntas ?? t.qtd_perguntas ?? t.perguntas?.length ?? '—';
+  document.getElementById('vt-body').innerHTML = `
+    <div style="display:grid;gap:12px">
+      <div><div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Título</div>
+        <div style="font-size:14px;font-weight:600">${t.titulo || '—'}</div></div>
+      <div><div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Vaga</div>
+        <div style="font-size:13px">${t.vaga_titulo || '—'}</div></div>
+      <div><div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Total de Perguntas</div>
+        <div style="font-size:13px">${qtd}</div></div>
+      <div><div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Tempo Limite</div>
+        <div style="font-size:13px">${t.tempo_limite_min || '—'} min</div></div>
+      <div style="padding:12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-size:13px;color:var(--muted)">
+        📋 Visualização completa das perguntas em breve.
+      </div>
+    </div>`;
+  document.getElementById('modal-ver-teste').classList.add('open');
+}
+
+function fecharModalVerTeste() {
+  document.getElementById('modal-ver-teste').classList.remove('open');
 }
 
 async function gerarTesteIA() {
@@ -4676,9 +4728,15 @@ async function gerarTesteIA() {
     });
     if (!r.ok) throw new Error();
     const data = await r.json();
-    const perguntas = data.perguntas || data;
+    // Se o backend já salvou o teste, capturar o id para evitar duplo save
+    if (data.resultado?.id || data.id) {
+      testeGeradoId = data.resultado?.id || data.id;
+      showToast('✨ Teste gerado e salvo! Clique em Salvar Teste para confirmar.', 'success');
+    } else {
+      showToast('✨ Perguntas geradas com sucesso!', 'success');
+    }
+    const perguntas = data.perguntas || data.resultado?.perguntas || data;
     document.getElementById('ct-perguntas').value = JSON.stringify(perguntas, null, 2);
-    showToast('✨ Perguntas geradas com sucesso!', 'success');
   } catch {
     showToast('Erro ao gerar teste. Verifique o título e contexto.', 'error');
   } finally {
@@ -4700,6 +4758,14 @@ async function submeterCriarTeste() {
   }
   const btn = document.getElementById('btn-salvar-teste');
   btn.disabled = true; btn.textContent = 'Salvando...';
+  // Se a IA já salvou o teste, não chamar o endpoint novamente
+  if (testeGeradoId) {
+    fecharModalCriarTeste(); // reseta testeGeradoId internamente
+    showToast('Teste salvo com sucesso!', 'success');
+    carregarTestes();
+    btn.disabled = false; btn.textContent = 'Salvar Teste';
+    return;
+  }
   try {
     const r = await fetch(BASE_URL + '/ats-testes', {
       method: 'POST', headers: {'Content-Type':'application/json'},
