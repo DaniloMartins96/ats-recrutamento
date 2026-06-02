@@ -4714,71 +4714,87 @@ async function verTeste(testeId) {
 }
 
 function _vtRenderPerguntas(perguntas, esc) {
-  if (!perguntas.length) return '<div style="text-align:center;padding:32px;color:var(--muted)">Nenhuma pergunta cadastrada.</div>';
+  if (!perguntas.length) return '<div style="text-align:center;padding:40px;color:var(--muted)"><div style="font-size:32px;margin-bottom:12px">📋</div>Nenhuma pergunta cadastrada.</div>';
   return perguntas.map((p, i) => {
-    const isMultipla = p.tipo !== 'dissertativa';
-    const tipoBadge  = isMultipla
-      ? '<span style="padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;background:rgba(59,130,246,.15);color:#60a5fa">Múltipla Escolha</span>'
-      : '<span style="padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;background:rgba(167,139,250,.15);color:#a78bfa">Dissertativa</span>';
-    const pesoBadge  = p.peso != null
-      ? `<span style="padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;background:var(--surface2);color:var(--muted)">Peso ${p.peso}</span>`
-      : '';
+    const isMultipla  = p.tipo !== 'dissertativa';
+    const borderClr   = isMultipla ? '#3b82f6' : '#a78bfa';
+    const tipeTxt     = isMultipla ? 'Múltipla Escolha' : 'Dissertativa';
+    const tipoClr     = isMultipla ? '#60a5fa' : '#a78bfa';
+    const tipeBg      = isMultipla ? 'rgba(59,130,246,.12)' : 'rgba(167,139,250,.12)';
+    const num         = p.ordem || i + 1;
+    const pesoTxt     = p.peso != null ? ` · Peso ${p.peso}` : '';
 
     let corpo = '';
     if (isMultipla && p.opcoes && typeof p.opcoes === 'object') {
-      corpo = Object.entries(p.opcoes).map(([letra, texto]) => {
-        const ok  = String(p.resposta_correta || '').toUpperCase() === letra.toUpperCase();
-        const bg  = ok ? 'rgba(16,185,129,.12)' : 'var(--surface2)';
-        const brd = ok ? '1px solid rgba(16,185,129,.4)' : '1px solid var(--border)';
-        const clr = ok ? '#10b981' : 'var(--text)';
-        return `<div style="display:flex;gap:10px;align-items:flex-start;padding:8px 10px;border-radius:7px;background:${bg};border:${brd};margin-bottom:6px">
-          <span style="font-weight:700;color:${clr};flex-shrink:0;min-width:18px">${letra}</span>
-          <span style="font-size:13px;color:${clr};line-height:1.4">${esc(texto)}${ok ? ' ✅' : ''}</span>
-        </div>`;
-      }).join('');
+      corpo = `<div style="display:flex;flex-direction:column;gap:6px;margin-top:12px">${
+        Object.entries(p.opcoes).map(([letra, texto]) => {
+          const ok  = String(p.resposta_correta || '').toUpperCase() === letra.toUpperCase();
+          return `<div style="display:flex;gap:12px;align-items:flex-start;padding:9px 12px;border-radius:8px;
+            background:${ok ? 'rgba(16,185,129,.1)' : 'var(--surface2)'};
+            border:1px solid ${ok ? 'rgba(16,185,129,.35)' : 'var(--border)'}">
+            <span style="font-size:12px;font-weight:800;color:${ok ? '#10b981' : 'var(--muted)'};flex-shrink:0;min-width:20px;padding-top:1px">${letra}</span>
+            <span style="font-size:13px;color:${ok ? '#10b981' : 'var(--text)'};line-height:1.45;flex:1">${esc(texto)}</span>
+            ${ok ? '<span style="flex-shrink:0;font-size:14px">✅</span>' : ''}
+          </div>`;
+        }).join('')
+      }</div>`;
     } else {
-      corpo = `<div style="padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:7px;font-size:13px;color:var(--muted)">
-        <span style="font-weight:600;color:var(--text)">Critérios: </span>${esc(p.resposta_correta || '—')}
-      </div>`;
+      const crit = p.resposta_correta;
+      corpo = crit
+        ? `<div style="margin-top:12px;padding:10px 14px;background:var(--surface2);border:1px solid var(--border);border-left:3px solid #10b981;border-radius:0 8px 8px 0;font-size:13px;color:var(--muted);font-style:italic;line-height:1.5">
+            <span style="font-weight:600;font-style:normal;color:var(--text);font-size:11px;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:4px">Critérios de correção</span>
+            ${esc(crit)}
+           </div>`
+        : '';
     }
 
-    return `<div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap">
-        <span style="font-size:13px;font-weight:700;color:var(--muted)">Q${p.ordem || i + 1}</span>
-        ${tipoBadge} ${pesoBadge}
+    return `<div style="border:1px solid var(--border);border-left:3px solid ${borderClr};border-radius:0 12px 12px 0;padding:14px 16px;margin-bottom:10px;background:var(--surface)">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <span style="font-size:12px;font-weight:800;color:var(--muted)">Q${num}</span>
+        <span style="display:inline-flex;align-items:center;padding:2px 9px;border-radius:4px;font-size:10px;font-weight:700;background:${tipeBg};color:${tipoClr}">${tipeTxt}${pesoTxt}</span>
       </div>
-      <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:12px;line-height:1.5">${esc(p.enunciado)}</div>
+      <div style="font-size:14px;font-weight:600;color:var(--text);line-height:1.55">${esc(p.enunciado)}</div>
       ${corpo}
     </div>`;
   }).join('');
 }
 
 function _vtRenderTentativas(tentativas, perguntas, esc) {
-  if (!tentativas.length) return '<div style="text-align:center;padding:32px;color:var(--muted)">Nenhum candidato respondeu ainda.</div>';
-  const fmtDt = d => d ? new Date(d).toLocaleString('pt-BR', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '—';
-  return tentativas.map((t, idx) => {
-    const concluido  = t.status === 'concluido';
-    const stClr  = concluido ? '#10b981'              : 'var(--warn)';
-    const stBg   = concluido ? 'rgba(16,185,129,.12)' : 'rgba(245,158,11,.12)';
-    const stBrd  = concluido ? 'rgba(16,185,129,.3)'  : 'rgba(245,158,11,.3)';
-    const stLbl  = concluido ? 'Concluído'            : (t.status || 'Pendente');
-    const scoreH = t.score_total != null ? ` &nbsp;<strong>${Number(t.score_total).toFixed(1)}</strong>/10` : '';
+  // Filtra: apenas concluídas com pelo menos uma resposta
+  const lista = tentativas
+    .filter(t => t.status === 'concluido' && (Array.isArray(t.respostas) ? t.respostas.length : (t.total_respostas || 0)) > 0)
+    .sort((a, b) => (Number(b.score_total) || 0) - (Number(a.score_total) || 0));
 
+  if (!lista.length) return `<div style="text-align:center;padding:40px;color:var(--muted)">
+    <div style="font-size:32px;margin-bottom:12px">👥</div>
+    Nenhum candidato concluiu este teste ainda.
+  </div>`;
+
+  const fmtDt = d => d ? new Date(d).toLocaleString('pt-BR', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '—';
+  const scoreClr = s => s >= 8 ? '#10b981' : s >= 6 ? '#f59e0b' : '#ef4444';
+  const scoreBg  = s => s >= 8 ? 'rgba(16,185,129,.12)' : s >= 6 ? 'rgba(245,158,11,.12)' : 'rgba(239,68,68,.12)';
+  const scoreBrd = s => s >= 8 ? 'rgba(16,185,129,.3)'  : s >= 6 ? 'rgba(245,158,11,.3)'  : 'rgba(239,68,68,.3)';
+
+  return lista.map((t, idx) => {
+    const score   = t.score_total != null ? Number(t.score_total) : null;
+    const scoreTxt = score != null ? score.toFixed(1) : '—';
+    const clr = score != null ? scoreClr(score) : 'var(--muted)';
+    const bg  = score != null ? scoreBg(score)  : 'var(--surface2)';
+    const brd = score != null ? scoreBrd(score) : 'var(--border)';
     const respostasHtml = _vtRenderRespostas(t.respostas || [], perguntas, esc);
 
-    return `<div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px">
-      <div style="display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:0">
+    return `<div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+        <div style="width:44px;height:44px;border-radius:50%;border:2px solid ${clr};background:${bg};display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <span style="font-size:13px;font-weight:800;color:${clr}">${scoreTxt}</span>
+        </div>
         <div style="flex:1;min-width:0">
-          <div style="font-weight:700;font-size:14px">${esc(t.candidato_nome || '—')}</div>
-          <div style="font-size:12px;color:var(--muted)">${esc(t.candidato_email || '')}</div>
+          <div style="font-weight:700;font-size:14px;color:var(--text)">${esc(t.candidato_nome || '—')}</div>
+          <div style="font-size:12px;color:var(--muted)">${esc(t.candidato_email || '')} &nbsp;·&nbsp; ${fmtDt(t.concluido_em)}</div>
         </div>
-        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;flex-shrink:0">
-          <span style="padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;background:${stBg};color:${stClr};border:1px solid ${stBrd}">${stLbl}${scoreH}</span>
-          ${concluido ? `<span style="font-size:11px;color:var(--muted)">${fmtDt(t.concluido_em)}</span>` : ''}
-          <button class="btn btn-ghost btn-sm" onclick="_vtToggleRespostas(${idx})">Ver Respostas</button>
-        </div>
+        <button class="btn btn-ghost btn-sm" style="flex-shrink:0" onclick="_vtToggleRespostas(${idx})">Ver Respostas ▾</button>
       </div>
-      <div id="vt-respostas-${idx}" style="display:none;margin-top:12px;border-top:1px solid var(--border);padding-top:12px">
+      <div id="vt-respostas-${idx}" style="display:none;margin-top:14px;border-top:1px solid var(--border);padding-top:14px">
         ${respostasHtml}
       </div>
     </div>`;
@@ -4787,44 +4803,55 @@ function _vtRenderTentativas(tentativas, perguntas, esc) {
 
 function _vtRenderRespostas(respostas, perguntas, esc) {
   if (!esc) esc = s => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  if (!respostas.length) return '<div style="font-size:13px;color:var(--muted);padding:8px 0">Sem respostas registradas.</div>';
-  return respostas.map(r => {
-    const perg     = perguntas.find(p => String(p.id) === String(r.pergunta_id)) || {};
-    const isMulti  = perg.tipo !== 'dissertativa';
-    const respRaw  = r.resposta_candidato ?? '—';
-    const enunciado = perg.enunciado ? esc(String(perg.enunciado).slice(0, 120)) + (perg.enunciado.length > 120 ? '…' : '') : '';
+  if (!respostas.length) return '<div style="font-size:13px;color:var(--muted);padding:12px 0">Sem respostas registradas.</div>';
 
-    let respostaHtml = '';
+  return respostas.map((r, ri) => {
+    const perg    = perguntas.find(p => String(p.id) === String(r.pergunta_id)) || {};
+    const isMulti = perg.tipo !== 'dissertativa';
+    const respRaw = String(r.resposta_candidato ?? '—');
+    const num     = perg.ordem || (ri + 1);
+
+    // Enunciado completo
+    const enunciadoH = perg.enunciado
+      ? `<div style="font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px">Q${num} — ${esc(perg.enunciado)}</div>`
+      : '';
+
+    let corpo = '';
     if (isMulti) {
-      // Para múltipla escolha: mostrar letra + texto da opção se disponível
-      const letra     = String(respRaw).toUpperCase();
-      const textoOpc  = (perg.opcoes && perg.opcoes[letra]) ? ` — ${esc(perg.opcoes[letra])}` : '';
-      const icone     = r.correta === true ? '✅' : r.correta === false ? '❌' : '•';
-      const corColor  = r.correta === true ? '#10b981' : r.correta === false ? 'var(--danger)' : 'var(--text)';
-      respostaHtml = `<div style="font-size:13px;color:${corColor};margin-bottom:4px">${icone} <strong>${esc(respRaw)}</strong>${textoOpc}</div>`;
-      // Gabarito correto
-      if (perg.resposta_correta) {
+      const letra    = respRaw.toUpperCase();
+      const textoOpc = (perg.opcoes && perg.opcoes[letra]) ? esc(perg.opcoes[letra]) : '';
+      const ok       = r.correta === true;
+      const wrong    = r.correta === false;
+      const icone    = ok ? '✅' : wrong ? '❌' : '•';
+      const clr      = ok ? '#10b981' : wrong ? '#ef4444' : 'var(--text)';
+      corpo = `<div style="padding:8px 12px;border-radius:7px;background:${ok ? 'rgba(16,185,129,.08)' : wrong ? 'rgba(239,68,68,.08)' : 'var(--surface2)'};border:1px solid ${ok ? 'rgba(16,185,129,.3)' : wrong ? 'rgba(239,68,68,.25)' : 'var(--border)'};font-size:13px;color:${clr};margin-bottom:5px">
+        ${icone} <strong>${esc(respRaw)}</strong>${textoOpc ? ` — ${textoOpc}` : ''}
+        <span style="font-size:11px;font-weight:600;margin-left:8px">${ok ? 'Correta' : wrong ? 'Incorreta' : ''}</span>
+      </div>`;
+      if (perg.resposta_correta && !ok) {
         const gabLetra = String(perg.resposta_correta).toUpperCase();
-        const gabTexto = (perg.opcoes && perg.opcoes[gabLetra]) ? esc(perg.opcoes[gabLetra]) : '';
-        respostaHtml += `<div style="font-size:11px;color:var(--muted)">Gabarito: <span style="color:#10b981;font-weight:600">${gabLetra}${gabTexto ? ' — ' + gabTexto : ''}</span></div>`;
+        const gabTexto = (perg.opcoes && perg.opcoes[gabLetra]) ? ` — ${esc(perg.opcoes[gabLetra])}` : '';
+        corpo += `<div style="font-size:11px;color:var(--muted)">Gabarito: <span style="color:#10b981;font-weight:700">${gabLetra}${gabTexto}</span></div>`;
       }
     } else {
-      // Para dissertativa: texto livre + nota IA + feedback
-      respostaHtml = `<div style="font-size:13px;color:var(--text);white-space:pre-wrap;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:8px 10px;margin-bottom:6px">📝 ${esc(String(respRaw))}</div>`;
+      corpo = `<div style="font-size:13px;color:var(--text);white-space:pre-wrap;line-height:1.6;background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:10px 12px;margin-bottom:6px">${esc(respRaw)}</div>`;
       if (r.score_ia != null) {
-        respostaHtml += `<div style="font-size:11px;color:var(--accent2);margin-bottom:3px;font-weight:600">Nota IA: ${Number(r.score_ia).toFixed(1)}/10</div>`;
+        const sc = Number(r.score_ia);
+        const scClr = sc >= 8 ? '#10b981' : sc >= 6 ? '#f59e0b' : '#ef4444';
+        corpo += `<div style="display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;background:${scClr}18;color:${scClr};border:1px solid ${scClr}44;margin-bottom:5px">Nota IA: ${sc.toFixed(1)}/10</div>`;
       }
       if (r.feedback_ia) {
-        respostaHtml += `<div style="font-size:12px;color:var(--muted);font-style:italic">${esc(r.feedback_ia)}</div>`;
+        corpo += `<div style="font-size:12px;color:var(--muted);font-style:italic;line-height:1.5;margin-bottom:5px">${esc(r.feedback_ia)}</div>`;
       }
       if (perg.resposta_correta) {
-        respostaHtml += `<div style="font-size:11px;color:var(--muted);margin-top:4px">Critérios: <span style="color:var(--text)">${esc(perg.resposta_correta)}</span></div>`;
+        corpo += `<div style="font-size:11px;color:var(--muted);padding:6px 10px;background:rgba(16,185,129,.06);border-left:2px solid #10b981;border-radius:0 5px 5px 0">
+          <span style="font-weight:600;color:#10b981">Critérios: </span>${esc(perg.resposta_correta)}
+        </div>`;
       }
     }
 
     return `<div style="padding:10px 0;border-bottom:1px solid var(--border)">
-      ${enunciado ? `<div style="font-size:11px;font-weight:600;color:var(--muted);margin-bottom:6px">${enunciado}</div>` : ''}
-      ${respostaHtml}
+      ${enunciadoH}${corpo}
     </div>`;
   }).join('');
 }
