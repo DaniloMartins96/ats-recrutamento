@@ -1742,11 +1742,23 @@ function mostrarSecao(nav) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   document.getElementById('sec-' + nav).classList.add('active');
   if (window.location.hash.replace('#', '') !== nav) window.location.hash = nav;
-  if (nav === 'dp' && !admissoes.length) carregarDP();
   if (nav === 'config') abrirAbaConfig('marca');
-  if (nav === 'metricas') carregarMetricas();
-  if (nav === 'testes') carregarTestes();
+  _recarregarSecao(nav);
 }
+
+function _recarregarSecao(secao) {
+  if (secao === 'candidatos') carregarCandidatos();
+  else if (secao === 'dp') carregarDP();
+  else if (secao === 'vagas') carregarVagas();
+  else if (secao === 'testes') carregarTestes();
+  else if (secao === 'metricas') carregarMetricas();
+}
+
+// Auto-refresh a cada 30 segundos na seção ativa
+setInterval(() => {
+  const nav = window.location.hash.replace('#', '');
+  if (nav) _recarregarSecao(nav);
+}, 30000);
 
 document.querySelectorAll('.nav-item[data-nav]').forEach(el => {
   el.onclick = () => mostrarSecao(el.dataset.nav);
@@ -4453,6 +4465,7 @@ async function liberarAdmissao(candidaturaId) {
     if (!r.ok) throw new Error();
     showToast('Admissão liberada! WhatsApp enviado ao candidato.', 'success');
     await carregarCandidatos();
+    await carregarDP();
     mostrarSecao('dp');
   } catch { showToast('Erro ao liberar admissão.', 'error'); }
 }
