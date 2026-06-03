@@ -536,6 +536,7 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
       <div class="stats-row" id="cand-stats"></div>
       <div class="tab-bar" style="margin-bottom:0;border-bottom:none;padding-bottom:0;padding-top:4px">
         <button class="tab-btn active" id="cand-tab-em_processo" onclick="setCandTab('em_processo')">Em processo</button>
+        <button class="tab-btn" id="cand-tab-aprovados" onclick="setCandTab('aprovados')">Aprovados ✅</button>
         <button class="tab-btn" id="cand-tab-reprovados" onclick="setCandTab('reprovados')">Reprovados</button>
         <button class="tab-btn" id="cand-tab-arquivados" onclick="setCandTab('arquivados')">Arquivados</button>
       </div>
@@ -2283,7 +2284,9 @@ function renderCandidatos() {
       ? etapa === 'reprovado'
       : candTabAtivo === 'arquivados'
       ? etapa === 'arquivado'
-      : etapa !== 'reprovado' && etapa !== 'arquivado';
+      : candTabAtivo === 'aprovados'
+      ? ['aprovado', 'admissao', 'admitido'].includes(etapa)
+      : etapa !== 'reprovado' && etapa !== 'arquivado' && !['aprovado', 'admissao', 'admitido'].includes(etapa);
     const matchQ = !q
       || (c.nome || '').toLowerCase().includes(q)
       || (c.vaga_titulo || '').toLowerCase().includes(q)
@@ -2423,7 +2426,7 @@ document.getElementById('ordenar-candidatos').onchange = renderCandidatos;
 
 function setCandTab(tab) {
   candTabAtivo = tab;
-  ['em_processo', 'reprovados', 'arquivados'].forEach(t => {
+  ['em_processo', 'aprovados', 'reprovados', 'arquivados'].forEach(t => {
     document.getElementById('cand-tab-' + t)?.classList.toggle('active', t === tab);
   });
   renderCandidatos();
