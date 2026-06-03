@@ -477,7 +477,13 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
       Depto. Pessoal
       <span class="nav-badge" id="nav-badge-dp" style="display:none">0</span>
     </div>
-    <div class="sidebar-section" style="margin-top:24px">Sistema</div>
+    <div class="sidebar-section" style="margin-top:24px">Master</div>
+    <div class="nav-item" data-nav="empresas">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      Empresas
+      <span class="nav-badge" id="nav-badge-empresas" style="display:none">0</span>
+    </div>
+    <div class="sidebar-section" style="margin-top:8px">Sistema</div>
     <div class="nav-item" data-nav="config">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
       Configurações
@@ -797,7 +803,9 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
     </section>
 
     <!-- ── CONFIG ── -->
-    <section class="section" id="sec-config">
+    <section class="section" id="sec-empresas"></section>
+
+  <section class="section" id="sec-config">
       <h2 style="margin-bottom:0.25rem">⚙️ Configurações</h2>
       <p style="color:var(--muted); margin-bottom:1.5rem; font-size:0.9rem">Preferências e integrações do sistema</p>
 
@@ -1736,7 +1744,7 @@ document.getElementById('logout-btn').onclick = doLogout;
 
 // ─── NAV ──────────────────────────────────────────────────────────
 function mostrarSecao(nav) {
-  const valid = ['vagas', 'candidatos', 'metricas', 'config', 'dp', 'testes'];
+  const valid = ['vagas', 'candidatos', 'metricas', 'config', 'dp', 'testes', 'empresas'];
   if (!valid.includes(nav)) nav = 'vagas';
   document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.nav === nav));
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
@@ -1752,6 +1760,7 @@ function _recarregarSecao(secao) {
   else if (secao === 'vagas') carregarVagas();
   else if (secao === 'testes') carregarTestes();
   else if (secao === 'metricas') carregarMetricas();
+  else if (secao === 'empresas') carregarEmpresas();
 }
 
 // Auto-refresh a cada 30 segundos na seção ativa
@@ -4439,6 +4448,128 @@ async function voltarDPParaProcesso(a) {
     await carregarDP();
     showToast('Candidato voltou para Em Processo.', 'success');
   } catch { showToast('Erro ao atualizar status.', 'error'); }
+}
+
+// ─── EMPRESAS (MASTER) ────────────────────────────────────────────
+let empresasList = [];
+
+async function carregarEmpresas() {
+  try {
+    const r = await fetch(BASE_URL + '/ats-master-empresas');
+    const data = r.ok ? await r.json() : {};
+    empresasList = data.empresas || [];
+    renderEmpresas(data);
+  } catch { empresasList = []; renderEmpresas({}); }
+}
+
+function renderEmpresas(data) {
+  const sec = document.getElementById('sec-empresas');
+  const total = data.total || 0;
+  const ativas = data.ativas || 0;
+  const trial = data.trial || 0;
+  const badge = document.getElementById('nav-badge-empresas');
+  badge.textContent = total; badge.style.display = total ? '' : 'none';
+
+  sec.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <div>
+        <h2 style="font-size:20px;font-weight:700;letter-spacing:-0.3px">Empresas Cadastradas</h2>
+        <p style="font-size:13px;color:var(--muted);margin-top:3px">Gerencie todos os clientes da plataforma</p>
+      </div>
+      <button class="btn btn-primary" onclick="abrirModalNovaEmpresa()">+ Nova Empresa</button>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;margin-bottom:24px">
+      <div class="card" style="padding:20px"><div style="font-size:12px;color:var(--muted);margin-bottom:8px">Total de Empresas</div><div style="font-size:28px;font-weight:800">${total}</div></div>
+      <div class="card" style="padding:20px"><div style="font-size:12px;color:var(--muted);margin-bottom:8px">Ativas</div><div style="font-size:28px;font-weight:800;color:var(--success)">${ativas}</div></div>
+      <div class="card" style="padding:20px"><div style="font-size:12px;color:var(--muted);margin-bottom:8px">Em Trial</div><div style="font-size:28px;font-weight:800;color:#f59e0b">${trial}</div></div>
+      <div class="card" style="padding:20px"><div style="font-size:12px;color:var(--muted);margin-bottom:8px">Pagas</div><div style="font-size:28px;font-weight:800;color:var(--accent)">${ativas - trial}</div></div>
+    </div>
+    ${!empresasList.length ? `<div class="empty-state"><p>Nenhuma empresa cadastrada ainda.</p></div>` : `
+    <div class="card" style="overflow:hidden">
+      <table class="table">
+        <thead><tr>
+          <th>Empresa</th><th>Plano</th><th>Status</th><th>Vagas</th><th>Candidatos</th><th>Usuários</th><th>Cadastro</th><th></th>
+        </tr></thead>
+        <tbody>
+          ${empresasList.map(e => `<tr>
+            <td>
+              <div style="font-weight:600">${e.nome}</div>
+              <div style="font-size:11px;color:var(--muted)">${e.email}</div>
+            </td>
+            <td><span class="badge ${e.plano === 'trial' ? 'badge-yellow' : e.plano === 'profissional' ? 'badge-blue' : 'badge-green'}">${e.plano}</span></td>
+            <td><span class="badge ${e.status === 'ativo' ? 'badge-green' : 'badge-red'}">${e.status}</span></td>
+            <td style="text-align:center;font-weight:600">${e.total_vagas || 0}</td>
+            <td style="text-align:center;font-weight:600">${e.total_candidatos || 0}</td>
+            <td style="text-align:center">${e.total_usuarios || 0}</td>
+            <td style="font-size:12px;color:var(--muted)">${new Date(e.created_at).toLocaleDateString('pt-BR')}</td>
+            <td style="white-space:nowrap">
+              <button class="btn btn-outline btn-sm" onclick="entrarComoEmpresa(${e.id}, '${e.nome}')">🔑 Entrar</button>
+            </td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>`}
+
+    <!-- Modal Nova Empresa -->
+    <div id="modal-nova-empresa" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:1000;align-items:center;justify-content:center">
+      <div class="card" style="width:480px;padding:28px;position:relative">
+        <h3 style="font-size:18px;font-weight:700;margin-bottom:20px">Nova Empresa</h3>
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div><label style="font-size:12px;color:var(--muted);display:block;margin-bottom:6px">Nome da Empresa *</label><input id="ne-nome" class="form-input" placeholder="Ex: Tibério Construtora"></div>
+          <div><label style="font-size:12px;color:var(--muted);display:block;margin-bottom:6px">Email da Empresa *</label><input id="ne-email" class="form-input" type="email" placeholder="contato@empresa.com.br"></div>
+          <div><label style="font-size:12px;color:var(--muted);display:block;margin-bottom:6px">Telefone</label><input id="ne-tel" class="form-input" placeholder="(11) 99999-0000"></div>
+          <div style="border-top:1px solid var(--border);padding-top:14px"><label style="font-size:12px;font-weight:600;display:block;margin-bottom:10px">Usuário Admin</label></div>
+          <div><label style="font-size:12px;color:var(--muted);display:block;margin-bottom:6px">Nome do Admin *</label><input id="ne-admin-nome" class="form-input" placeholder="Nome completo"></div>
+          <div><label style="font-size:12px;color:var(--muted);display:block;margin-bottom:6px">Email do Admin *</label><input id="ne-admin-email" class="form-input" type="email" placeholder="admin@empresa.com.br"></div>
+          <div><label style="font-size:12px;color:var(--muted);display:block;margin-bottom:6px">Senha *</label><input id="ne-admin-senha" class="form-input" type="password" placeholder="Mínimo 8 caracteres"></div>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:20px;justify-content:flex-end">
+          <button class="btn btn-ghost" onclick="fecharModalNovaEmpresa()">Cancelar</button>
+          <button class="btn btn-primary" onclick="salvarNovaEmpresa()">Criar Empresa</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function abrirModalNovaEmpresa() {
+  document.getElementById('modal-nova-empresa').style.display = 'flex';
+}
+
+function fecharModalNovaEmpresa() {
+  document.getElementById('modal-nova-empresa').style.display = 'none';
+}
+
+async function salvarNovaEmpresa() {
+  const nome = document.getElementById('ne-nome').value.trim();
+  const email = document.getElementById('ne-email').value.trim();
+  const tel = document.getElementById('ne-tel').value.trim();
+  const adminNome = document.getElementById('ne-admin-nome').value.trim();
+  const adminEmail = document.getElementById('ne-admin-email').value.trim();
+  const adminSenha = document.getElementById('ne-admin-senha').value;
+  if (!nome || !email || !adminNome || !adminEmail || !adminSenha) { showToast('Preencha todos os campos obrigatórios.', 'warn'); return; }
+  try {
+    const r = await fetch(BASE_URL + '/ats-criar-empresa', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nome, email, telefone: tel, admin_nome: adminNome, admin_email: adminEmail, admin_senha: adminSenha })
+    });
+    const data = await r.json();
+    if (!data.success) throw new Error(data.message || 'Erro ao criar empresa');
+    fecharModalNovaEmpresa();
+    showToast('Empresa criada com sucesso!', 'success');
+    await carregarEmpresas();
+  } catch (err) { showToast(err.message || 'Erro ao criar empresa.', 'error'); }
+}
+
+function entrarComoEmpresa(empresaId, empresaNome) {
+  if (!confirm('Entrar como "' + empresaNome + '"? Você será redirecionado para o painel delas.')) return;
+  localStorage.setItem('tr_token', 'master-' + empresaId);
+  localStorage.setItem('tr_empresa_id', empresaId);
+  localStorage.setItem('tr_empresa_nome', empresaNome);
+  localStorage.setItem('tr_usuario_nome', 'Master Admin');
+  localStorage.setItem('tr_usuario_role', 'master');
+  localStorage.setItem('tr_empresa_plano', 'master');
+  window.open('/empresa.html', '_blank');
 }
 
 async function reenviarLinkAdmissao(admissaoId, candidaturaId) {
