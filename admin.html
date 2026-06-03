@@ -2285,8 +2285,8 @@ function renderCandidatos() {
       : candTabAtivo === 'arquivados'
       ? etapa === 'arquivado'
       : candTabAtivo === 'aprovados'
-      ? ['aprovado', 'admissao', 'admitido'].includes(etapa)
-      : etapa !== 'reprovado' && etapa !== 'arquivado' && !['aprovado', 'admissao', 'admitido'].includes(etapa);
+      ? etapa === 'aprovado'
+      : etapa !== 'reprovado' && etapa !== 'arquivado' && etapa !== 'aprovado' && etapa !== 'admissao' && etapa !== 'admitido';
     const matchQ = !q
       || (c.nome || '').toLowerCase().includes(q)
       || (c.vaga_titulo || '').toLowerCase().includes(q)
