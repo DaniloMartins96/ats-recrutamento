@@ -2285,8 +2285,8 @@ function renderCandidatos() {
       : candTabAtivo === 'arquivados'
       ? etapa === 'arquivado'
       : candTabAtivo === 'aprovados'
-      ? etapa === 'admissao'
-      : etapa !== 'reprovado' && etapa !== 'arquivado' && etapa !== 'admissao' && etapa !== 'admitido';
+      ? (etapa === 'aprovado' || etapa === 'admissao')
+      : etapa !== 'reprovado' && etapa !== 'arquivado' && etapa !== 'aprovado' && etapa !== 'admissao' && etapa !== 'admitido';
     const matchQ = !q
       || (c.nome || '').toLowerCase().includes(q)
       || (c.vaga_titulo || '').toLowerCase().includes(q)
@@ -2340,8 +2340,11 @@ function renderCandidatos() {
     const score = parseFloat(c.score_total) || 0;
     const etapaLow = (c.etapa_atual || '').toLowerCase();
     const isArquivado = etapaLow === 'arquivado';
-    const isAprovado  = etapaLow === 'aprovado';
     const isReprovado = etapaLow === 'reprovado';
+    const isAprovadoOuAdmissao = etapaLow === 'aprovado' || etapaLow === 'admissao';
+    const isEmProcesso = !isArquivado && !isReprovado && !isAprovadoOuAdmissao && etapaLow !== 'admitido';
+    const podeVoltarEtapa = ['entrevista_rh', 'entrevista_tecnica'].includes(etapaLow);
+    const etapaAnterior = etapaLow === 'entrevista_tecnica' ? 'entrevista_rh' : etapaLow === 'entrevista_rh' ? 'triagem' : '';
     const candId = c.candidatura_id || c.candidato_id;
     return `
     <tr onclick="abrirCandidato('${candId}')">
@@ -2359,12 +2362,15 @@ function renderCandidatos() {
       <td><span class="badge badge-gray" style="font-size:10px">${c.etapa_atual || '—'}</span></td>
       <td onclick="event.stopPropagation()" style="white-space:nowrap">
         <button class="btn btn-ghost btn-sm" onclick="abrirCandidato('${candId}')">Ver</button>
-        ${!isArquivado && !isAprovado && !isReprovado ? `<button class="btn btn-primary btn-sm" onclick="abrirModalAgendamento('${candId}')">Agendar</button>` : ''}
-        ${!isArquivado && !isAprovado && !isReprovado ? `<button class="btn btn-outline btn-sm" style="border-color:#8b5cf6;color:#8b5cf6" onclick="enviarTeste('${candId}')">🧪 Teste</button>` : ''}
-        ${!isArquivado ? `<button class="btn btn-danger btn-sm" onclick="rejeitarCandidato('${candId}')">Rejeitar</button>` : ''}
-        ${!isArquivado ? `<button class="btn btn-outline btn-sm" style="border-color:var(--muted);color:var(--muted)" onclick="arquivarCandidato('${candId}','${c.candidato_id}')">&#128230; Arquivar</button>` : ''}
-        ${isArquivado ? `<button class="btn btn-outline btn-sm" onclick="restaurarCandidato('${candId}','${c.candidato_id}')">&#8617; Restaurar</button>` : ''}
-        ${isAprovado ? `<button class="btn btn-outline btn-sm" style="border-color:var(--success);color:var(--success)" onclick="liberarAdmissao('${candId}')">&#128203; Admissão</button>` : ''}
+        ${isEmProcesso ? `<button class="btn btn-primary btn-sm" onclick="abrirModalAgendamento('${candId}')">Agendar</button>` : ''}
+        ${isEmProcesso ? `<button class="btn btn-outline btn-sm" style="border-color:#8b5cf6;color:#8b5cf6" onclick="enviarTeste('${candId}')">🧪 Teste</button>` : ''}
+        ${isEmProcesso && podeVoltarEtapa ? `<button class="btn btn-outline btn-sm" style="border-color:#f59e0b;color:#f59e0b" onclick="voltarEtapaCandidato('${candId}','${etapaAnterior}')">↩ Voltar</button>` : ''}
+        ${isEmProcesso ? `<button class="btn btn-danger btn-sm" onclick="rejeitarCandidato('${candId}')">Reprovar</button>` : ''}
+        ${isAprovadoOuAdmissao && etapaLow === 'aprovado' ? `<button class="btn btn-outline btn-sm" style="border-color:var(--success);color:var(--success)" onclick="liberarAdmissao('${candId}')">📋 Liberar Admissão</button>` : ''}
+        ${isAprovadoOuAdmissao ? `<button class="btn btn-outline btn-sm" style="border-color:#f59e0b;color:#f59e0b" onclick="voltarEtapaCandidato('${candId}','entrevista_tecnica')">↩ Regredir</button>` : ''}
+        ${isReprovado ? `<button class="btn btn-outline btn-sm" style="border-color:var(--success);color:var(--success)" onclick="reativarCandidato('${candId}')">↩ Reativar</button>` : ''}
+        ${!isArquivado && etapaLow !== 'admitido' ? `<button class="btn btn-outline btn-sm" style="border-color:var(--muted);color:var(--muted)" onclick="arquivarCandidato('${candId}','${c.candidato_id}')">📦 Arquivar</button>` : ''}
+        ${isArquivado ? `<button class="btn btn-outline btn-sm" onclick="restaurarCandidato('${candId}','${c.candidato_id}')">↩ Restaurar</button>` : ''}
       </td>
     </tr>`;
   }).join('');
@@ -3875,6 +3881,7 @@ function _renderDP_aguardandoAssinatura(lista, tbody) {
             <td onclick="event.stopPropagation()">
               <div style="display:flex;gap:0.5rem;justify-content:flex-end">
                 <button class="btn btn-ghost btn-sm" onclick="abrirModalDP(window.admissoesData[${idx}])">Ver</button>
+                <button class="btn btn-outline btn-sm" style="border-color:#f59e0b;color:#f59e0b" onclick="voltarDPParaProcesso(window.admissoesData[${idx}])">↩ Voltar</button>
                 <button class="btn btn-primary btn-sm" onclick="confirmarAdmissaoLista(window.admissoesData[${idx}])">✅ Confirmar Admissão</button>
               </div>
             </td>
@@ -4331,6 +4338,59 @@ async function confirmarAdmissao(admissaoId) {
     if (btnFunc) btnFunc.classList.add('active');
     await carregarDP();
   } catch { showToast('Erro ao confirmar admissão.', 'error'); }
+}
+
+async function voltarEtapaCandidato(candidaturaId, etapaDestino) {
+  if (!candidaturaId || !etapaDestino) return;
+  const cand = candidatos.find(x => (x.candidatura_id || x.candidato_id) === candidaturaId);
+  const labels = { triagem: 'Triagem', entrevista_rh: 'Entrevista RH', entrevista_tecnica: 'Entrevista Técnica' };
+  if (!confirm('Voltar candidato para "' + (labels[etapaDestino] || etapaDestino) + '"?')) return;
+  try {
+    const r = await fetch(BASE_URL + '/ats-atualizar-etapa', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ candidatura_id: candidaturaId, nova_etapa: etapaDestino, candidato_nome: cand?.nome || '', candidato_telefone: cand?.telefone || '', vaga_titulo: cand?.vaga_titulo || '' }),
+      signal: AbortSignal.timeout(8000)
+    });
+    if (!r.ok) throw new Error();
+    if (cand) cand.etapa_atual = etapaDestino;
+    fecharSlideover();
+    calcularRankings();
+    renderCandidatos();
+    showToast('Etapa atualizada com sucesso.', 'success');
+  } catch { showToast('Erro ao atualizar etapa.', 'error'); }
+}
+
+async function reativarCandidato(candidaturaId) {
+  if (!candidaturaId) return;
+  const cand = candidatos.find(x => (x.candidatura_id || x.candidato_id) === candidaturaId);
+  if (!confirm('Reativar candidato? Ele voltará para a etapa de Triagem.')) return;
+  try {
+    const r = await fetch(BASE_URL + '/ats-atualizar-etapa', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ candidatura_id: candidaturaId, nova_etapa: 'triagem', candidato_nome: cand?.nome || '', candidato_telefone: cand?.telefone || '', vaga_titulo: cand?.vaga_titulo || '' }),
+      signal: AbortSignal.timeout(8000)
+    });
+    if (!r.ok) throw new Error();
+    if (cand) cand.etapa_atual = 'triagem';
+    calcularRankings();
+    renderCandidatos();
+    showToast('Candidato reativado. Voltou para Triagem.', 'success');
+  } catch { showToast('Erro ao reativar candidato.', 'error'); }
+}
+
+async function voltarDPParaProcesso(a) {
+  if (!a) return;
+  if (!confirm('Voltar candidato para "Em Processo" no DP?')) return;
+  try {
+    const r = await fetch(BASE_URL + '/ats-dp-acao', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ acao: 'voltar_processo', admissao_id: a.admissao_id || a.id }),
+      signal: AbortSignal.timeout(8000)
+    });
+    if (!r.ok) throw new Error();
+    await carregarDP();
+    showToast('Candidato voltou para Em Processo.', 'success');
+  } catch { showToast('Erro ao atualizar status.', 'error'); }
 }
 
 async function reenviarLinkAdmissao(admissaoId, candidaturaId) {
