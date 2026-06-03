@@ -4251,15 +4251,20 @@ async function docsAdmissao_salvarConfig(admissaoId) {
       showToast('Documentos configurados! O candidato será notificado.', 'success');
       var _adm = window.dpAdmissaoAtual || {};
       var _candAdm = candidatos.find(function(x) { return x.candidatura_id === _adm.candidatura_id || x.candidato_id === _adm.candidatura_id; }) || {};
-      console.log('[email admissao_liberada] admissão:', _adm, '| candidato:', _candAdm);
-      fetch(EMAIL_URL, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({
-        tipo: 'admissao_liberada',
-        nome: _adm.candidato_nome || _adm.nome || _candAdm.nome || '',
-        email: _adm.email || _adm.candidato_email || _candAdm.email || '',
-        vaga: _adm.vaga_titulo || _adm.vaga || _candAdm.vaga_titulo || '',
-        candidatura_id: _adm.candidatura_id || _candAdm.candidatura_id || '',
-        link_admissao: 'https://ats.danns.com.br/admissao?id=' + (_adm.admissao_id || _adm.id || admissaoId)
-      }) }).catch(function() {});
+      var _emailAdm = _adm.email || _adm.candidato_email || _candAdm.email || '';
+      var _nomeAdm  = _adm.candidato_nome || _adm.nome_completo || _adm.nome || _candAdm.nome || '';
+      var _vagaAdm  = _adm.vaga || _adm.vaga_titulo || _candAdm.vaga_titulo || '';
+      var _cidAdm   = _adm.candidatura_id || _candAdm.candidatura_id || '';
+      if (_emailAdm) {
+        fetch(EMAIL_URL, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({
+          tipo: 'admissao_liberada',
+          nome: _nomeAdm,
+          email: _emailAdm,
+          vaga: _vagaAdm,
+          candidatura_id: _cidAdm,
+          link_admissao: 'https://ats.danns.com.br/admissao?id=' + (_adm.admissao_id || _adm.id || admissaoId)
+        }) }).catch(function() {});
+      }
     } else {
       alert('Erro ao salvar: ' + (data.message || 'Tente novamente.'));
     }
@@ -4561,20 +4566,22 @@ async function confirmarEnviarTeste() {
         method: 'POST', headers: {'Content-Type':'application/json'},
         body: JSON.stringify({ candidatura_id: _enviarTesteParaCandidatura, tipo_avaliacao: tipo })
       });
+      const rAval = await r.json().catch(() => ({}));
       if (!r.ok) throw new Error();
       fecharModalEnviarTeste();
       showToast('🧠 Avaliação enviada ao candidato!', 'success');
       const _candAval = candidatos.find(x => (x.candidatura_id || x.candidato_id) === _enviarTesteParaCandidatura) || {};
-      const rAval = await r.json().catch(() => ({}));
-      fetch(EMAIL_URL, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({
-        tipo: 'avaliacao_enviada',
-        nome: _candAval.nome || '',
-        email: _candAval.email || '',
-        vaga: _candAval.vaga_titulo || '',
-        candidatura_id: _enviarTesteParaCandidatura || '',
-        tipo_avaliacao: tipo,
-        link_avaliacao: rAval.link || rAval.link_avaliacao || ''
-      }) }).catch(() => {});
+      if (_candAval.email) {
+        fetch(EMAIL_URL, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({
+          tipo: 'avaliacao_enviada',
+          nome: _candAval.nome || '',
+          email: _candAval.email || '',
+          vaga: _candAval.vaga_titulo || '',
+          candidatura_id: _enviarTesteParaCandidatura || '',
+          tipo_avaliacao: tipo,
+          link_avaliacao: rAval.link || rAval.link_avaliacao || ''
+        }) }).catch(() => {});
+      }
     }
   } catch {
     showToast('Erro ao enviar. Tente novamente.', 'error');
