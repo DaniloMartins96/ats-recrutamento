@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TechRecruit AI — Acesso Empresas</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --indigo: #6366f1;
+    --indigo-light: #818cf8;
+    --indigo-dark: #4f46e5;
+    --bg: #07070a;
+    --surface: #0f0f14;
+    --border: rgba(255,255,255,0.07);
+    --text: #f1f1f5;
+    --muted: #71717a;
+    --success: #22c55e;
+    --danger: #ef4444;
+  }
+
+  html, body {
+    height: 100%;
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    overflow: hidden;
+  }
+
+  /* ── LAYOUT ── */
+  .layout {
+    display: grid;
+    grid-template-columns: 1fr 480px;
+    height: 100vh;
+  }
+
+  /* ── LEFT SIDE ── */
+  .left {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 48px 56px;
+    overflow: hidden;
+  }
+
+  .left-bg {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 20% 40%, rgba(99,102,241,0.18) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 80% at 80% 10%, rgba(129,140,248,0.12) 0%, transparent 50%),
+      radial-gradient(ellipse 100% 100% at 50% 100%, rgba(79,70,229,0.1) 0%, transparent 60%);
+    z-index: 0;
+  }
+
+  .grid-overlay {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(99,102,241,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(99,102,241,0.04) 1px, transparent 1px);
+    background-size: 48px 48px;
+    z-index: 0;
+    mask-image: radial-gradient(ellipse 80% 80% at 30% 50%, black, transparent);
+  }
+
+  .left > * { position: relative; z-index: 1; }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .brand-icon {
+    width: 42px; height: 42px;
+    background: linear-gradient(135deg, var(--indigo), var(--indigo-light));
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    box-shadow: 0 0 32px rgba(99,102,241,0.4);
+  }
+
+  .brand-name {
+    font-family: 'Sora', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+  }
+
+  .brand-name span { color: var(--indigo-light); }
+
+  .hero { max-width: 520px; }
+
+  .hero-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(99,102,241,0.12);
+    border: 1px solid rgba(99,102,241,0.25);
+    border-radius: 100px;
+    padding: 6px 14px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--indigo-light);
+    margin-bottom: 28px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  .hero-label::before {
+    content: '';
+    width: 6px; height: 6px;
+    background: var(--success);
+    border-radius: 50%;
+    box-shadow: 0 0 8px var(--success);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  .hero h1 {
+    font-family: 'Sora', sans-serif;
+    font-size: clamp(36px, 4vw, 54px);
+    font-weight: 800;
+    line-height: 1.08;
+    letter-spacing: -1.5px;
+    color: var(--text);
+    margin-bottom: 20px;
+  }
+
+  .hero h1 em {
+    font-style: normal;
+    background: linear-gradient(90deg, var(--indigo-light), #a78bfa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero p {
+    font-size: 16px;
+    color: var(--muted);
+    line-height: 1.7;
+    max-width: 440px;
+  }
+
+  .features {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .feature {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 18px 20px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    backdrop-filter: blur(10px);
+    transition: border-color 0.3s;
+  }
+
+  .feature:hover { border-color: rgba(99,102,241,0.3); }
+
+  .feature-icon {
+    width: 36px; height: 36px; flex-shrink: 0;
+    background: rgba(99,102,241,0.1);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+  }
+
+  .feature-text strong {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 3px;
+  }
+
+  .feature-text span {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  .left-footer {
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  /* ── RIGHT SIDE ── */
+  .right {
+    background: var(--surface);
+    border-left: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 48px;
+    overflow-y: auto;
+  }
+
+  .form-card { width: 100%; max-width: 360px; }
+
+  .form-header { margin-bottom: 36px; }
+
+  .form-header h2 {
+    font-family: 'Sora', sans-serif;
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    margin-bottom: 8px;
+  }
+
+  .form-header p { font-size: 14px; color: var(--muted); line-height: 1.6; }
+
+  .field { margin-bottom: 20px; }
+
+  .field label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: #a1a1aa;
+    margin-bottom: 8px;
+  }
+
+  .field input {
+    width: 100%;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
+    padding: 13px 16px;
+    font-size: 14px;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  .field input::placeholder { color: #52525b; }
+
+  .field input:focus {
+    border-color: var(--indigo);
+    box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
+    background: rgba(99,102,241,0.04);
+  }
+
+  .field-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+
+  .field-row label { margin-bottom: 0; }
+
+  .link-muted {
+    font-size: 12px;
+    color: var(--muted);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  .link-muted:hover { color: var(--indigo-light); }
+
+  .btn-submit {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, var(--indigo-dark), var(--indigo));
+    border: none;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    font-family: 'DM Sans', sans-serif;
+    color: white;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+    box-shadow: 0 4px 24px rgba(99,102,241,0.35);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-submit::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, transparent, rgba(255,255,255,0.08));
+  }
+
+  .btn-submit:hover:not(:disabled) {
+    opacity: 0.92;
+    transform: translateY(-1px);
+    box-shadow: 0 8px 32px rgba(99,102,241,0.45);
+  }
+
+  .btn-submit:active:not(:disabled) { transform: translateY(0); }
+
+  .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+
+  .spinner {
+    display: none;
+    width: 16px; height: 16px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    margin: 0 auto;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 24px 0;
+    color: var(--muted);
+    font-size: 12px;
+  }
+
+  .divider::before, .divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .btn-register {
+    width: 100%;
+    padding: 13px;
+    background: transparent;
+    border: 1px solid rgba(99,102,241,0.35);
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--indigo-light);
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+    text-decoration: none;
+    display: block;
+  }
+
+  .btn-register:hover {
+    background: rgba(99,102,241,0.08);
+    border-color: var(--indigo);
+  }
+
+  .error-box {
+    display: none;
+    background: rgba(239,68,68,0.1);
+    border: 1px solid rgba(239,68,68,0.3);
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 13px;
+    color: #fca5a5;
+    margin-bottom: 16px;
+    line-height: 1.5;
+  }
+
+  .form-footer {
+    margin-top: 28px;
+    text-align: center;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .form-footer a { color: #52525b; text-decoration: none; }
+  .form-footer a:hover { color: var(--muted); }
+
+  /* ── LOADING STATE ── */
+  .btn-submit .btn-text { display: block; }
+  .btn-submit.loading .btn-text { display: none; }
+  .btn-submit.loading .spinner { display: block; }
+
+  /* ── ANIMATIONS ── */
+  .form-card { animation: slideUp 0.5s ease both; }
+  .left .brand { animation: fadeIn 0.4s ease both; }
+  .hero { animation: slideUp 0.5s 0.1s ease both; }
+  .features { animation: slideUp 0.5s 0.2s ease both; }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 900px) {
+    .layout { grid-template-columns: 1fr; }
+    .left { display: none; }
+    .right {
+      border-left: none;
+      background: var(--bg);
+      padding: 32px 24px;
+    }
+    body, html { overflow: auto; }
+  }
+</style>
+</head>
+<body>
+
+<div class="layout">
+
+  <!-- LEFT: marketing -->
+  <div class="left">
+    <div class="left-bg"></div>
+    <div class="grid-overlay"></div>
+
+    <div class="brand">
+      <div class="brand-icon">🎯</div>
+      <div class="brand-name">TechRecruit <span>AI</span></div>
+    </div>
+
+    <div class="hero">
+      <div class="hero-label">Plataforma de Recrutamento</div>
+      <h1>Contrate mais rápido.<br>Com <em>inteligência</em>.</h1>
+      <p>Triagem automática com IA, captação ativa de candidatos e gestão completa do ciclo de contratação — tudo em um só lugar.</p>
+    </div>
+
+    <div class="features">
+      <div class="feature">
+        <div class="feature-icon">🤖</div>
+        <div class="feature-text">
+          <strong>Triagem com GPT-4o</strong>
+          <span>Score e análise STAR automática de cada candidato em segundos.</span>
+        </div>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">📲</div>
+        <div class="feature-text">
+          <strong>Captação via WhatsApp</strong>
+          <span>Bot ativo que encontra candidatos onde eles estão, 24 horas por dia.</span>
+        </div>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">📊</div>
+        <div class="feature-text">
+          <strong>Pipeline visual completo</strong>
+          <span>Do primeiro contato à admissão, tudo rastreado e organizado.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="left-footer">© 2025 TechRecruit AI · Todos os direitos reservados</div>
+  </div>
+
+  <!-- RIGHT: form -->
+  <div class="right">
+    <div class="form-card">
+      <div class="form-header">
+        <h2>Bem-vindo de volta 👋</h2>
+        <p>Entre com as credenciais da sua empresa para acessar o painel de recrutamento.</p>
+      </div>
+
+      <div class="error-box" id="error-box"></div>
+
+      <form id="login-form" onsubmit="handleLogin(event)">
+        <div class="field">
+          <label for="email">E-mail corporativo</label>
+          <input type="email" id="email" placeholder="voce@empresa.com.br" required autocomplete="email">
+        </div>
+
+        <div class="field">
+          <div class="field-row">
+            <label for="senha">Senha</label>
+            <a href="#" class="link-muted">Esqueci minha senha</a>
+          </div>
+          <input type="password" id="senha" placeholder="••••••••" required autocomplete="current-password">
+        </div>
+
+        <div class="error-box" id="error-inline"></div>
+
+        <button type="submit" class="btn-submit" id="btn-submit">
+          <span class="btn-text">Entrar no painel</span>
+          <div class="spinner"></div>
+        </button>
+      </form>
+
+      <div class="divider">ou</div>
+
+      <a href="mailto:contato@techrecruit.ai?subject=Quero conhecer o TechRecruit AI" class="btn-register">
+        Solicitar acesso para minha empresa
+      </a>
+
+      <div class="form-footer">
+        <a href="/login.html">Acesso administrativo</a>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const BASE_URL = 'https://webhook.danns.com.br/webhook';
+
+  async function handleLogin(e) {
+    e.preventDefault();
+    const btn = document.getElementById('btn-submit');
+    const errBox = document.getElementById('error-box');
+    const email = document.getElementById('email').value.trim();
+    const senha = document.getElementById('senha').value;
+
+    errBox.style.display = 'none';
+    btn.classList.add('loading');
+    btn.disabled = true;
+
+    try {
+      const r = await fetch(BASE_URL + '/ats-login-empresa', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, senha }),
+        signal: AbortSignal.timeout(10000)
+      });
+
+      const data = await r.json();
+
+      if (!r.ok || !data.success) {
+        throw new Error(data.message || 'Credenciais inválidas. Verifique e-mail e senha.');
+      }
+
+      // Salvar sessão
+      localStorage.setItem('tr_token', data.token);
+      localStorage.setItem('tr_empresa_id', data.empresa_id);
+      localStorage.setItem('tr_empresa_nome', data.empresa_nome);
+      localStorage.setItem('tr_usuario_nome', data.usuario_nome);
+      localStorage.setItem('tr_usuario_role', data.role);
+
+      // Redirecionar ao painel
+      window.location.href = '/empresa.html';
+
+    } catch (err) {
+      errBox.textContent = err.message || 'Erro ao conectar. Tente novamente.';
+      errBox.style.display = 'block';
+      btn.classList.remove('loading');
+      btn.disabled = false;
+    }
+  }
+
+  // Se já tem sessão válida, redirecionar
+  if (localStorage.getItem('tr_token')) {
+    window.location.href = '/empresa.html';
+  }
+</script>
+
+</body>
+</html>
