@@ -4540,9 +4540,9 @@ function renderTestes() {
             <td><div style="font-weight:600">${t.titulo || '—'}</div></td>
             <td style="color:var(--muted);font-size:12px">${t.vaga_titulo || '—'}</td>
             <td style="color:var(--muted);font-size:12px">${t.tempo_limite_min || '—'} min</td>
-            <td style="text-align:center">${t.qtd_perguntas ?? (t.perguntas?.length ?? '—')}</td>
-            <td style="text-align:center">${t.tentativas ?? '—'}</td>
-            <td style="text-align:center">${t.concluidos ?? '—'}</td>
+            <td style="text-align:center">${t.total_perguntas ?? t.qtd_perguntas ?? (t.perguntas?.length ?? '—')}</td>
+            <td style="text-align:center">${t.total_tentativas ?? t.tentativas ?? '—'}</td>
+            <td style="text-align:center">${t.total_concluidos ?? t.concluidos ?? '—'}</td>
             <td style="white-space:nowrap">
               <button class="btn btn-ghost btn-sm" onclick="verTeste('${t.id}')">👁 Ver</button>
               <button class="btn btn-ghost btn-sm" onclick="copiarLinkTeste('${t.id}')">🔗 Link</button>
