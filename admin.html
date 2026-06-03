@@ -3857,7 +3857,12 @@ function _renderDP_emProcesso(lista, tbody) {
             <td><span class="badge ${cls}">${lbl}</span></td>
             <td style="font-size:12px">${docs.length ? docsAprov+'/'+docs.length : '—'}</td>
             <td style="font-size:12px;color:var(--muted)">${dataLib}</td>
-            <td onclick="event.stopPropagation()"><button class="btn btn-ghost btn-sm" onclick="abrirModalDP(window.admissoesData[${idx}])">Ver</button></td>
+            <td onclick="event.stopPropagation()">
+              <div style="display:flex;gap:0.5rem;justify-content:flex-end">
+                <button class="btn btn-ghost btn-sm" onclick="abrirModalDP(window.admissoesData[${idx}])">Ver</button>
+                <button class="btn btn-outline btn-sm" style="border-color:#ef4444;color:#ef4444" onclick="cancelarAdmissaoDP(window.admissoesData[${idx}])">❌ Cancelar</button>
+              </div>
+            </td>
           </tr>`;
         }).join('')}
       </tbody>
@@ -3908,6 +3913,7 @@ function _renderDP_funcionarios(lista, tbody) {
           <div class="dp-func-data">Admitido em ${dataFmt}</div>
         </div>
         <button class="btn btn-ghost btn-sm" onclick="abrirModalDP(window.admissoesData[${idx}])" title="Ver Ficha">👁️</button>
+        <button class="btn btn-outline btn-sm" style="border-color:#f59e0b;color:#f59e0b;margin-top:6px" onclick="regredirFuncionarioDP(window.admissoesData[${idx}])">↩ Regredir</button>
       </div>`;
     }).join('')}
   </div>`;
@@ -4376,6 +4382,36 @@ async function reativarCandidato(candidaturaId) {
     renderCandidatos();
     showToast('Candidato reativado. Voltou para Triagem.', 'success');
   } catch { showToast('Erro ao reativar candidato.', 'error'); }
+}
+
+async function cancelarAdmissaoDP(a) {
+  if (!a) return;
+  if (!confirm('Cancelar a admissão de ' + (a.candidato_nome || 'este candidato') + '? Ele voltará para a etapa de Entrevista Técnica nos Candidatos.')) return;
+  try {
+    const r = await fetch(BASE_URL + '/ats-dp-acao', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ acao: 'cancelar_admissao', admissao_id: a.admissao_id || a.id }),
+      signal: AbortSignal.timeout(8000)
+    });
+    if (!r.ok) throw new Error();
+    await carregarDP();
+    showToast('Admissão cancelada. Candidato voltou para Entrevista Técnica.', 'success');
+  } catch { showToast('Erro ao cancelar admissão.', 'error'); }
+}
+
+async function regredirFuncionarioDP(a) {
+  if (!a) return;
+  if (!confirm('Regredir ' + (a.candidato_nome || 'este funcionário') + ' de volta para Aguardando Assinatura?')) return;
+  try {
+    const r = await fetch(BASE_URL + '/ats-dp-acao', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ acao: 'regredir_funcionario', admissao_id: a.admissao_id || a.id }),
+      signal: AbortSignal.timeout(8000)
+    });
+    if (!r.ok) throw new Error();
+    await carregarDP();
+    showToast('Funcionário regredido para Aguardando Assinatura.', 'success');
+  } catch { showToast('Erro ao regredir.', 'error'); }
 }
 
 async function voltarDPParaProcesso(a) {
