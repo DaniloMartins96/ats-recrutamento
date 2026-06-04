@@ -967,18 +967,29 @@ async function carregarMetricas() {
 }
 
 // ── AÇÕES ──
-function novaVaga() { window.location.href = '/admin.html#vagas'; }
+function novaVaga() { document.getElementById('modal-nova-vaga').style.display = 'flex'; }
+function fecharModalNovaVaga() { document.getElementById('modal-nova-vaga').style.display = 'none'; }
 
-async function salvarVaga(payload) {
-  const r = await apiFetch('/ats-admin-criar-vaga', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      ...payload,
-      empresa_id: parseInt(localStorage.getItem('tr_empresa_id') || '1'),
-    }),
-  });
-  return r;
+async function salvarNovaVaga() {
+  const titulo = document.getElementById('nv-titulo').value.trim();
+  const departamento = document.getElementById('nv-departamento').value.trim();
+  const modalidade = document.getElementById('nv-modalidade').value;
+  const tipo_contrato = document.getElementById('nv-contrato').value;
+  const descricao = document.getElementById('nv-descricao').value.trim();
+  const cidade = document.getElementById('nv-cidade').value.trim();
+  if (!titulo) { showToast('Título é obrigatório.', 'info'); return; }
+  try {
+    const r = await fetch(BASE_URL + '/ats-admin-criar-vaga', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ titulo, departamento, modalidade, tipo_contrato, descricao, cidade, empresa_id: parseInt(localStorage.getItem('tr_empresa_id') || '1'), status: 'ativa' }),
+      signal: AbortSignal.timeout(15000)
+    });
+    const data = await r.json();
+    if (!data.success) throw new Error('Erro ao criar vaga');
+    fecharModalNovaVaga();
+    showToast('Vaga criada com sucesso!', 'success');
+    await carregarVagas();
+  } catch(err) { showToast(err.message || 'Erro ao criar vaga.', 'error'); }
 }
 function verVaga(id) { showToast('Funcionalidade em desenvolvimento', 'info'); }
 function verCandidato(id) { showToast('Funcionalidade em desenvolvimento', 'info'); }
@@ -1009,6 +1020,29 @@ document.addEventListener('DOMContentLoaded', () => {
   setInterval(() => carregarSecao(secaoAtiva), 30000);
 });
 </script>
+
+    <!-- Modal Nova Vaga -->
+    <div id="modal-nova-vaga" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:1000;align-items:center;justify-content:center">
+      <div class="card" style="width:520px;padding:28px;position:relative;max-height:90vh;overflow-y:auto">
+        <h3 style="font-size:18px;font-weight:700;margin-bottom:20px">Nova Vaga</h3>
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div><label style="font-size:12px;color:var(--muted);display:block;margin-bottom:6px">Título da Vaga *</label><input id="nv-titulo" class="form-input" placeholder="Ex: Corretor de Imóveis"></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div><label style="font-size:12px;color:var(--muted);display:block;margin-bottom:6px">Departamento</label><input id="nv-departamento" class="form-input" placeholder="Ex: Comercial"></div>
+            <div><label style="font-size:12px;color:var(--muted);display:block;margin-bottom:6px">Cidade</label><input id="nv-cidade" class="form-input" placeholder="Ex: São Paulo/SP"></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div><label style="font-size:12px;color:var(--muted);display:block;margin-bottom:6px">Modalidade</label><select id="nv-modalidade" class="form-input"><option value="presencial">Presencial</option><option value="hibrido">Híbrido</option><option value="remoto">Remoto</option></select></div>
+            <div><label style="font-size:12px;color:var(--muted);display:block;margin-bottom:6px">Contrato</label><select id="nv-contrato" class="form-input"><option value="CLT">CLT</option><option value="PJ">PJ</option><option value="Estagio">Estágio</option><option value="Freelancer">Freelancer</option></select></div>
+          </div>
+          <div><label style="font-size:12px;color:var(--muted);display:block;margin-bottom:6px">Descrição</label><textarea id="nv-descricao" class="form-input" rows="4" placeholder="Descreva a vaga, responsabilidades e requisitos..." style="resize:vertical"></textarea></div>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:20px;justify-content:flex-end">
+          <button class="btn btn-ghost" onclick="fecharModalNovaVaga()">Cancelar</button>
+          <button class="btn btn-primary" onclick="salvarNovaVaga()">Criar Vaga</button>
+        </div>
+      </div>
+    </div>
 
 </body>
 </html>
