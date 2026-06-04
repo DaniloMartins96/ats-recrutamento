@@ -968,6 +968,18 @@ async function carregarMetricas() {
 
 // ── AÇÕES ──
 function novaVaga() { window.location.href = '/admin.html#vagas'; }
+
+async function salvarVaga(payload) {
+  const r = await apiFetch('/ats-admin-criar-vaga', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      ...payload,
+      empresa_id: parseInt(localStorage.getItem('tr_empresa_id') || '1'),
+    }),
+  });
+  return r;
+}
 function verVaga(id) { showToast('Funcionalidade em desenvolvimento', 'info'); }
 function verCandidato(id) { showToast('Funcionalidade em desenvolvimento', 'info'); }
 function verCandidatosVaga(id) { mostrarSecao('candidatos'); }
