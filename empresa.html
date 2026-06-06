@@ -1021,65 +1021,309 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 
-    <!-- Modal Nova Vaga -->
-    <div id="modal-nova-vaga" style="display:none;position:fixed;inset:0;z-index:1000;align-items:center;justify-content:center;padding:20px" onclick="if(event.target===this)fecharModalNovaVaga()">
-      <div style="position:absolute;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(6px)"></div>
-      <div style="position:relative;z-index:1;width:100%;max-width:560px;background:linear-gradient(145deg,#13131a,#0f0f14);border:1px solid rgba(99,102,241,0.2);border-radius:20px;box-shadow:0 24px 64px rgba(0,0,0,0.5),0 0 0 1px rgba(255,255,255,0.04);overflow:hidden">
-        <div style="padding:24px 28px 20px;border-bottom:1px solid rgba(255,255,255,0.06);background:linear-gradient(135deg,rgba(99,102,241,0.1),transparent);display:flex;align-items:center;justify-content:space-between">
-          <div style="display:flex;align-items:center;gap:14px">
-            <div style="width:42px;height:42px;background:linear-gradient(135deg,#4f46e5,#818cf8);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 0 24px rgba(99,102,241,0.4)">📋</div>
-            <div>
-              <div style="font-family:'Sora',sans-serif;font-size:17px;font-weight:700;color:#f1f1f5;letter-spacing:-0.3px">Nova Vaga</div>
-              <div style="font-size:12px;color:#71717a;margin-top:2px">Preencha os dados da oportunidade</div>
+    <!-- Modal Nova Vaga – Profissional com Abas -->
+    <div id="modal-nova-vaga" style="display:none;position:fixed;inset:0;z-index:1000;align-items:center;justify-content:center;padding:16px" onclick="if(event.target===this)fecharModalNovaVaga()">
+      <div style="position:absolute;inset:0;background:rgba(0,0,0,0.8);backdrop-filter:blur(8px)"></div>
+      <div style="position:relative;z-index:1;width:100%;max-width:680px;background:#0d0d14;border:1px solid rgba(99,102,241,0.25);border-radius:22px;box-shadow:0 32px 80px rgba(0,0,0,0.6),0 0 0 1px rgba(255,255,255,0.04),inset 0 1px 0 rgba(255,255,255,0.06);overflow:hidden;display:flex;flex-direction:column;max-height:92vh">
+
+        <!-- Header -->
+        <div style="padding:22px 28px 18px;border-bottom:1px solid rgba(255,255,255,0.06);background:linear-gradient(135deg,rgba(99,102,241,0.08) 0%,rgba(99,102,241,0.02) 100%);flex-shrink:0">
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <div style="display:flex;align-items:center;gap:14px">
+              <div style="width:44px;height:44px;background:linear-gradient(135deg,#4338ca,#6366f1);border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;box-shadow:0 0 28px rgba(99,102,241,0.45)">💼</div>
+              <div>
+                <div style="font-family:'Sora',sans-serif;font-size:18px;font-weight:700;color:#f1f1f5;letter-spacing:-0.4px">Criar Nova Vaga</div>
+                <div style="font-size:12px;color:#52525b;margin-top:2px">Preencha todas as informações da oportunidade</div>
+              </div>
             </div>
+            <button onclick="fecharModalNovaVaga()" style="width:34px;height:34px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:9px;color:#71717a;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;flex-shrink:0" onmouseover="this.style.background='rgba(239,68,68,0.12)';this.style.borderColor='rgba(239,68,68,0.3)';this.style.color='#ef4444'" onmouseout="this.style.background='rgba(255,255,255,0.05)';this.style.borderColor='rgba(255,255,255,0.08)';this.style.color='#71717a'">✕</button>
           </div>
-          <button onclick="fecharModalNovaVaga()" style="width:32px;height:32px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);border-radius:8px;color:#71717a;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.15s" onmouseover="this.style.background='rgba(255,255,255,0.1)';this.style.color='#f1f1f5'" onmouseout="this.style.background='rgba(255,255,255,0.06)';this.style.color='#71717a'">✕</button>
-        </div>
-        <div style="padding:24px 28px;display:flex;flex-direction:column;gap:18px;max-height:65vh;overflow-y:auto">
-          <div>
-            <label style="display:block;font-size:12px;font-weight:600;color:#a1a1aa;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px">Título da Vaga <span style="color:#6366f1">*</span></label>
-            <input id="nv-titulo" placeholder="Ex: Corretor de Imóveis Sênior" style="width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:13px 16px;font-size:14px;color:#f1f1f5;outline:none;font-family:'DM Sans',sans-serif;transition:all 0.2s;box-sizing:border-box" onfocus="this.style.borderColor='#6366f1';this.style.boxShadow='0 0 0 3px rgba(99,102,241,0.15)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)';this.style.boxShadow='none'">
-          </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
-            <div>
-              <label style="display:block;font-size:12px;font-weight:600;color:#a1a1aa;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px">Departamento</label>
-              <input id="nv-departamento" placeholder="Ex: Comercial" style="width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:13px 16px;font-size:14px;color:#f1f1f5;outline:none;font-family:'DM Sans',sans-serif;transition:all 0.2s;box-sizing:border-box" onfocus="this.style.borderColor='#6366f1';this.style.boxShadow='0 0 0 3px rgba(99,102,241,0.15)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)';this.style.boxShadow='none'">
-            </div>
-            <div>
-              <label style="display:block;font-size:12px;font-weight:600;color:#a1a1aa;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px">Cidade</label>
-              <input id="nv-cidade" placeholder="Ex: São Paulo/SP" style="width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:13px 16px;font-size:14px;color:#f1f1f5;outline:none;font-family:'DM Sans',sans-serif;transition:all 0.2s;box-sizing:border-box" onfocus="this.style.borderColor='#6366f1';this.style.boxShadow='0 0 0 3px rgba(99,102,241,0.15)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)';this.style.boxShadow='none'">
-            </div>
-          </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
-            <div>
-              <label style="display:block;font-size:12px;font-weight:600;color:#a1a1aa;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px">Modalidade</label>
-              <select id="nv-modalidade" style="width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:13px 16px;font-size:14px;color:#f1f1f5;outline:none;font-family:'DM Sans',sans-serif;cursor:pointer;box-sizing:border-box">
-                <option value="presencial" style="background:#13131a">Presencial</option>
-                <option value="hibrido" style="background:#13131a">Híbrido</option>
-                <option value="remoto" style="background:#13131a">Remoto</option>
-              </select>
-            </div>
-            <div>
-              <label style="display:block;font-size:12px;font-weight:600;color:#a1a1aa;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px">Contrato</label>
-              <select id="nv-contrato" style="width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:13px 16px;font-size:14px;color:#f1f1f5;outline:none;font-family:'DM Sans',sans-serif;cursor:pointer;box-sizing:border-box">
-                <option value="CLT" style="background:#13131a">CLT</option>
-                <option value="PJ" style="background:#13131a">PJ</option>
-                <option value="Estagio" style="background:#13131a">Estágio</option>
-                <option value="Freelancer" style="background:#13131a">Freelancer</option>
-              </select>
-            </div>
-          </div>
-          <div>
-            <label style="display:block;font-size:12px;font-weight:600;color:#a1a1aa;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px">Descrição</label>
-            <textarea id="nv-descricao" rows="4" placeholder="Descreva a vaga, principais responsabilidades e requisitos..." style="width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:13px 16px;font-size:14px;color:#f1f1f5;outline:none;font-family:'DM Sans',sans-serif;resize:vertical;transition:all 0.2s;box-sizing:border-box" onfocus="this.style.borderColor='#6366f1';this.style.boxShadow='0 0 0 3px rgba(99,102,241,0.15)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)';this.style.boxShadow='none'"></textarea>
+          <!-- Tabs -->
+          <div style="display:flex;gap:4px;margin-top:18px;background:rgba(255,255,255,0.03);border-radius:10px;padding:4px">
+            <button id="nv-tab-0" onclick="nvMudarAba(0)" style="flex:1;padding:8px 12px;border-radius:8px;border:none;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;background:linear-gradient(135deg,#4338ca,#6366f1);color:white;box-shadow:0 2px 8px rgba(99,102,241,0.3)">📋 Informações</button>
+            <button id="nv-tab-1" onclick="nvMudarAba(1)" style="flex:1;padding:8px 12px;border-radius:8px;border:none;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;background:transparent;color:#71717a">📝 Descrição</button>
+            <button id="nv-tab-2" onclick="nvMudarAba(2)" style="flex:1;padding:8px 12px;border-radius:8px;border:none;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;background:transparent;color:#71717a">⚙️ Configurações</button>
           </div>
         </div>
-        <div style="padding:16px 28px 24px;border-top:1px solid rgba(255,255,255,0.06);display:flex;justify-content:flex-end;gap:10px">
-          <button onclick="fecharModalNovaVaga()" style="padding:11px 20px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:10px;color:#a1a1aa;font-size:14px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.15s" onmouseover="this.style.background='rgba(255,255,255,0.08)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">Cancelar</button>
-          <button onclick="salvarNovaVaga()" style="padding:11px 24px;background:linear-gradient(135deg,#4f46e5,#6366f1);border:none;border-radius:10px;color:white;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.15s;box-shadow:0 4px 16px rgba(99,102,241,0.35)" onmouseover="this.style.opacity='0.9';this.style.transform='translateY(-1px)'" onmouseout="this.style.opacity='1';this.style.transform='none'">✨ Criar Vaga</button>
+
+        <!-- Body com scroll -->
+        <div style="overflow-y:auto;flex:1;padding:24px 28px">
+
+          <!-- ABA 0: Informações Básicas -->
+          <div id="nv-pane-0">
+            <div style="display:grid;gap:18px">
+              <div>
+                <label style="display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:#a1a1aa;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.8px">Título da Vaga <span style="color:#6366f1;font-size:14px">*</span></label>
+                <input id="nv-titulo" placeholder="Ex: Corretor de Imóveis Sênior" style="width:100%;background:rgba(255,255,255,0.04);border:1.5px solid rgba(255,255,255,0.08);border-radius:11px;padding:13px 16px;font-size:14px;color:#f1f1f5;outline:none;font-family:'DM Sans',sans-serif;transition:all 0.2s;box-sizing:border-box" onfocus="this.style.borderColor='#6366f1';this.style.background='rgba(99,102,241,0.06)';this.style.boxShadow='0 0 0 3px rgba(99,102,241,0.12)'" onblur="this.style.borderColor='rgba(255,255,255,0.08)';this.style.background='rgba(255,255,255,0.04)';this.style.boxShadow='none'">
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+                <div>
+                  <label style="display:block;font-size:11px;font-weight:700;color:#a1a1aa;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.8px">Departamento</label>
+                  <input id="nv-departamento" placeholder="Ex: Comercial" style="width:100%;background:rgba(255,255,255,0.04);border:1.5px solid rgba(255,255,255,0.08);border-radius:11px;padding:13px 16px;font-size:14px;color:#f1f1f5;outline:none;font-family:'DM Sans',sans-serif;transition:all 0.2s;box-sizing:border-box" onfocus="this.style.borderColor='#6366f1';this.style.background='rgba(99,102,241,0.06)';this.style.boxShadow='0 0 0 3px rgba(99,102,241,0.12)'" onblur="this.style.borderColor='rgba(255,255,255,0.08)';this.style.background='rgba(255,255,255,0.04)';this.style.boxShadow='none'">
+                </div>
+                <div>
+                  <label style="display:block;font-size:11px;font-weight:700;color:#a1a1aa;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.8px">Nº de Vagas</label>
+                  <input id="nv-qtd" type="number" min="1" value="1" style="width:100%;background:rgba(255,255,255,0.04);border:1.5px solid rgba(255,255,255,0.08);border-radius:11px;padding:13px 16px;font-size:14px;color:#f1f1f5;outline:none;font-family:'DM Sans',sans-serif;transition:all 0.2s;box-sizing:border-box" onfocus="this.style.borderColor='#6366f1';this.style.background='rgba(99,102,241,0.06)';this.style.boxShadow='0 0 0 3px rgba(99,102,241,0.12)'" onblur="this.style.borderColor='rgba(255,255,255,0.08)';this.style.background='rgba(255,255,255,0.04)';this.style.boxShadow='none'">
+                </div>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+                <div>
+                  <label style="display:block;font-size:11px;font-weight:700;color:#a1a1aa;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.8px">Cidade</label>
+                  <input id="nv-cidade" placeholder="Ex: São Paulo" style="width:100%;background:rgba(255,255,255,0.04);border:1.5px solid rgba(255,255,255,0.08);border-radius:11px;padding:13px 16px;font-size:14px;color:#f1f1f5;outline:none;font-family:'DM Sans',sans-serif;transition:all 0.2s;box-sizing:border-box" onfocus="this.style.borderColor='#6366f1';this.style.background='rgba(99,102,241,0.06)';this.style.boxShadow='0 0 0 3px rgba(99,102,241,0.12)'" onblur="this.style.borderColor='rgba(255,255,255,0.08)';this.style.background='rgba(255,255,255,0.04)';this.style.boxShadow='none'">
+                </div>
+                <div>
+                  <label style="display:block;font-size:11px;font-weight:700;color:#a1a1aa;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.8px">Estado</label>
+                  <select id="nv-estado" style="width:100%;background:#0d0d14;border:1.5px solid rgba(255,255,255,0.08);border-radius:11px;padding:13px 16px;font-size:14px;color:#f1f1f5;outline:none;font-family:'DM Sans',sans-serif;cursor:pointer;box-sizing:border-box">
+                    <option value="">Selecione...</option>
+                    <option value="SP">São Paulo</option><option value="RJ">Rio de Janeiro</option><option value="MG">Minas Gerais</option><option value="RS">Rio Grande do Sul</option><option value="PR">Paraná</option><option value="SC">Santa Catarina</option><option value="BA">Bahia</option><option value="CE">Ceará</option><option value="PE">Pernambuco</option><option value="GO">Goiás</option><option value="DF">Distrito Federal</option><option value="AM">Amazonas</option><option value="PA">Pará</option><option value="ES">Espírito Santo</option><option value="MT">Mato Grosso</option><option value="MS">Mato Grosso do Sul</option><option value="MA">Maranhão</option><option value="PB">Paraíba</option><option value="RN">Rio Grande do Norte</option><option value="AL">Alagoas</option><option value="PI">Piauí</option><option value="SE">Sergipe</option><option value="RO">Rondônia</option><option value="TO">Tocantins</option><option value="AC">Acre</option><option value="AP">Amapá</option><option value="RR">Roraima</option>
+                  </select>
+                </div>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px">
+                <div>
+                  <label style="display:block;font-size:11px;font-weight:700;color:#a1a1aa;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.8px">Modalidade</label>
+                  <select id="nv-modalidade" style="width:100%;background:#0d0d14;border:1.5px solid rgba(255,255,255,0.08);border-radius:11px;padding:13px 16px;font-size:14px;color:#f1f1f5;outline:none;font-family:'DM Sans',sans-serif;cursor:pointer;box-sizing:border-box">
+                    <option value="presencial">🏢 Presencial</option>
+                    <option value="hibrido">🔄 Híbrido</option>
+                    <option value="remoto">🏠 Remoto</option>
+                  </select>
+                </div>
+                <div>
+                  <label style="display:block;font-size:11px;font-weight:700;color:#a1a1aa;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.8px">Contrato</label>
+                  <select id="nv-contrato" style="width:100%;background:#0d0d14;border:1.5px solid rgba(255,255,255,0.08);border-radius:11px;padding:13px 16px;font-size:14px;color:#f1f1f5;outline:none;font-family:'DM Sans',sans-serif;cursor:pointer;box-sizing:border-box">
+                    <option value="CLT">CLT</option>
+                    <option value="PJ">PJ</option>
+                    <option value="Estagio">Estágio</option>
+                    <option value="Freelancer">Freelancer</option>
+                    <option value="Temporario">Temporário</option>
+                  </select>
+                </div>
+                <div>
+                  <label style="display:block;font-size:11px;font-weight:700;color:#a1a1aa;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.8px">Senioridade</label>
+                  <select id="nv-senioridade" style="width:100%;background:#0d0d14;border:1.5px solid rgba(255,255,255,0.08);border-radius:11px;padding:13px 16px;font-size:14px;color:#f1f1f5;outline:none;font-family:'DM Sans',sans-serif;cursor:pointer;box-sizing:border-box">
+                    <option value="estagiario">Estagiário</option>
+                    <option value="junior">Júnior</option>
+                    <option value="pleno" selected>Pleno</option>
+                    <option value="senior">Sênior</option>
+                    <option value="especialista">Especialista</option>
+                    <option value="gerente">Gerente</option>
+                    <option value="diretor">Diretor</option>
+                  </select>
+                </div>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+                <div>
+                  <label style="display:block;font-size:11px;font-weight:700;color:#a1a1aa;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.8px">Salário Mínimo (R$)</label>
+                  <input id="nv-salario-min" type="number" placeholder="Ex: 3000" style="width:100%;background:rgba(255,255,255,0.04);border:1.5px solid rgba(255,255,255,0.08);border-radius:11px;padding:13px 16px;font-size:14px;color:#f1f1f5;outline:none;font-family:'DM Sans',sans-serif;transition:all 0.2s;box-sizing:border-box" onfocus="this.style.borderColor='#6366f1';this.style.background='rgba(99,102,241,0.06)';this.style.boxShadow='0 0 0 3px rgba(99,102,241,0.12)'" onblur="this.style.borderColor='rgba(255,255,255,0.08)';this.style.background='rgba(255,255,255,0.04)';this.style.boxShadow='none'">
+                </div>
+                <div>
+                  <label style="display:block;font-size:11px;font-weight:700;color:#a1a1aa;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.8px">Salário Máximo (R$)</label>
+                  <input id="nv-salario-max" type="number" placeholder="Ex: 6000" style="width:100%;background:rgba(255,255,255,0.04);border:1.5px solid rgba(255,255,255,0.08);border-radius:11px;padding:13px 16px;font-size:14px;color:#f1f1f5;outline:none;font-family:'DM Sans',sans-serif;transition:all 0.2s;box-sizing:border-box" onfocus="this.style.borderColor='#6366f1';this.style.background='rgba(99,102,241,0.06)';this.style.boxShadow='0 0 0 3px rgba(99,102,241,0.12)'" onblur="this.style.borderColor='rgba(255,255,255,0.08)';this.style.background='rgba(255,255,255,0.04)';this.style.boxShadow='none'">
+                </div>
+              </div>
+              <div>
+                <label style="display:block;font-size:11px;font-weight:700;color:#a1a1aa;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.8px">Benefícios</label>
+                <input id="nv-beneficios" placeholder="Ex: VR R$50/dia, Plano de saúde, Vale-transporte, PLR..." style="width:100%;background:rgba(255,255,255,0.04);border:1.5px solid rgba(255,255,255,0.08);border-radius:11px;padding:13px 16px;font-size:14px;color:#f1f1f5;outline:none;font-family:'DM Sans',sans-serif;transition:all 0.2s;box-sizing:border-box" onfocus="this.style.borderColor='#6366f1';this.style.background='rgba(99,102,241,0.06)';this.style.boxShadow='0 0 0 3px rgba(99,102,241,0.12)'" onblur="this.style.borderColor='rgba(255,255,255,0.08)';this.style.background='rgba(255,255,255,0.04)';this.style.boxShadow='none'">
+              </div>
+            </div>
+          </div>
+
+          <!-- ABA 1: Descrição -->
+          <div id="nv-pane-1" style="display:none">
+            <div style="display:grid;gap:18px">
+              <div>
+                <label style="display:block;font-size:11px;font-weight:700;color:#a1a1aa;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.8px">Sobre a Empresa</label>
+                <textarea id="nv-sobre-empresa" rows="3" placeholder="Breve apresentação da empresa para atrair candidatos..." style="width:100%;background:rgba(255,255,255,0.04);border:1.5px solid rgba(255,255,255,0.08);border-radius:11px;padding:13px 16px;font-size:14px;color:#f1f1f5;outline:none;font-family:'DM Sans',sans-serif;resize:vertical;transition:all 0.2s;box-sizing:border-box" onfocus="this.style.borderColor='#6366f1';this.style.background='rgba(99,102,241,0.06)';this.style.boxShadow='0 0 0 3px rgba(99,102,241,0.12)'" onblur="this.style.borderColor='rgba(255,255,255,0.08)';this.style.background='rgba(255,255,255,0.04)';this.style.boxShadow='none'"></textarea>
+              </div>
+              <div>
+                <label style="display:block;font-size:11px;font-weight:700;color:#a1a1aa;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.8px">Descrição da Vaga <span style="color:#6366f1;font-size:14px">*</span></label>
+                <textarea id="nv-descricao" rows="4" placeholder="Descreva o papel, o que o profissional fará no dia a dia..." style="width:100%;background:rgba(255,255,255,0.04);border:1.5px solid rgba(255,255,255,0.08);border-radius:11px;padding:13px 16px;font-size:14px;color:#f1f1f5;outline:none;font-family:'DM Sans',sans-serif;resize:vertical;transition:all 0.2s;box-sizing:border-box" onfocus="this.style.borderColor='#6366f1';this.style.background='rgba(99,102,241,0.06)';this.style.boxShadow='0 0 0 3px rgba(99,102,241,0.12)'" onblur="this.style.borderColor='rgba(255,255,255,0.08)';this.style.background='rgba(255,255,255,0.04)';this.style.boxShadow='none'"></textarea>
+              </div>
+              <div>
+                <label style="display:block;font-size:11px;font-weight:700;color:#a1a1aa;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.8px">Responsabilidades</label>
+                <textarea id="nv-responsabilidades" rows="4" placeholder="• Atender clientes e apresentar imóveis&#10;• Prospectar novos clientes&#10;• Negociar contratos..." style="width:100%;background:rgba(255,255,255,0.04);border:1.5px solid rgba(255,255,255,0.08);border-radius:11px;padding:13px 16px;font-size:14px;color:#f1f1f5;outline:none;font-family:'DM Sans',sans-serif;resize:vertical;transition:all 0.2s;box-sizing:border-box" onfocus="this.style.borderColor='#6366f1';this.style.background='rgba(99,102,241,0.06)';this.style.boxShadow='0 0 0 3px rgba(99,102,241,0.12)'" onblur="this.style.borderColor='rgba(255,255,255,0.08)';this.style.background='rgba(255,255,255,0.04)';this.style.boxShadow='none'"></textarea>
+              </div>
+              <div>
+                <label style="display:block;font-size:11px;font-weight:700;color:#a1a1aa;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.8px">Requisitos Obrigatórios</label>
+                <textarea id="nv-requisitos-obrig" rows="3" placeholder="• CRECI ativo&#10;• CNH categoria B&#10;• Experiência mínima de 1 ano..." style="width:100%;background:rgba(255,255,255,0.04);border:1.5px solid rgba(255,255,255,0.08);border-radius:11px;padding:13px 16px;font-size:14px;color:#f1f1f5;outline:none;font-family:'DM Sans',sans-serif;resize:vertical;transition:all 0.2s;box-sizing:border-box" onfocus="this.style.borderColor='#6366f1';this.style.background='rgba(99,102,241,0.06)';this.style.boxShadow='0 0 0 3px rgba(99,102,241,0.12)'" onblur="this.style.borderColor='rgba(255,255,255,0.08)';this.style.background='rgba(255,255,255,0.04)';this.style.boxShadow='none'"></textarea>
+              </div>
+              <div>
+                <label style="display:block;font-size:11px;font-weight:700;color:#a1a1aa;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.8px">Requisitos Desejáveis</label>
+                <textarea id="nv-requisitos-desej" rows="3" placeholder="• Experiência com CRM&#10;• Inglês básico&#10;• Pós-graduação em gestão..." style="width:100%;background:rgba(255,255,255,0.04);border:1.5px solid rgba(255,255,255,0.08);border-radius:11px;padding:13px 16px;font-size:14px;color:#f1f1f5;outline:none;font-family:'DM Sans',sans-serif;resize:vertical;transition:all 0.2s;box-sizing:border-box" onfocus="this.style.borderColor='#6366f1';this.style.background='rgba(99,102,241,0.06)';this.style.boxShadow='0 0 0 3px rgba(99,102,241,0.12)'" onblur="this.style.borderColor='rgba(255,255,255,0.08)';this.style.background='rgba(255,255,255,0.04)';this.style.boxShadow='none'"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- ABA 2: Configurações -->
+          <div id="nv-pane-2" style="display:none">
+            <div style="display:grid;gap:18px">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+                <div>
+                  <label style="display:block;font-size:11px;font-weight:700;color:#a1a1aa;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.8px">Experiência Mínima</label>
+                  <select id="nv-experiencia" style="width:100%;background:#0d0d14;border:1.5px solid rgba(255,255,255,0.08);border-radius:11px;padding:13px 16px;font-size:14px;color:#f1f1f5;outline:none;font-family:'DM Sans',sans-serif;cursor:pointer;box-sizing:border-box">
+                    <option value="0">Sem experiência</option>
+                    <option value="1">1 ano</option>
+                    <option value="2">2 anos</option>
+                    <option value="3">3 anos</option>
+                    <option value="5">5 anos</option>
+                    <option value="7">7+ anos</option>
+                  </select>
+                </div>
+                <div>
+                  <label style="display:block;font-size:11px;font-weight:700;color:#a1a1aa;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.8px">Status</label>
+                  <select id="nv-status" style="width:100%;background:#0d0d14;border:1.5px solid rgba(255,255,255,0.08);border-radius:11px;padding:13px 16px;font-size:14px;color:#f1f1f5;outline:none;font-family:'DM Sans',sans-serif;cursor:pointer;box-sizing:border-box">
+                    <option value="ativa">✅ Ativa</option>
+                    <option value="rascunho">📄 Rascunho</option>
+                  </select>
+                </div>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+                <div>
+                  <label style="display:block;font-size:11px;font-weight:700;color:#a1a1aa;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.8px">Inglês Obrigatório</label>
+                  <select id="nv-ingles-obrig" style="width:100%;background:#0d0d14;border:1.5px solid rgba(255,255,255,0.08);border-radius:11px;padding:13px 16px;font-size:14px;color:#f1f1f5;outline:none;font-family:'DM Sans',sans-serif;cursor:pointer;box-sizing:border-box">
+                    <option value="false">Não</option>
+                    <option value="true">Sim</option>
+                  </select>
+                </div>
+                <div>
+                  <label style="display:block;font-size:11px;font-weight:700;color:#a1a1aa;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.8px">Nível de Inglês</label>
+                  <select id="nv-nivel-ingles" style="width:100%;background:#0d0d14;border:1.5px solid rgba(255,255,255,0.08);border-radius:11px;padding:13px 16px;font-size:14px;color:#f1f1f5;outline:none;font-family:'DM Sans',sans-serif;cursor:pointer;box-sizing:border-box">
+                    <option value="">Não aplicável</option>
+                    <option value="basico">Básico</option>
+                    <option value="intermediario">Intermediário</option>
+                    <option value="avancado">Avançado</option>
+                    <option value="fluente">Fluente</option>
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label style="display:block;font-size:11px;font-weight:700;color:#a1a1aa;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.8px">Data Limite para Inscrições</label>
+                <input id="nv-data-limite" type="date" style="width:100%;background:rgba(255,255,255,0.04);border:1.5px solid rgba(255,255,255,0.08);border-radius:11px;padding:13px 16px;font-size:14px;color:#f1f1f5;outline:none;font-family:'DM Sans',sans-serif;transition:all 0.2s;box-sizing:border-box;color-scheme:dark" onfocus="this.style.borderColor='#6366f1';this.style.boxShadow='0 0 0 3px rgba(99,102,241,0.12)'" onblur="this.style.borderColor='rgba(255,255,255,0.08)';this.style.boxShadow='none'">
+              </div>
+              <div>
+                <label style="display:block;font-size:11px;font-weight:700;color:#a1a1aa;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.8px">Recrutador Responsável</label>
+                <input id="nv-recrutador" placeholder="Nome do recrutador responsável..." style="width:100%;background:rgba(255,255,255,0.04);border:1.5px solid rgba(255,255,255,0.08);border-radius:11px;padding:13px 16px;font-size:14px;color:#f1f1f5;outline:none;font-family:'DM Sans',sans-serif;transition:all 0.2s;box-sizing:border-box" onfocus="this.style.borderColor='#6366f1';this.style.background='rgba(99,102,241,0.06)';this.style.boxShadow='0 0 0 3px rgba(99,102,241,0.12)'" onblur="this.style.borderColor='rgba(255,255,255,0.08)';this.style.background='rgba(255,255,255,0.04)';this.style.boxShadow='none'">
+              </div>
+              <!-- Pesos de triagem IA -->
+              <div style="background:rgba(99,102,241,0.05);border:1px solid rgba(99,102,241,0.15);border-radius:14px;padding:18px">
+                <div style="font-size:12px;font-weight:700;color:#818cf8;margin-bottom:14px;display:flex;align-items:center;gap:8px">🤖 Pesos de Triagem IA <span style="font-size:10px;font-weight:400;color:#52525b">(total deve ser 100)</span></div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+                  <div>
+                    <label style="display:flex;justify-content:space-between;font-size:11px;color:#a1a1aa;margin-bottom:6px">Técnico <span id="nv-peso-tec-val" style="color:#818cf8;font-weight:700">35%</span></label>
+                    <input id="nv-peso-tec" type="range" min="0" max="100" value="35" oninput="document.getElementById('nv-peso-tec-val').textContent=this.value+'%'" style="width:100%;accent-color:#6366f1">
+                  </div>
+                  <div>
+                    <label style="display:flex;justify-content:space-between;font-size:11px;color:#a1a1aa;margin-bottom:6px">Experiência <span id="nv-peso-exp-val" style="color:#818cf8;font-weight:700">25%</span></label>
+                    <input id="nv-peso-exp" type="range" min="0" max="100" value="25" oninput="document.getElementById('nv-peso-exp-val').textContent=this.value+'%'" style="width:100%;accent-color:#6366f1">
+                  </div>
+                  <div>
+                    <label style="display:flex;justify-content:space-between;font-size:11px;color:#a1a1aa;margin-bottom:6px">Comportamental <span id="nv-peso-comp-val" style="color:#818cf8;font-weight:700">20%</span></label>
+                    <input id="nv-peso-comp" type="range" min="0" max="100" value="20" oninput="document.getElementById('nv-peso-comp-val').textContent=this.value+'%'" style="width:100%;accent-color:#6366f1">
+                  </div>
+                  <div>
+                    <label style="display:flex;justify-content:space-between;font-size:11px;color:#a1a1aa;margin-bottom:6px">Fit Cultural <span id="nv-peso-fit-val" style="color:#818cf8;font-weight:700">20%</span></label>
+                    <input id="nv-peso-fit" type="range" min="0" max="100" value="20" oninput="document.getElementById('nv-peso-fit-val').textContent=this.value+'%'" style="width:100%;accent-color:#6366f1">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
         </div>
+
+        <!-- Footer -->
+        <div style="padding:16px 28px 20px;border-top:1px solid rgba(255,255,255,0.06);display:flex;justify-content:space-between;align-items:center;flex-shrink:0;background:rgba(0,0,0,0.2)">
+          <div style="font-size:12px;color:#52525b"><span id="nv-aba-indicador">Aba 1 de 3</span></div>
+          <div style="display:flex;gap:10px">
+            <button onclick="fecharModalNovaVaga()" style="padding:11px 20px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:10px;color:#a1a1aa;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s" onmouseover="this.style.background='rgba(255,255,255,0.09)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">Cancelar</button>
+            <button id="nv-btn-anterior" onclick="nvMudarAba(nvAbaAtual-1)" style="display:none;padding:11px 20px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:10px;color:#f1f1f5;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s" onmouseover="this.style.background='rgba(255,255,255,0.09)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">← Anterior</button>
+            <button id="nv-btn-proximo" onclick="nvMudarAba(nvAbaAtual+1)" style="padding:11px 24px;background:linear-gradient(135deg,#4338ca,#6366f1);border:none;border-radius:10px;color:white;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;box-shadow:0 4px 16px rgba(99,102,241,0.35)" onmouseover="this.style.opacity='0.9';this.style.transform='translateY(-1px)'" onmouseout="this.style.opacity='1';this.style.transform='none'">Próximo →</button>
+            <button id="nv-btn-salvar" onclick="salvarNovaVaga()" style="display:none;padding:11px 24px;background:linear-gradient(135deg,#059669,#10b981);border:none;border-radius:10px;color:white;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;box-shadow:0 4px 16px rgba(16,185,129,0.35)" onmouseover="this.style.opacity='0.9';this.style.transform='translateY(-1px)'" onmouseout="this.style.opacity='1';this.style.transform='none'">✅ Publicar Vaga</button>
+          </div>
+        </div>
+
       </div>
     </div>
+
+<script>
+var nvAbaAtual = 0;
+
+function nvMudarAba(idx) {
+  if (idx < 0 || idx > 2) return;
+  [0,1,2].forEach(function(i) {
+    document.getElementById('nv-pane-'+i).style.display = i===idx ? 'block' : 'none';
+    var tab = document.getElementById('nv-tab-'+i);
+    if (i===idx) {
+      tab.style.background = 'linear-gradient(135deg,#4338ca,#6366f1)';
+      tab.style.color = 'white';
+      tab.style.boxShadow = '0 2px 8px rgba(99,102,241,0.3)';
+    } else {
+      tab.style.background = 'transparent';
+      tab.style.color = '#71717a';
+      tab.style.boxShadow = 'none';
+    }
+  });
+  nvAbaAtual = idx;
+  document.getElementById('nv-aba-indicador').textContent = 'Aba '+(idx+1)+' de 3';
+  document.getElementById('nv-btn-anterior').style.display = idx > 0 ? '' : 'none';
+  document.getElementById('nv-btn-proximo').style.display = idx < 2 ? '' : 'none';
+  document.getElementById('nv-btn-salvar').style.display = idx === 2 ? '' : 'none';
+}
+
+function fecharModalNovaVaga() {
+  document.getElementById('modal-nova-vaga').style.display = 'none';
+  nvMudarAba(0);
+}
+
+async function salvarNovaVaga() {
+  const titulo = document.getElementById('nv-titulo').value.trim();
+  if (!titulo) { nvMudarAba(0); showToast('Título da vaga é obrigatório.', 'info'); return; }
+  const btn = document.getElementById('nv-btn-salvar');
+  btn.textContent = 'Publicando...'; btn.disabled = true;
+  try {
+    const r = await fetch('https://webhook.danns.com.br/webhook/ats-admin-criar-vaga', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        titulo, empresa_id: parseInt(localStorage.getItem('tr_empresa_id') || '1'),
+        departamento: document.getElementById('nv-departamento').value.trim(),
+        cidade: (document.getElementById('nv-cidade').value.trim() + (document.getElementById('nv-estado').value ? '/' + document.getElementById('nv-estado').value : '')),
+        modalidade: document.getElementById('nv-modalidade').value,
+        tipo_contrato: document.getElementById('nv-contrato').value,
+        senioridade: document.getElementById('nv-senioridade').value,
+        salario_min: parseFloat(document.getElementById('nv-salario-min').value) || 0,
+        salario_max: parseFloat(document.getElementById('nv-salario-max').value) || 0,
+        beneficios: document.getElementById('nv-beneficios').value.trim(),
+        sobre_empresa: document.getElementById('nv-sobre-empresa').value.trim(),
+        descricao: document.getElementById('nv-descricao').value.trim(),
+        responsabilidades: document.getElementById('nv-responsabilidades').value.trim(),
+        requisitos_obrigatorios: document.getElementById('nv-requisitos-obrig').value.trim(),
+        requisitos_desejaveis: document.getElementById('nv-requisitos-desej').value.trim(),
+        experiencia_minima_anos: parseInt(document.getElementById('nv-experiencia').value) || 0,
+        ingles_obrigatorio: document.getElementById('nv-ingles-obrig').value === 'true',
+        nivel_ingles_minimo: document.getElementById('nv-nivel-ingles').value,
+        data_limite: document.getElementById('nv-data-limite').value || null,
+        recrutador_responsavel: document.getElementById('nv-recrutador').value.trim(),
+        status: document.getElementById('nv-status').value,
+        vagas_abertas: parseInt(document.getElementById('nv-qtd').value) || 1,
+        peso_tecnico: parseInt(document.getElementById('nv-peso-tec').value) || 35,
+        peso_experiencia: parseInt(document.getElementById('nv-peso-exp').value) || 25,
+        peso_comportamental: parseInt(document.getElementById('nv-peso-comp').value) || 20,
+        peso_fit_cultural: parseInt(document.getElementById('nv-peso-fit').value) || 20,
+        stack_tecnica: [], competencias_comportamentais: []
+      }), signal: AbortSignal.timeout(20000)
+    });
+    const data = await r.json();
+    if (!data.success) throw new Error('Erro ao criar vaga');
+    fecharModalNovaVaga();
+    showToast('Vaga publicada com sucesso! 🎉', 'success');
+    if (typeof carregarVagas === 'function') await carregarVagas();
+  } catch(err) {
+    showToast(err.message || 'Erro ao publicar vaga.', 'error');
+  } finally {
+    btn.textContent = '✅ Publicar Vaga'; btn.disabled = false;
+  }
+}
+</script>
 
 </body>
 </html>
