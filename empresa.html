@@ -1022,24 +1022,61 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 
     <!-- Modal Nova Vaga -->
-    <div id="modal-nova-vaga" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:1000;align-items:center;justify-content:center">
-      <div class="card" style="width:520px;padding:28px;position:relative;max-height:90vh;overflow-y:auto">
-        <h3 style="font-size:18px;font-weight:700;margin-bottom:20px">Nova Vaga</h3>
-        <div style="display:flex;flex-direction:column;gap:14px">
-          <div><label style="font-size:12px;color:var(--muted);display:block;margin-bottom:6px">Título da Vaga *</label><input id="nv-titulo" class="form-input" placeholder="Ex: Corretor de Imóveis"></div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-            <div><label style="font-size:12px;color:var(--muted);display:block;margin-bottom:6px">Departamento</label><input id="nv-departamento" class="form-input" placeholder="Ex: Comercial"></div>
-            <div><label style="font-size:12px;color:var(--muted);display:block;margin-bottom:6px">Cidade</label><input id="nv-cidade" class="form-input" placeholder="Ex: São Paulo/SP"></div>
+    <div id="modal-nova-vaga" style="display:none;position:fixed;inset:0;z-index:1000;align-items:center;justify-content:center;padding:20px" onclick="if(event.target===this)fecharModalNovaVaga()">
+      <div style="position:absolute;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(6px)"></div>
+      <div style="position:relative;z-index:1;width:100%;max-width:560px;background:linear-gradient(145deg,#13131a,#0f0f14);border:1px solid rgba(99,102,241,0.2);border-radius:20px;box-shadow:0 24px 64px rgba(0,0,0,0.5),0 0 0 1px rgba(255,255,255,0.04);overflow:hidden">
+        <div style="padding:24px 28px 20px;border-bottom:1px solid rgba(255,255,255,0.06);background:linear-gradient(135deg,rgba(99,102,241,0.1),transparent);display:flex;align-items:center;justify-content:space-between">
+          <div style="display:flex;align-items:center;gap:14px">
+            <div style="width:42px;height:42px;background:linear-gradient(135deg,#4f46e5,#818cf8);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 0 24px rgba(99,102,241,0.4)">📋</div>
+            <div>
+              <div style="font-family:'Sora',sans-serif;font-size:17px;font-weight:700;color:#f1f1f5;letter-spacing:-0.3px">Nova Vaga</div>
+              <div style="font-size:12px;color:#71717a;margin-top:2px">Preencha os dados da oportunidade</div>
+            </div>
           </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-            <div><label style="font-size:12px;color:var(--muted);display:block;margin-bottom:6px">Modalidade</label><select id="nv-modalidade" class="form-input"><option value="presencial">Presencial</option><option value="hibrido">Híbrido</option><option value="remoto">Remoto</option></select></div>
-            <div><label style="font-size:12px;color:var(--muted);display:block;margin-bottom:6px">Contrato</label><select id="nv-contrato" class="form-input"><option value="CLT">CLT</option><option value="PJ">PJ</option><option value="Estagio">Estágio</option><option value="Freelancer">Freelancer</option></select></div>
-          </div>
-          <div><label style="font-size:12px;color:var(--muted);display:block;margin-bottom:6px">Descrição</label><textarea id="nv-descricao" class="form-input" rows="4" placeholder="Descreva a vaga, responsabilidades e requisitos..." style="resize:vertical"></textarea></div>
+          <button onclick="fecharModalNovaVaga()" style="width:32px;height:32px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);border-radius:8px;color:#71717a;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.15s" onmouseover="this.style.background='rgba(255,255,255,0.1)';this.style.color='#f1f1f5'" onmouseout="this.style.background='rgba(255,255,255,0.06)';this.style.color='#71717a'">✕</button>
         </div>
-        <div style="display:flex;gap:10px;margin-top:20px;justify-content:flex-end">
-          <button class="btn btn-ghost" onclick="fecharModalNovaVaga()">Cancelar</button>
-          <button class="btn btn-primary" onclick="salvarNovaVaga()">Criar Vaga</button>
+        <div style="padding:24px 28px;display:flex;flex-direction:column;gap:18px;max-height:65vh;overflow-y:auto">
+          <div>
+            <label style="display:block;font-size:12px;font-weight:600;color:#a1a1aa;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px">Título da Vaga <span style="color:#6366f1">*</span></label>
+            <input id="nv-titulo" placeholder="Ex: Corretor de Imóveis Sênior" style="width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:13px 16px;font-size:14px;color:#f1f1f5;outline:none;font-family:'DM Sans',sans-serif;transition:all 0.2s;box-sizing:border-box" onfocus="this.style.borderColor='#6366f1';this.style.boxShadow='0 0 0 3px rgba(99,102,241,0.15)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)';this.style.boxShadow='none'">
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+            <div>
+              <label style="display:block;font-size:12px;font-weight:600;color:#a1a1aa;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px">Departamento</label>
+              <input id="nv-departamento" placeholder="Ex: Comercial" style="width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:13px 16px;font-size:14px;color:#f1f1f5;outline:none;font-family:'DM Sans',sans-serif;transition:all 0.2s;box-sizing:border-box" onfocus="this.style.borderColor='#6366f1';this.style.boxShadow='0 0 0 3px rgba(99,102,241,0.15)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)';this.style.boxShadow='none'">
+            </div>
+            <div>
+              <label style="display:block;font-size:12px;font-weight:600;color:#a1a1aa;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px">Cidade</label>
+              <input id="nv-cidade" placeholder="Ex: São Paulo/SP" style="width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:13px 16px;font-size:14px;color:#f1f1f5;outline:none;font-family:'DM Sans',sans-serif;transition:all 0.2s;box-sizing:border-box" onfocus="this.style.borderColor='#6366f1';this.style.boxShadow='0 0 0 3px rgba(99,102,241,0.15)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)';this.style.boxShadow='none'">
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+            <div>
+              <label style="display:block;font-size:12px;font-weight:600;color:#a1a1aa;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px">Modalidade</label>
+              <select id="nv-modalidade" style="width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:13px 16px;font-size:14px;color:#f1f1f5;outline:none;font-family:'DM Sans',sans-serif;cursor:pointer;box-sizing:border-box">
+                <option value="presencial" style="background:#13131a">Presencial</option>
+                <option value="hibrido" style="background:#13131a">Híbrido</option>
+                <option value="remoto" style="background:#13131a">Remoto</option>
+              </select>
+            </div>
+            <div>
+              <label style="display:block;font-size:12px;font-weight:600;color:#a1a1aa;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px">Contrato</label>
+              <select id="nv-contrato" style="width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:13px 16px;font-size:14px;color:#f1f1f5;outline:none;font-family:'DM Sans',sans-serif;cursor:pointer;box-sizing:border-box">
+                <option value="CLT" style="background:#13131a">CLT</option>
+                <option value="PJ" style="background:#13131a">PJ</option>
+                <option value="Estagio" style="background:#13131a">Estágio</option>
+                <option value="Freelancer" style="background:#13131a">Freelancer</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label style="display:block;font-size:12px;font-weight:600;color:#a1a1aa;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px">Descrição</label>
+            <textarea id="nv-descricao" rows="4" placeholder="Descreva a vaga, principais responsabilidades e requisitos..." style="width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:13px 16px;font-size:14px;color:#f1f1f5;outline:none;font-family:'DM Sans',sans-serif;resize:vertical;transition:all 0.2s;box-sizing:border-box" onfocus="this.style.borderColor='#6366f1';this.style.boxShadow='0 0 0 3px rgba(99,102,241,0.15)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)';this.style.boxShadow='none'"></textarea>
+          </div>
+        </div>
+        <div style="padding:16px 28px 24px;border-top:1px solid rgba(255,255,255,0.06);display:flex;justify-content:flex-end;gap:10px">
+          <button onclick="fecharModalNovaVaga()" style="padding:11px 20px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:10px;color:#a1a1aa;font-size:14px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.15s" onmouseover="this.style.background='rgba(255,255,255,0.08)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">Cancelar</button>
+          <button onclick="salvarNovaVaga()" style="padding:11px 24px;background:linear-gradient(135deg,#4f46e5,#6366f1);border:none;border-radius:10px;color:white;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.15s;box-shadow:0 4px 16px rgba(99,102,241,0.35)" onmouseover="this.style.opacity='0.9';this.style.transform='translateY(-1px)'" onmouseout="this.style.opacity='1';this.style.transform='none'">✨ Criar Vaga</button>
         </div>
       </div>
     </div>
