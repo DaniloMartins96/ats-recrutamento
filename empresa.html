@@ -729,7 +729,7 @@ function logout() {
 
 // ── NAVEGAÇÃO ──
 const SECOES = {
-  vagas:      { title: 'Vagas', subtitle: 'Gerencie as vagas da sua empresa', actions: '<button class="btn btn-primary" onclick="novaVaga()">+ Nova Vaga</button>' },
+  vagas:      { title: 'Vagas', subtitle: 'Gerencie as vagas da sua empresa', actions: '<button class="btn btn-outline" onclick="copiarPortalVagas()" style="margin-right:8px">🔗 Copiar Link do Portal</button><button class="btn btn-ghost" onclick="abrirPortalVagas()" style="margin-right:8px">👁️ Ver Portal</button><button class="btn btn-primary" onclick="novaVaga()">+ Nova Vaga</button>' },
   candidatos: { title: 'Candidatos', subtitle: 'Pipeline de candidatos por vaga', actions: '' },
   testes:     { title: 'Testes Técnicos', subtitle: 'Avalie candidatos com testes personalizados', actions: '' },
   dp:         { title: 'Depto. Pessoal', subtitle: 'Gestão de admissões e documentação', actions: '' },
@@ -998,6 +998,16 @@ function copiarLinkVaga(id) {
   const link = `${window.location.origin}/vagas.html?empresa=${empresaId}`;
   navigator.clipboard.writeText(link);
   showToast('Link copiado!', 'success');
+}
+
+function abrirPortalVagas() {
+  window.open(`/vagas.html?empresa=${empresaId}`, '_blank');
+}
+
+function copiarPortalVagas() {
+  const link = `${window.location.origin}/vagas.html?empresa=${empresaId}`;
+  navigator.clipboard.writeText(link);
+  showToast('Link do portal copiado! 🔗', 'success');
 }
 function novaCampanha() { showToast('Sistema de campanhas em implementação', 'info'); }
 function convidarTalento(id) { showToast('Convite enviado via WhatsApp!', 'success'); }
