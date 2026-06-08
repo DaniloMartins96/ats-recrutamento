@@ -360,7 +360,9 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 
 <script>
 const MARCA_URL  = 'https://webhook.danns.com.br/webhook/ats-marca';
-const VAGAS_URL  = 'https://webhook.danns.com.br/webhook/ats-vagas-publicas';
+const _urlParams = new URLSearchParams(window.location.search);
+const _empresaId = _urlParams.get('empresa') || _urlParams.get('empresa_id') || '';
+const VAGAS_URL  = 'https://webhook.danns.com.br/webhook/ats-vagas-publicas' + (_empresaId ? '?empresa_id=' + _empresaId : '');
 
 let _todasVagas   = [];
 let _pillModal    = '';
@@ -374,7 +376,8 @@ async function carregarMarca() {
     const data = await res.json();
     const m    = data.marca;
     if (!m) return;
-    const nome = m.nome_empresa || 'TechRecruit AI';
+    const nome = m.nome || m.nome_empresa || 'TechRecruit AI';
+    if (m.cor_primaria) document.documentElement.style.setProperty('--primary', m.cor_primaria);
     // Header
     document.getElementById('header-brand-name').textContent  = nome;
     if (m.slogan) document.getElementById('header-brand-slogan').textContent = m.slogan;
