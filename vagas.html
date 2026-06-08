@@ -404,7 +404,8 @@ async function carregarMarca() {
 // ── VAGAS ──────────────────────────────────────────────────────────
 async function carregarVagas() {
   try {
-    const res  = await fetch(VAGAS_URL + '?t=' + Date.now(), { signal: AbortSignal.timeout(12000) });
+    const _sep = VAGAS_URL.includes('?') ? '&' : '?';
+    const res  = await fetch(VAGAS_URL + _sep + 't=' + Date.now(), { signal: AbortSignal.timeout(12000) });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
     console.log('[vagas] resposta da API:', data);

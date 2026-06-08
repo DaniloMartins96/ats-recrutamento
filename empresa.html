@@ -814,7 +814,7 @@ async function carregarVagas() {
           <div class="vaga-titulo">${v.titulo || '—'}</div>
           <div class="vaga-dept">${v.departamento || ''} · ${v.tipo_contrato || 'CLT'} · ${v.modalidade || 'Presencial'}</div>
         </div>
-        <span class="badge ${v.status === 'aberta' ? 'badge-green' : 'badge-gray'}">${v.status === 'aberta' ? 'Aberta' : 'Fechada'}</span>
+        <span class="badge ${['ativa','aberta'].includes((v.status||'').toLowerCase()) ? 'badge-green' : 'badge-gray'}">${['ativa','aberta'].includes((v.status||'').toLowerCase()) ? 'Aberta' : 'Fechada'}</span>
       </div>
       <div class="vaga-stats">
         <div class="vaga-stat"><strong>${v.candidatos_count || 0}</strong><span>Candidatos</span></div>
