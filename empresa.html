@@ -1056,10 +1056,10 @@ else if (secao === 'perfil') carregarPerfil();
 -->
 
 <!-- PASSO 4: Adicionar a seção HTML no content area -->
-<section class="section" id="secao-perfil">
+<section class="section" id="secao-perfil" style="width:100%;box-sizing:border-box">
 
   <!-- Progress indicator -->
-  <div id="perfil-completude" style="margin-bottom:24px;padding:18px 22px;background:linear-gradient(135deg,rgba(99,102,241,0.08),rgba(99,102,241,0.03));border:1px solid rgba(99,102,241,0.2);border-radius:16px;display:flex;align-items:center;gap:16px">
+  <div id="perfil-completude" style="margin-bottom:24px;padding:18px 22px;background:linear-gradient(135deg,rgba(99,102,241,0.08),rgba(99,102,241,0.03));border:1px solid rgba(99,102,241,0.2);border-radius:16px;display:flex;align-items:center;gap:16px;width:100%;box-sizing:border-box">
     <div style="flex:1">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
         <span style="font-size:13px;font-weight:600;color:#f1f1f5">Completude do Perfil</span>
@@ -1074,7 +1074,7 @@ else if (secao === 'perfil') carregarPerfil();
   </div>
 
   <!-- Tabs -->
-  <div style="display:flex;gap:3px;background:rgba(255,255,255,0.03);border-radius:12px;padding:4px;margin-bottom:24px;border:1px solid var(--border)">
+  <div style="display:flex;gap:3px;background:rgba(255,255,255,0.03);border-radius:12px;padding:4px;margin-bottom:24px;border:1px solid var(--border);width:100%;box-sizing:border-box">
     <button id="pt-0" onclick="perfilAba(0)" style="flex:1;padding:10px;border-radius:9px;border:none;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;background:linear-gradient(135deg,#4338ca,#6366f1);color:white;box-shadow:0 2px 8px rgba(99,102,241,0.3)">🏢 Identidade</button>
     <button id="pt-1" onclick="perfilAba(1)" style="flex:1;padding:10px;border-radius:9px;border:none;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;background:transparent;color:#71717a">📖 Sobre</button>
     <button id="pt-2" onclick="perfilAba(2)" style="flex:1;padding:10px;border-radius:9px;border:none;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;background:transparent;color:#71717a">🎯 Cultura</button>
@@ -1082,8 +1082,8 @@ else if (secao === 'perfil') carregarPerfil();
   </div>
 
   <!-- ABA 0: Identidade -->
-  <div id="pp-0">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+  <div id="pp-0" style="width:100%">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;width:100%">
 
       <div style="grid-column:1/-1">
         <div class="card" style="padding:22px">
@@ -1182,8 +1182,8 @@ else if (secao === 'perfil') carregarPerfil();
   </div>
 
   <!-- ABA 1: Sobre -->
-  <div id="pp-1" style="display:none">
-    <div style="display:grid;gap:18px">
+  <div id="pp-1" style="display:none;width:100%">
+    <div style="display:grid;gap:18px;width:100%">
 
       <div class="card" style="padding:22px">
         <div style="font-size:13px;font-weight:700;color:#818cf8;margin-bottom:6px">📝 Sobre a Empresa</div>
@@ -1219,8 +1219,8 @@ else if (secao === 'perfil') carregarPerfil();
   </div>
 
   <!-- ABA 2: Cultura -->
-  <div id="pp-2" style="display:none">
-    <div style="display:grid;gap:18px">
+  <div id="pp-2" style="display:none;width:100%">
+    <div style="display:grid;gap:18px;width:100%">
 
       <div class="card" style="padding:22px">
         <div style="font-size:13px;font-weight:700;color:#818cf8;margin-bottom:6px">🏠 Cultura Organizacional</div>
@@ -1251,8 +1251,8 @@ else if (secao === 'perfil') carregarPerfil();
   </div>
 
   <!-- ABA 3: Visual & IA -->
-  <div id="pp-3" style="display:none">
-    <div style="display:grid;gap:18px">
+  <div id="pp-3" style="display:none;width:100%">
+    <div style="display:grid;gap:18px;width:100%">
 
       <div class="card" style="padding:22px">
         <div style="font-size:13px;font-weight:700;color:#818cf8;margin-bottom:16px">🎨 Identidade Visual</div>
