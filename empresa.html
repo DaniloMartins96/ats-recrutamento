@@ -687,375 +687,9 @@
       </div>
     </section>
 
-  </div>
-</main>
 
-<script>
-const BASE_URL = 'https://webhook.danns.com.br/webhook';
-let empresaId = null;
-let token = null;
-let secaoAtiva = 'vagas';
-let candidatos = [];
-let vagas = [];
 
-// ── AUTH ──
-function verificarAuth() {
-  token = localStorage.getItem('tr_token');
-  empresaId = localStorage.getItem('tr_empresa_id');
-  const nome = localStorage.getItem('tr_usuario_nome') || 'Admin';
-  const empresaNome = localStorage.getItem('tr_empresa_nome') || 'Empresa';
-  const plano = localStorage.getItem('tr_empresa_plano') || 'Trial';
-  const role = localStorage.getItem('tr_usuario_role') || 'admin';
-
-  if (!token || !empresaId) {
-    window.location.href = '/login-empresa.html';
-    return false;
-  }
-
-  document.getElementById('sidebar-empresa-nome').textContent = empresaNome;
-  document.getElementById('sidebar-empresa-plano').textContent = 'Plano ' + plano.charAt(0).toUpperCase() + plano.slice(1);
-  document.getElementById('user-nome').textContent = nome;
-  document.getElementById('user-role').textContent = role === 'admin' ? 'Administrador' : 'Recrutador';
-  document.getElementById('user-avatar').textContent = nome.charAt(0).toUpperCase();
-  return true;
-}
-
-function logout() {
-  if (!confirm('Deseja sair da conta?')) return;
-  localStorage.removeItem('tr_token');
-  localStorage.removeItem('tr_empresa_id');
-  localStorage.removeItem('tr_empresa_nome');
-  localStorage.removeItem('tr_usuario_nome');
-  localStorage.removeItem('tr_usuario_role');
-  localStorage.removeItem('tr_empresa_plano');
-  window.location.href = '/login-empresa.html';
-}
-
-// ── NAVEGAÇÃO ──
-const SECOES = {
-  vagas:      { title: 'Vagas', subtitle: 'Gerencie as vagas da sua empresa', actions: '<button class="btn btn-outline" onclick="copiarPortalVagas()" style="margin-right:8px">🔗 Copiar Link do Portal</button><button class="btn btn-ghost" onclick="abrirPortalVagas()" style="margin-right:8px">👁️ Ver Portal</button><button class="btn btn-primary" onclick="novaVaga()">+ Nova Vaga</button>' },
-  candidatos: { title: 'Candidatos', subtitle: 'Pipeline de candidatos por vaga', actions: '' },
-  testes:     { title: 'Testes Técnicos', subtitle: 'Avalie candidatos com testes personalizados', actions: '' },
-  dp:         { title: 'Depto. Pessoal', subtitle: 'Gestão de admissões e documentação', actions: '' },
-  campanhas:  { title: 'Campanhas de Captação', subtitle: 'Atraia candidatos ativamente', actions: '<button class="btn btn-primary" onclick="novaCampanha()">+ Nova Campanha</button>' },
-  banco:      { title: 'Banco de Talentos', subtitle: 'Pool global de candidatos disponíveis', actions: '<button class="btn btn-success" onclick="convidarTodos()">📲 Disparar WhatsApp</button>' },
-  perfil:     { title: 'Perfil da Empresa', subtitle: 'Informações que a IA usa para gerar conteúdo personalizado', actions: '' },
-  metricas:   { title: 'Métricas', subtitle: 'Performance do recrutamento', actions: '' },
-};
-
-function mostrarSecao(secao) {
-  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  const el = document.getElementById('secao-' + secao);
-  if (el) el.classList.add('active');
-  document.querySelectorAll('.nav-item').forEach(n => {
-    if (n.getAttribute('onclick')?.includes("'" + secao + "'")) n.classList.add('active');
-  });
-  secaoAtiva = secao;
-  const cfg = SECOES[secao] || {};
-  document.getElementById('topbar-title').textContent = cfg.title || '';
-  document.getElementById('topbar-subtitle').textContent = cfg.subtitle || '';
-  document.getElementById('topbar-actions').innerHTML = cfg.actions || '';
-  carregarSecao(secao);
-}
-
-async function carregarSecao(secao) {
-  if (secao === 'vagas') await carregarVagas();
-  else if (secao === 'candidatos') await carregarCandidatos();
-  else if (secao === 'banco') await carregarBancoTalentos();
-  else if (secao === 'campanhas') await carregarCampanhas();
-  else if (secao === 'metricas') await carregarMetricas();
-  else if (secao === 'perfil') await carregarPerfil();
-}
-
-// ── API HELPER ──
-async function apiFetch(path, opts = {}) {
-  const res = await fetch(BASE_URL + path, {
-    ...opts,
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer ' + token,
-      ...(opts.headers || {})
-    }
-  });
-  if (res.status === 401) { logout(); return null; }
-  return res.ok ? res.json() : null;
-}
-
-// ── VAGAS ──
-async function carregarVagas() {
-  const data = await apiFetch('/ats-empresa-vagas?empresa_id=' + empresaId);
-  vagas = data?.vagas || [];
-
-  const stats = document.getElementById('vagas-stats');
-  const total = vagas.length;
-  const ativas = vagas.filter(v => v.status === 'aberta').length;
-  const candidatosTotal = vagas.reduce((s, v) => s + (Number(v.candidatos_count) || 0), 0);
-
-  stats.innerHTML = `
-    <div class="stat-card"><div class="stat-label">Total de Vagas</div><div class="stat-value">${total}</div></div>
-    <div class="stat-card"><div class="stat-label">Vagas Ativas</div><div class="stat-value" style="color:var(--success)">${ativas}</div></div>
-    <div class="stat-card"><div class="stat-label">Total de Candidatos</div><div class="stat-value">${candidatosTotal}</div></div>
-    <div class="stat-card"><div class="stat-label">Taxa de Conversão</div><div class="stat-value">${total ? Math.round((candidatosTotal/total)*10)/10 : 0}<span style="font-size:14px;color:var(--muted)"> /vaga</span></div></div>
-  `;
-
-  const badge = document.getElementById('badge-vagas');
-  badge.textContent = total; badge.style.display = total ? '' : 'none';
-
-  if (!vagas.length) {
-    document.getElementById('vagas-content').innerHTML = `
-      <div class="empty-state">
-        <div class="empty-icon">📋</div>
-        <h4>Nenhuma vaga criada ainda</h4>
-        <p>Crie sua primeira vaga e comece a receber candidatos automaticamente.</p>
-        <button class="btn btn-primary" onclick="novaVaga()">+ Criar primeira vaga</button>
-      </div>`;
-    return;
-  }
-
-  document.getElementById('vagas-content').innerHTML = `<div class="vagas-grid">${vagas.map(v => `
-    <div class="vaga-card" onclick="verVaga('${v.id}')">
-      <div class="vaga-card-top">
-        <div>
-          <div class="vaga-titulo">${v.titulo || '—'}</div>
-          <div class="vaga-dept">${v.departamento || ''} · ${v.tipo_contrato || 'CLT'} · ${v.modalidade || 'Presencial'}</div>
-        </div>
-        <span class="badge ${['ativa','aberta'].includes((v.status||'').toLowerCase()) ? 'badge-green' : 'badge-gray'}">${['ativa','aberta'].includes((v.status||'').toLowerCase()) ? 'Aberta' : 'Fechada'}</span>
-      </div>
-      <div class="vaga-stats">
-        <div class="vaga-stat"><strong>${v.candidatos_count || 0}</strong><span>Candidatos</span></div>
-        <div class="vaga-stat"><strong>${v.em_processo || 0}</strong><span>Em Processo</span></div>
-        <div class="vaga-stat"><strong>${v.aprovados || 0}</strong><span>Aprovados</span></div>
-      </div>
-      <div class="vaga-actions">
-        <button class="btn btn-outline" style="font-size:12px;padding:7px 12px" onclick="event.stopPropagation();copiarLinkVaga('${v.id}')">🔗 Link Público</button>
-        <button class="btn btn-primary" style="font-size:12px;padding:7px 12px;flex:1" onclick="event.stopPropagation();verCandidatosVaga('${v.id}')">Ver Candidatos</button>
-      </div>
-    </div>`).join('')}</div>`;
-}
-
-// ── CANDIDATOS ──
-async function carregarCandidatos() {
-  const data = await apiFetch('/ats-empresa-candidatos?empresa_id=' + empresaId);
-  candidatos = data?.candidatos || [];
-
-  const badge = document.getElementById('badge-cands');
-  badge.textContent = candidatos.length;
-  badge.style.display = candidatos.length ? '' : 'none';
-
-  document.getElementById('cands-stats').innerHTML = `
-    <div class="stat-card"><div class="stat-label">Total</div><div class="stat-value">${candidatos.length}</div></div>
-    <div class="stat-card"><div class="stat-label">Em Processo</div><div class="stat-value">${candidatos.filter(c=>!['reprovado','arquivado','admitido'].includes(c.etapa_atual)).length}</div></div>
-    <div class="stat-card"><div class="stat-label">Score Médio</div><div class="stat-value">${candidatos.length ? (candidatos.reduce((s,c)=>s+(Number(c.score_total)||0),0)/candidatos.length).toFixed(1) : '—'}<span style="font-size:14px;color:var(--muted)">/10</span></div></div>
-  `;
-
-  renderCandidatos(candidatos);
-}
-
-function renderCandidatos(lista) {
-  if (!lista.length) {
-    document.getElementById('cands-content').innerHTML = `<div class="empty-state"><div class="empty-icon">👥</div><h4>Nenhum candidato ainda</h4><p>Os candidatos aparecem aqui conforme se inscrevem nas suas vagas.</p></div>`;
-    return;
-  }
-  document.getElementById('cands-content').innerHTML = `
-    <table>
-      <thead><tr><th>Candidato</th><th>Vaga</th><th>Score IA</th><th>Etapa</th><th></th></tr></thead>
-      <tbody>
-        ${lista.map(c => `<tr>
-          <td><div style="font-weight:600">${c.nome||'—'}</div><div style="font-size:11px;color:var(--muted)">${c.email||''}</div></td>
-          <td style="font-size:12px;color:var(--muted)">${c.vaga_titulo||'—'}</td>
-          <td><strong style="color:${Number(c.score_total)>=7?'var(--success)':Number(c.score_total)>=5?'var(--warn)':'var(--danger)'}">${Number(c.score_total||0).toFixed(1)}</strong><span style="font-size:11px;color:var(--muted)">/10</span></td>
-          <td><span class="badge badge-gray" style="font-size:10px">${c.etapa_atual||'—'}</span></td>
-          <td><button class="btn btn-ghost" style="font-size:12px" onclick="verCandidato('${c.candidatura_id||c.id}')">Ver</button></td>
-        </tr>`).join('')}
-      </tbody>
-    </table>`;
-}
-
-function filtrarCandidatos(q) {
-  const f = q.toLowerCase();
-  renderCandidatos(candidatos.filter(c =>
-    (c.nome||'').toLowerCase().includes(f) ||
-    (c.email||'').toLowerCase().includes(f) ||
-    (c.vaga_titulo||'').toLowerCase().includes(f)
-  ));
-}
-
-// ── BANCO DE TALENTOS ──
-async function carregarBancoTalentos() {
-  const data = await apiFetch('/ats-banco-talentos?empresa_id=' + empresaId);
-  const talentos = data?.candidatos || [];
-
-  document.getElementById('banco-stats').innerHTML = `
-    <div class="stat-card"><div class="stat-label">Disponíveis</div><div class="stat-value" style="color:var(--success)">${talentos.filter(t=>t.disponivel).length}</div></div>
-    <div class="stat-card"><div class="stat-label">Total no Banco</div><div class="stat-value">${talentos.length}</div></div>
-    <div class="stat-card"><div class="stat-label">Novas Esta Semana</div><div class="stat-value">${talentos.filter(t=>{ const d=new Date(t.created_at); return (Date.now()-d.getTime())<7*24*3600*1000; }).length}</div></div>
-  `;
-
-  if (!talentos.length) {
-    document.getElementById('banco-content').innerHTML = `<div class="empty-state"><div class="empty-icon">🏦</div><h4>Banco ainda em formação</h4><p>À medida que candidatos se cadastram na plataforma, eles aparecem aqui disponíveis para convite.</p></div>`;
-    return;
-  }
-
-  document.getElementById('banco-content').innerHTML = `
-    <table>
-      <thead><tr><th>Candidato</th><th>Área</th><th>Cidade</th><th>Disponível</th><th>Origem</th><th></th></tr></thead>
-      <tbody>
-        ${talentos.map(t => `<tr>
-          <td><div style="font-weight:600">${t.nome||'—'}</div></td>
-          <td style="font-size:12px">${(t.areas_interesse||[]).join(', ')||'—'}</td>
-          <td style="font-size:12px;color:var(--muted)">${(t.cidades||[])[0]||'—'}</td>
-          <td><span class="badge ${t.disponivel?'badge-green':'badge-gray'}">${t.disponivel?'Disponível':'Indisponível'}</span></td>
-          <td style="font-size:11px;color:var(--muted)">${t.origem||'candidatura'}</td>
-          <td><button class="btn btn-outline" style="font-size:12px;padding:6px 12px" onclick="convidarTalento('${t.candidato_id}')">📲 Convidar</button></td>
-        </tr>`).join('')}
-      </tbody>
-    </table>`;
-}
-
-function filtrarTalentos(area, btn) {
-  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
-  btn.classList.add('active');
-  // implementar filtro
-}
-
-// ── CAMPANHAS ──
-async function carregarCampanhas() {
-  const data = await apiFetch('/ats-campanhas?empresa_id=' + empresaId);
-  const campanhas = data?.campanhas || [];
-
-  const badge = document.getElementById('badge-campanhas');
-  const ativas = campanhas.filter(c=>c.status==='ativa').length;
-  badge.textContent = ativas; badge.style.display = ativas ? '' : 'none';
-
-  if (!campanhas.length) {
-    document.getElementById('campanhas-content').innerHTML = `
-      <div class="empty-state">
-        <div class="empty-icon">🚀</div>
-        <h4>Nenhuma campanha criada</h4>
-        <p>Crie uma campanha de captação e o sistema vai buscar candidatos automaticamente para você.</p>
-        <button class="btn btn-primary" onclick="novaCampanha()">+ Criar Campanha</button>
-      </div>`;
-    return;
-  }
-
-  document.getElementById('campanhas-content').innerHTML = campanhas.map(c => {
-    const taxa = c.total_enviados > 0 ? Math.round((c.total_respostas/c.total_enviados)*100) : 0;
-    return `<div class="campanha-card">
-      <div class="campanha-top">
-        <div>
-          <div class="campanha-titulo">${c.titulo}</div>
-          <div class="campanha-vaga">${c.vaga_titulo||'Sem vaga vinculada'}</div>
-        </div>
-        <span class="badge ${c.status==='ativa'?'badge-green':c.status==='pausada'?'badge-yellow':'badge-gray'}">${c.status}</span>
-      </div>
-      <div class="campanha-metrics">
-        <div class="metric"><strong>${c.total_enviados||0}</strong><span>Enviados</span></div>
-        <div class="metric"><strong>${c.total_respostas||0}</strong><span>Respostas</span></div>
-        <div class="metric"><strong>${c.total_qualificados||0}</strong><span>Qualificados</span></div>
-        <div class="metric"><strong>${c.total_contratados||0}</strong><span>Contratados</span></div>
-      </div>
-      <div class="progress-bar"><div class="progress-fill" style="width:${taxa}%"></div></div>
-      <div style="font-size:11px;color:var(--muted);margin-top:6px">Taxa de resposta: ${taxa}%</div>
-    </div>`;
-  }).join('');
-}
-
-// ── MÉTRICAS ──
-async function carregarMetricas() {
-  document.getElementById('metricas-stats').innerHTML = `
-    <div class="stat-card"><div class="stat-label">Candidatos Este Mês</div><div class="stat-value">—</div></div>
-    <div class="stat-card"><div class="stat-label">Taxa de Triagem</div><div class="stat-value">—</div></div>
-    <div class="stat-card"><div class="stat-label">Tempo Médio de Contratação</div><div class="stat-value">—</div></div>
-    <div class="stat-card"><div class="stat-label">Contratações Realizadas</div><div class="stat-value">—</div></div>
-  `;
-  document.getElementById('metricas-content').innerHTML = `<div class="empty-state"><div class="empty-icon">📊</div><h4>Métricas em breve</h4><p>As métricas detalhadas estarão disponíveis após o primeiro ciclo de contratação.</p></div>`;
-}
-
-// ── AÇÕES ──
-function novaVaga() { document.getElementById('modal-nova-vaga').style.display = 'flex'; }
-function fecharModalNovaVaga() { document.getElementById('modal-nova-vaga').style.display = 'none'; }
-
-async function salvarNovaVaga() {
-  const titulo = document.getElementById('nv-titulo').value.trim();
-  const departamento = document.getElementById('nv-departamento').value.trim();
-  const modalidade = document.getElementById('nv-modalidade').value;
-  const tipo_contrato = document.getElementById('nv-contrato').value;
-  const descricao = document.getElementById('nv-descricao').value.trim();
-  const cidade = document.getElementById('nv-cidade').value.trim();
-  if (!titulo) { showToast('Título é obrigatório.', 'info'); return; }
-  try {
-    const r = await fetch(BASE_URL + '/ats-admin-criar-vaga', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ titulo, departamento, modalidade, tipo_contrato, descricao, cidade, empresa_id: parseInt(localStorage.getItem('tr_empresa_id') || '1'), status: 'ativa' }),
-      signal: AbortSignal.timeout(15000)
-    });
-    const data = await r.json();
-    if (!data.success) throw new Error('Erro ao criar vaga');
-    fecharModalNovaVaga();
-    showToast('Vaga criada com sucesso!', 'success');
-    await carregarVagas();
-  } catch(err) { showToast(err.message || 'Erro ao criar vaga.', 'error'); }
-}
-function verVaga(id) { showToast('Funcionalidade em desenvolvimento', 'info'); }
-function verCandidato(id) { showToast('Funcionalidade em desenvolvimento', 'info'); }
-function verCandidatosVaga(id) { mostrarSecao('candidatos'); }
-function copiarLinkVaga(id) {
-  const link = `${window.location.origin}/vagas.html?empresa=${empresaId}`;
-  navigator.clipboard.writeText(link);
-  showToast('Link copiado!', 'success');
-}
-
-function abrirPortalVagas() {
-  window.open(`/vagas.html?empresa=${empresaId}`, '_blank');
-}
-
-function copiarPortalVagas() {
-  const link = `${window.location.origin}/vagas.html?empresa=${empresaId}`;
-  navigator.clipboard.writeText(link);
-  showToast('Link do portal copiado! 🔗', 'success');
-}
-function novaCampanha() { showToast('Sistema de campanhas em implementação', 'info'); }
-function convidarTalento(id) { showToast('Convite enviado via WhatsApp!', 'success'); }
-function convidarParaVaga() { showToast('Selecione uma vaga primeiro', 'info'); }
-function convidarTodos() { showToast('Disparo em massa em desenvolvimento', 'info'); }
-
-// ── TOAST ──
-function showToast(msg, type = 'info') {
-  const t = document.createElement('div');
-  t.className = `toast toast-${type}`;
-  t.textContent = msg;
-  document.getElementById('toasts').appendChild(t);
-  setTimeout(() => t.remove(), 3500);
-}
-
-// ── INIT ──
-document.addEventListener('DOMContentLoaded', () => {
-  if (!verificarAuth()) return;
-  carregarVagas();
-  setInterval(() => carregarSecao(secaoAtiva), 30000);
-});
-</script>
-
-<!-- ═══════════════════════════════════════════════════════════
-     SEÇÃO PERFIL DA EMPRESA — adicionar ao menu e ao content
-     ═══════════════════════════════════════════════════════════ -->
-
-<!-- PASSO 1: Adicionar no sidebar nav, após "Banco de Talentos":
-<button class="nav-item" onclick="mostrarSecao('perfil')">
-  <span>🏢</span> Perfil da Empresa
-</button>
--->
-
-<!-- PASSO 2: Adicionar ao objeto SECOES:
-perfil: { title: 'Perfil da Empresa', subtitle: 'Informações que a IA usa para gerar conteúdo personalizado', actions: '' },
--->
-
-<!-- PASSO 3: Adicionar ao carregarSecao:
-else if (secao === 'perfil') carregarPerfil();
--->
-
-<section class="section" id="secao-perfil">
+    <section class="section" id="secao-perfil">
 <style>
 .pf-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 24px; margin-bottom: 20px; }
 .pf-card-title { font-size: 13px; font-weight: 700; color: var(--indigo-light); margin-bottom: 18px; display: flex; align-items: center; gap: 8px; }
@@ -1457,7 +1091,355 @@ else if (secao === 'perfil') carregarPerfil();
 </script>
 </section>
 
+  </div>
+</main>
 
+<script>
+const BASE_URL = 'https://webhook.danns.com.br/webhook';
+let empresaId = null;
+let token = null;
+let secaoAtiva = 'vagas';
+let candidatos = [];
+let vagas = [];
+
+// ── AUTH ──
+function verificarAuth() {
+  token = localStorage.getItem('tr_token');
+  empresaId = localStorage.getItem('tr_empresa_id');
+  const nome = localStorage.getItem('tr_usuario_nome') || 'Admin';
+  const empresaNome = localStorage.getItem('tr_empresa_nome') || 'Empresa';
+  const plano = localStorage.getItem('tr_empresa_plano') || 'Trial';
+  const role = localStorage.getItem('tr_usuario_role') || 'admin';
+
+  if (!token || !empresaId) {
+    window.location.href = '/login-empresa.html';
+    return false;
+  }
+
+  document.getElementById('sidebar-empresa-nome').textContent = empresaNome;
+  document.getElementById('sidebar-empresa-plano').textContent = 'Plano ' + plano.charAt(0).toUpperCase() + plano.slice(1);
+  document.getElementById('user-nome').textContent = nome;
+  document.getElementById('user-role').textContent = role === 'admin' ? 'Administrador' : 'Recrutador';
+  document.getElementById('user-avatar').textContent = nome.charAt(0).toUpperCase();
+  return true;
+}
+
+function logout() {
+  if (!confirm('Deseja sair da conta?')) return;
+  localStorage.removeItem('tr_token');
+  localStorage.removeItem('tr_empresa_id');
+  localStorage.removeItem('tr_empresa_nome');
+  localStorage.removeItem('tr_usuario_nome');
+  localStorage.removeItem('tr_usuario_role');
+  localStorage.removeItem('tr_empresa_plano');
+  window.location.href = '/login-empresa.html';
+}
+
+// ── NAVEGAÇÃO ──
+const SECOES = {
+  vagas:      { title: 'Vagas', subtitle: 'Gerencie as vagas da sua empresa', actions: '<button class="btn btn-outline" onclick="copiarPortalVagas()" style="margin-right:8px">🔗 Copiar Link do Portal</button><button class="btn btn-ghost" onclick="abrirPortalVagas()" style="margin-right:8px">👁️ Ver Portal</button><button class="btn btn-primary" onclick="novaVaga()">+ Nova Vaga</button>' },
+  candidatos: { title: 'Candidatos', subtitle: 'Pipeline de candidatos por vaga', actions: '' },
+  testes:     { title: 'Testes Técnicos', subtitle: 'Avalie candidatos com testes personalizados', actions: '' },
+  dp:         { title: 'Depto. Pessoal', subtitle: 'Gestão de admissões e documentação', actions: '' },
+  campanhas:  { title: 'Campanhas de Captação', subtitle: 'Atraia candidatos ativamente', actions: '<button class="btn btn-primary" onclick="novaCampanha()">+ Nova Campanha</button>' },
+  banco:      { title: 'Banco de Talentos', subtitle: 'Pool global de candidatos disponíveis', actions: '<button class="btn btn-success" onclick="convidarTodos()">📲 Disparar WhatsApp</button>' },
+  perfil:     { title: 'Perfil da Empresa', subtitle: 'Informações que a IA usa para gerar conteúdo personalizado', actions: '' },
+  metricas:   { title: 'Métricas', subtitle: 'Performance do recrutamento', actions: '' },
+};
+
+function mostrarSecao(secao) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const el = document.getElementById('secao-' + secao);
+  if (el) el.classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => {
+    if (n.getAttribute('onclick')?.includes("'" + secao + "'")) n.classList.add('active');
+  });
+  secaoAtiva = secao;
+  const cfg = SECOES[secao] || {};
+  document.getElementById('topbar-title').textContent = cfg.title || '';
+  document.getElementById('topbar-subtitle').textContent = cfg.subtitle || '';
+  document.getElementById('topbar-actions').innerHTML = cfg.actions || '';
+  carregarSecao(secao);
+}
+
+async function carregarSecao(secao) {
+  if (secao === 'vagas') await carregarVagas();
+  else if (secao === 'candidatos') await carregarCandidatos();
+  else if (secao === 'banco') await carregarBancoTalentos();
+  else if (secao === 'campanhas') await carregarCampanhas();
+  else if (secao === 'metricas') await carregarMetricas();
+  else if (secao === 'perfil') await carregarPerfil();
+}
+
+// ── API HELPER ──
+async function apiFetch(path, opts = {}) {
+  const res = await fetch(BASE_URL + path, {
+    ...opts,
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + token,
+      ...(opts.headers || {})
+    }
+  });
+  if (res.status === 401) { logout(); return null; }
+  return res.ok ? res.json() : null;
+}
+
+// ── VAGAS ──
+async function carregarVagas() {
+  const data = await apiFetch('/ats-empresa-vagas?empresa_id=' + empresaId);
+  vagas = data?.vagas || [];
+
+  const stats = document.getElementById('vagas-stats');
+  const total = vagas.length;
+  const ativas = vagas.filter(v => v.status === 'aberta').length;
+  const candidatosTotal = vagas.reduce((s, v) => s + (Number(v.candidatos_count) || 0), 0);
+
+  stats.innerHTML = `
+    <div class="stat-card"><div class="stat-label">Total de Vagas</div><div class="stat-value">${total}</div></div>
+    <div class="stat-card"><div class="stat-label">Vagas Ativas</div><div class="stat-value" style="color:var(--success)">${ativas}</div></div>
+    <div class="stat-card"><div class="stat-label">Total de Candidatos</div><div class="stat-value">${candidatosTotal}</div></div>
+    <div class="stat-card"><div class="stat-label">Taxa de Conversão</div><div class="stat-value">${total ? Math.round((candidatosTotal/total)*10)/10 : 0}<span style="font-size:14px;color:var(--muted)"> /vaga</span></div></div>
+  `;
+
+  const badge = document.getElementById('badge-vagas');
+  badge.textContent = total; badge.style.display = total ? '' : 'none';
+
+  if (!vagas.length) {
+    document.getElementById('vagas-content').innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">📋</div>
+        <h4>Nenhuma vaga criada ainda</h4>
+        <p>Crie sua primeira vaga e comece a receber candidatos automaticamente.</p>
+        <button class="btn btn-primary" onclick="novaVaga()">+ Criar primeira vaga</button>
+      </div>`;
+    return;
+  }
+
+  document.getElementById('vagas-content').innerHTML = `<div class="vagas-grid">${vagas.map(v => `
+    <div class="vaga-card" onclick="verVaga('${v.id}')">
+      <div class="vaga-card-top">
+        <div>
+          <div class="vaga-titulo">${v.titulo || '—'}</div>
+          <div class="vaga-dept">${v.departamento || ''} · ${v.tipo_contrato || 'CLT'} · ${v.modalidade || 'Presencial'}</div>
+        </div>
+        <span class="badge ${['ativa','aberta'].includes((v.status||'').toLowerCase()) ? 'badge-green' : 'badge-gray'}">${['ativa','aberta'].includes((v.status||'').toLowerCase()) ? 'Aberta' : 'Fechada'}</span>
+      </div>
+      <div class="vaga-stats">
+        <div class="vaga-stat"><strong>${v.candidatos_count || 0}</strong><span>Candidatos</span></div>
+        <div class="vaga-stat"><strong>${v.em_processo || 0}</strong><span>Em Processo</span></div>
+        <div class="vaga-stat"><strong>${v.aprovados || 0}</strong><span>Aprovados</span></div>
+      </div>
+      <div class="vaga-actions">
+        <button class="btn btn-outline" style="font-size:12px;padding:7px 12px" onclick="event.stopPropagation();copiarLinkVaga('${v.id}')">🔗 Link Público</button>
+        <button class="btn btn-primary" style="font-size:12px;padding:7px 12px;flex:1" onclick="event.stopPropagation();verCandidatosVaga('${v.id}')">Ver Candidatos</button>
+      </div>
+    </div>`).join('')}</div>`;
+}
+
+// ── CANDIDATOS ──
+async function carregarCandidatos() {
+  const data = await apiFetch('/ats-empresa-candidatos?empresa_id=' + empresaId);
+  candidatos = data?.candidatos || [];
+
+  const badge = document.getElementById('badge-cands');
+  badge.textContent = candidatos.length;
+  badge.style.display = candidatos.length ? '' : 'none';
+
+  document.getElementById('cands-stats').innerHTML = `
+    <div class="stat-card"><div class="stat-label">Total</div><div class="stat-value">${candidatos.length}</div></div>
+    <div class="stat-card"><div class="stat-label">Em Processo</div><div class="stat-value">${candidatos.filter(c=>!['reprovado','arquivado','admitido'].includes(c.etapa_atual)).length}</div></div>
+    <div class="stat-card"><div class="stat-label">Score Médio</div><div class="stat-value">${candidatos.length ? (candidatos.reduce((s,c)=>s+(Number(c.score_total)||0),0)/candidatos.length).toFixed(1) : '—'}<span style="font-size:14px;color:var(--muted)">/10</span></div></div>
+  `;
+
+  renderCandidatos(candidatos);
+}
+
+function renderCandidatos(lista) {
+  if (!lista.length) {
+    document.getElementById('cands-content').innerHTML = `<div class="empty-state"><div class="empty-icon">👥</div><h4>Nenhum candidato ainda</h4><p>Os candidatos aparecem aqui conforme se inscrevem nas suas vagas.</p></div>`;
+    return;
+  }
+  document.getElementById('cands-content').innerHTML = `
+    <table>
+      <thead><tr><th>Candidato</th><th>Vaga</th><th>Score IA</th><th>Etapa</th><th></th></tr></thead>
+      <tbody>
+        ${lista.map(c => `<tr>
+          <td><div style="font-weight:600">${c.nome||'—'}</div><div style="font-size:11px;color:var(--muted)">${c.email||''}</div></td>
+          <td style="font-size:12px;color:var(--muted)">${c.vaga_titulo||'—'}</td>
+          <td><strong style="color:${Number(c.score_total)>=7?'var(--success)':Number(c.score_total)>=5?'var(--warn)':'var(--danger)'}">${Number(c.score_total||0).toFixed(1)}</strong><span style="font-size:11px;color:var(--muted)">/10</span></td>
+          <td><span class="badge badge-gray" style="font-size:10px">${c.etapa_atual||'—'}</span></td>
+          <td><button class="btn btn-ghost" style="font-size:12px" onclick="verCandidato('${c.candidatura_id||c.id}')">Ver</button></td>
+        </tr>`).join('')}
+      </tbody>
+    </table>`;
+}
+
+function filtrarCandidatos(q) {
+  const f = q.toLowerCase();
+  renderCandidatos(candidatos.filter(c =>
+    (c.nome||'').toLowerCase().includes(f) ||
+    (c.email||'').toLowerCase().includes(f) ||
+    (c.vaga_titulo||'').toLowerCase().includes(f)
+  ));
+}
+
+// ── BANCO DE TALENTOS ──
+async function carregarBancoTalentos() {
+  const data = await apiFetch('/ats-banco-talentos?empresa_id=' + empresaId);
+  const talentos = data?.candidatos || [];
+
+  document.getElementById('banco-stats').innerHTML = `
+    <div class="stat-card"><div class="stat-label">Disponíveis</div><div class="stat-value" style="color:var(--success)">${talentos.filter(t=>t.disponivel).length}</div></div>
+    <div class="stat-card"><div class="stat-label">Total no Banco</div><div class="stat-value">${talentos.length}</div></div>
+    <div class="stat-card"><div class="stat-label">Novas Esta Semana</div><div class="stat-value">${talentos.filter(t=>{ const d=new Date(t.created_at); return (Date.now()-d.getTime())<7*24*3600*1000; }).length}</div></div>
+  `;
+
+  if (!talentos.length) {
+    document.getElementById('banco-content').innerHTML = `<div class="empty-state"><div class="empty-icon">🏦</div><h4>Banco ainda em formação</h4><p>À medida que candidatos se cadastram na plataforma, eles aparecem aqui disponíveis para convite.</p></div>`;
+    return;
+  }
+
+  document.getElementById('banco-content').innerHTML = `
+    <table>
+      <thead><tr><th>Candidato</th><th>Área</th><th>Cidade</th><th>Disponível</th><th>Origem</th><th></th></tr></thead>
+      <tbody>
+        ${talentos.map(t => `<tr>
+          <td><div style="font-weight:600">${t.nome||'—'}</div></td>
+          <td style="font-size:12px">${(t.areas_interesse||[]).join(', ')||'—'}</td>
+          <td style="font-size:12px;color:var(--muted)">${(t.cidades||[])[0]||'—'}</td>
+          <td><span class="badge ${t.disponivel?'badge-green':'badge-gray'}">${t.disponivel?'Disponível':'Indisponível'}</span></td>
+          <td style="font-size:11px;color:var(--muted)">${t.origem||'candidatura'}</td>
+          <td><button class="btn btn-outline" style="font-size:12px;padding:6px 12px" onclick="convidarTalento('${t.candidato_id}')">📲 Convidar</button></td>
+        </tr>`).join('')}
+      </tbody>
+    </table>`;
+}
+
+function filtrarTalentos(area, btn) {
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  // implementar filtro
+}
+
+// ── CAMPANHAS ──
+async function carregarCampanhas() {
+  const data = await apiFetch('/ats-campanhas?empresa_id=' + empresaId);
+  const campanhas = data?.campanhas || [];
+
+  const badge = document.getElementById('badge-campanhas');
+  const ativas = campanhas.filter(c=>c.status==='ativa').length;
+  badge.textContent = ativas; badge.style.display = ativas ? '' : 'none';
+
+  if (!campanhas.length) {
+    document.getElementById('campanhas-content').innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">🚀</div>
+        <h4>Nenhuma campanha criada</h4>
+        <p>Crie uma campanha de captação e o sistema vai buscar candidatos automaticamente para você.</p>
+        <button class="btn btn-primary" onclick="novaCampanha()">+ Criar Campanha</button>
+      </div>`;
+    return;
+  }
+
+  document.getElementById('campanhas-content').innerHTML = campanhas.map(c => {
+    const taxa = c.total_enviados > 0 ? Math.round((c.total_respostas/c.total_enviados)*100) : 0;
+    return `<div class="campanha-card">
+      <div class="campanha-top">
+        <div>
+          <div class="campanha-titulo">${c.titulo}</div>
+          <div class="campanha-vaga">${c.vaga_titulo||'Sem vaga vinculada'}</div>
+        </div>
+        <span class="badge ${c.status==='ativa'?'badge-green':c.status==='pausada'?'badge-yellow':'badge-gray'}">${c.status}</span>
+      </div>
+      <div class="campanha-metrics">
+        <div class="metric"><strong>${c.total_enviados||0}</strong><span>Enviados</span></div>
+        <div class="metric"><strong>${c.total_respostas||0}</strong><span>Respostas</span></div>
+        <div class="metric"><strong>${c.total_qualificados||0}</strong><span>Qualificados</span></div>
+        <div class="metric"><strong>${c.total_contratados||0}</strong><span>Contratados</span></div>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${taxa}%"></div></div>
+      <div style="font-size:11px;color:var(--muted);margin-top:6px">Taxa de resposta: ${taxa}%</div>
+    </div>`;
+  }).join('');
+}
+
+// ── MÉTRICAS ──
+async function carregarMetricas() {
+  document.getElementById('metricas-stats').innerHTML = `
+    <div class="stat-card"><div class="stat-label">Candidatos Este Mês</div><div class="stat-value">—</div></div>
+    <div class="stat-card"><div class="stat-label">Taxa de Triagem</div><div class="stat-value">—</div></div>
+    <div class="stat-card"><div class="stat-label">Tempo Médio de Contratação</div><div class="stat-value">—</div></div>
+    <div class="stat-card"><div class="stat-label">Contratações Realizadas</div><div class="stat-value">—</div></div>
+  `;
+  document.getElementById('metricas-content').innerHTML = `<div class="empty-state"><div class="empty-icon">📊</div><h4>Métricas em breve</h4><p>As métricas detalhadas estarão disponíveis após o primeiro ciclo de contratação.</p></div>`;
+}
+
+// ── AÇÕES ──
+function novaVaga() { document.getElementById('modal-nova-vaga').style.display = 'flex'; }
+function fecharModalNovaVaga() { document.getElementById('modal-nova-vaga').style.display = 'none'; }
+
+async function salvarNovaVaga() {
+  const titulo = document.getElementById('nv-titulo').value.trim();
+  const departamento = document.getElementById('nv-departamento').value.trim();
+  const modalidade = document.getElementById('nv-modalidade').value;
+  const tipo_contrato = document.getElementById('nv-contrato').value;
+  const descricao = document.getElementById('nv-descricao').value.trim();
+  const cidade = document.getElementById('nv-cidade').value.trim();
+  if (!titulo) { showToast('Título é obrigatório.', 'info'); return; }
+  try {
+    const r = await fetch(BASE_URL + '/ats-admin-criar-vaga', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ titulo, departamento, modalidade, tipo_contrato, descricao, cidade, empresa_id: parseInt(localStorage.getItem('tr_empresa_id') || '1'), status: 'ativa' }),
+      signal: AbortSignal.timeout(15000)
+    });
+    const data = await r.json();
+    if (!data.success) throw new Error('Erro ao criar vaga');
+    fecharModalNovaVaga();
+    showToast('Vaga criada com sucesso!', 'success');
+    await carregarVagas();
+  } catch(err) { showToast(err.message || 'Erro ao criar vaga.', 'error'); }
+}
+function verVaga(id) { showToast('Funcionalidade em desenvolvimento', 'info'); }
+function verCandidato(id) { showToast('Funcionalidade em desenvolvimento', 'info'); }
+function verCandidatosVaga(id) { mostrarSecao('candidatos'); }
+function copiarLinkVaga(id) {
+  const link = `${window.location.origin}/vagas.html?empresa=${empresaId}`;
+  navigator.clipboard.writeText(link);
+  showToast('Link copiado!', 'success');
+}
+
+function abrirPortalVagas() {
+  window.open(`/vagas.html?empresa=${empresaId}`, '_blank');
+}
+
+function copiarPortalVagas() {
+  const link = `${window.location.origin}/vagas.html?empresa=${empresaId}`;
+  navigator.clipboard.writeText(link);
+  showToast('Link do portal copiado! 🔗', 'success');
+}
+function novaCampanha() { showToast('Sistema de campanhas em implementação', 'info'); }
+function convidarTalento(id) { showToast('Convite enviado via WhatsApp!', 'success'); }
+function convidarParaVaga() { showToast('Selecione uma vaga primeiro', 'info'); }
+function convidarTodos() { showToast('Disparo em massa em desenvolvimento', 'info'); }
+
+// ── TOAST ──
+function showToast(msg, type = 'info') {
+  const t = document.createElement('div');
+  t.className = `toast toast-${type}`;
+  t.textContent = msg;
+  document.getElementById('toasts').appendChild(t);
+  setTimeout(() => t.remove(), 3500);
+}
+
+// ── INIT ──
+document.addEventListener('DOMContentLoaded', () => {
+  if (!verificarAuth()) return;
+  carregarVagas();
+  setInterval(() => carregarSecao(secaoAtiva), 30000);
+});
+</script>
     <!-- Modal Nova Vaga – Profissional com Abas -->
     <div id="modal-nova-vaga" style="display:none;position:fixed;inset:0;z-index:1000;align-items:center;justify-content:center;padding:16px" onclick="if(event.target===this)fecharModalNovaVaga()">
       <div style="position:absolute;inset:0;background:rgba(0,0,0,0.8);backdrop-filter:blur(8px)"></div>
