@@ -1055,406 +1055,408 @@ perfil: { title: 'Perfil da Empresa', subtitle: 'Informações que a IA usa para
 else if (secao === 'perfil') carregarPerfil();
 -->
 
-<!-- PASSO 4: Adicionar a seção HTML no content area -->
-<section class="section" id="secao-perfil" style="width:100%;box-sizing:border-box">
+<section class="section" id="secao-perfil">
+<style>
+.pf-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 24px; margin-bottom: 20px; }
+.pf-card-title { font-size: 13px; font-weight: 700; color: var(--indigo-light); margin-bottom: 18px; display: flex; align-items: center; gap: 8px; }
+.pf-row { display: grid; gap: 14px; margin-bottom: 14px; }
+.pf-row-2 { grid-template-columns: 1fr 1fr; }
+.pf-row-3 { grid-template-columns: 1fr 1fr 1fr; }
+.pf-row-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+.pf-label { font-size: 11px; font-weight: 700; color: #a1a1aa; text-transform: uppercase; letter-spacing: 0.8px; display: block; margin-bottom: 7px; }
+.pf-input { width: 100%; background: rgba(255,255,255,0.04); border: 1.5px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 11px 14px; font-size: 14px; color: #f1f1f5; outline: none; font-family: 'DM Sans', sans-serif; box-sizing: border-box; transition: border-color 0.2s, box-shadow 0.2s; }
+.pf-input:focus { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.12); background: rgba(99,102,241,0.04); }
+.pf-textarea { width: 100%; background: rgba(255,255,255,0.04); border: 1.5px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 11px 14px; font-size: 14px; color: #f1f1f5; outline: none; font-family: 'DM Sans', sans-serif; box-sizing: border-box; resize: vertical; transition: border-color 0.2s, box-shadow 0.2s; }
+.pf-textarea:focus { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.12); background: rgba(99,102,241,0.04); }
+.pf-select { width: 100%; background: var(--surface2, #14141b); border: 1.5px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 11px 14px; font-size: 14px; color: #f1f1f5; outline: none; font-family: 'DM Sans', sans-serif; cursor: pointer; box-sizing: border-box; }
+.pf-tab { flex: 1; padding: 10px 8px; border-radius: 9px; border: none; font-size: 12px; font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.2s; }
+.pf-tab.active { background: linear-gradient(135deg, #4338ca, #6366f1); color: white; box-shadow: 0 2px 8px rgba(99,102,241,0.3); }
+.pf-tab:not(.active) { background: transparent; color: #71717a; }
+.pf-completude { background: linear-gradient(135deg, rgba(99,102,241,0.08), rgba(99,102,241,0.03)); border: 1px solid rgba(99,102,241,0.2); border-radius: 16px; padding: 18px 22px; margin-bottom: 24px; display: flex; align-items: center; gap: 20px; }
+.pf-tom-btn { padding: 10px 16px; border-radius: 8px; border: 1.5px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.03); color: #a1a1aa; font-size: 13px; font-weight: 500; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.2s; }
+.pf-tom-btn.active { border-color: #6366f1; background: rgba(99,102,241,0.12); color: #818cf8; font-weight: 600; }
+.pf-salvar-btn { position: fixed; bottom: 28px; right: 32px; padding: 13px 28px; background: linear-gradient(135deg, #059669, #10b981); border: none; border-radius: 12px; color: white; font-size: 14px; font-weight: 700; cursor: pointer; font-family: 'DM Sans', sans-serif; box-shadow: 0 8px 32px rgba(16,185,129,0.4); transition: all 0.2s; z-index: 90; }
+.pf-salvar-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(16,185,129,0.5); }
+</style>
 
-  <!-- Progress indicator -->
-  <div id="perfil-completude" style="margin-bottom:24px;padding:18px 22px;background:linear-gradient(135deg,rgba(99,102,241,0.08),rgba(99,102,241,0.03));border:1px solid rgba(99,102,241,0.2);border-radius:16px;display:flex;align-items:center;gap:16px;width:100%;box-sizing:border-box">
-    <div style="flex:1">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-        <span style="font-size:13px;font-weight:600;color:#f1f1f5">Completude do Perfil</span>
-        <span id="perfil-pct" style="font-size:13px;font-weight:700;color:#818cf8">0%</span>
-      </div>
-      <div style="height:6px;background:rgba(255,255,255,0.06);border-radius:100px;overflow:hidden">
-        <div id="perfil-bar" style="height:100%;background:linear-gradient(90deg,#4338ca,#818cf8);border-radius:100px;width:0%;transition:width 0.6s ease"></div>
-      </div>
-      <div style="font-size:11px;color:#52525b;margin-top:6px">Quanto mais completo, melhor a IA gera vagas, posts e mensagens para sua empresa</div>
+<!-- Completude -->
+<div class="pf-completude">
+  <div style="flex:1">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <span style="font-size:13px;font-weight:600;color:#f1f1f5">Completude do Perfil</span>
+      <span id="pf-pct" style="font-size:13px;font-weight:700;color:#818cf8">0%</span>
     </div>
-    <div style="font-size:32px">🤖</div>
+    <div style="height:6px;background:rgba(255,255,255,0.06);border-radius:100px;overflow:hidden">
+      <div id="pf-bar" style="height:100%;background:linear-gradient(90deg,#4338ca,#818cf8);border-radius:100px;width:0%;transition:width 0.6s ease"></div>
+    </div>
+    <div style="font-size:11px;color:#52525b;margin-top:6px">Quanto mais completo, melhor a IA gera vagas, posts e mensagens para sua empresa</div>
   </div>
+  <div style="font-size:36px">🤖</div>
+</div>
 
-  <!-- Tabs -->
-  <div style="display:flex;gap:3px;background:rgba(255,255,255,0.03);border-radius:12px;padding:4px;margin-bottom:24px;border:1px solid var(--border);width:100%;box-sizing:border-box">
-    <button id="pt-0" onclick="perfilAba(0)" style="flex:1;padding:10px;border-radius:9px;border:none;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;background:linear-gradient(135deg,#4338ca,#6366f1);color:white;box-shadow:0 2px 8px rgba(99,102,241,0.3)">🏢 Identidade</button>
-    <button id="pt-1" onclick="perfilAba(1)" style="flex:1;padding:10px;border-radius:9px;border:none;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;background:transparent;color:#71717a">📖 Sobre</button>
-    <button id="pt-2" onclick="perfilAba(2)" style="flex:1;padding:10px;border-radius:9px;border:none;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;background:transparent;color:#71717a">🎯 Cultura</button>
-    <button id="pt-3" onclick="perfilAba(3)" style="flex:1;padding:10px;border-radius:9px;border:none;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;background:transparent;color:#71717a">🎨 Visual & IA</button>
-  </div>
+<!-- Tabs -->
+<div style="display:flex;gap:4px;background:rgba(255,255,255,0.03);border-radius:12px;padding:4px;margin-bottom:24px;border:1px solid var(--border)">
+  <button id="pft-0" class="pf-tab active" onclick="pfAba(0)">🏢 Identidade</button>
+  <button id="pft-1" class="pf-tab" onclick="pfAba(1)">📖 Sobre</button>
+  <button id="pft-2" class="pf-tab" onclick="pfAba(2)">🎯 Cultura</button>
+  <button id="pft-3" class="pf-tab" onclick="pfAba(3)">🎨 Visual & IA</button>
+</div>
 
-  <!-- ABA 0: Identidade -->
-  <div id="pp-0" style="width:100%">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;width:100%">
+<!-- ABA 0: Identidade -->
+<div id="pfa-0">
 
-      <div style="grid-column:1/-1">
-        <div class="card" style="padding:22px">
-          <div style="font-size:13px;font-weight:700;color:#818cf8;margin-bottom:16px;display:flex;align-items:center;gap:8px">🏢 Dados da Empresa</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
-            <div style="grid-column:1/-1">
-              <label style="display:block;font-size:11px;font-weight:700;color:#a1a1aa;margin-bottom:7px;text-transform:uppercase;letter-spacing:0.8px">Nome da Empresa</label>
-              <input id="pf-nome" style="width:100%;background:rgba(255,255,255,0.04);border:1.5px solid rgba(255,255,255,0.08);border-radius:10px;padding:12px 15px;font-size:14px;color:#f1f1f5;outline:none;font-family:'DM Sans',sans-serif;box-sizing:border-box;transition:all 0.2s" onfocus="this.style.borderColor='#6366f1';this.style.boxShadow='0 0 0 3px rgba(99,102,241,0.12)'" onblur="this.style.borderColor='rgba(255,255,255,0.08)';this.style.boxShadow='none'">
-            </div>
-            <div>
-              <label style="display:block;font-size:11px;font-weight:700;color:#a1a1aa;margin-bottom:7px;text-transform:uppercase;letter-spacing:0.8px">CNPJ</label>
-              <input id="pf-cnpj" placeholder="00.000.000/0001-00" style="width:100%;background:rgba(255,255,255,0.04);border:1.5px solid rgba(255,255,255,0.08);border-radius:10px;padding:12px 15px;font-size:14px;color:#f1f1f5;outline:none;font-family:'DM Sans',sans-serif;box-sizing:border-box;transition:all 0.2s" onfocus="this.style.borderColor='#6366f1';this.style.boxShadow='0 0 0 3px rgba(99,102,241,0.12)'" onblur="this.style.borderColor='rgba(255,255,255,0.08)';this.style.boxShadow='none'">
-            </div>
-            <div>
-              <label style="display:block;font-size:11px;font-weight:700;color:#a1a1aa;margin-bottom:7px;text-transform:uppercase;letter-spacing:0.8px">Telefone / WhatsApp</label>
-              <input id="pf-telefone" placeholder="(11) 99999-0000" style="width:100%;background:rgba(255,255,255,0.04);border:1.5px solid rgba(255,255,255,0.08);border-radius:10px;padding:12px 15px;font-size:14px;color:#f1f1f5;outline:none;font-family:'DM Sans',sans-serif;box-sizing:border-box;transition:all 0.2s" onfocus="this.style.borderColor='#6366f1';this.style.boxShadow='0 0 0 3px rgba(99,102,241,0.12)'" onblur="this.style.borderColor='rgba(255,255,255,0.08)';this.style.boxShadow='none'">
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="card" style="padding:22px">
-        <div style="font-size:13px;font-weight:700;color:#818cf8;margin-bottom:16px">📍 Localização</div>
-        <div style="display:grid;gap:12px">
-          <div style="display:grid;grid-template-columns:1fr auto;gap:10px">
-            <div>
-              <label style="display:block;font-size:11px;font-weight:700;color:#a1a1aa;margin-bottom:7px;text-transform:uppercase;letter-spacing:0.8px">Cidade Sede</label>
-              <input id="pf-cidade" placeholder="São Paulo" style="width:100%;background:rgba(255,255,255,0.04);border:1.5px solid rgba(255,255,255,0.08);border-radius:10px;padding:12px 15px;font-size:14px;color:#f1f1f5;outline:none;font-family:'DM Sans',sans-serif;box-sizing:border-box;transition:all 0.2s" onfocus="this.style.borderColor='#6366f1';this.style.boxShadow='0 0 0 3px rgba(99,102,241,0.12)'" onblur="this.style.borderColor='rgba(255,255,255,0.08)';this.style.boxShadow='none'">
-            </div>
-            <div>
-              <label style="display:block;font-size:11px;font-weight:700;color:#a1a1aa;margin-bottom:7px;text-transform:uppercase;letter-spacing:0.8px">UF</label>
-              <select id="pf-estado" style="background:#0d0d14;border:1.5px solid rgba(255,255,255,0.08);border-radius:10px;padding:12px 15px;font-size:14px;color:#f1f1f5;outline:none;font-family:'DM Sans',sans-serif;cursor:pointer;width:70px">
-                <option value="">--</option>
-                <option>SP</option><option>RJ</option><option>MG</option><option>RS</option><option>PR</option><option>SC</option><option>BA</option><option>CE</option><option>PE</option><option>GO</option><option>DF</option><option>AM</option><option>PA</option><option>ES</option><option>MT</option><option>MS</option>
-              </select>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="card" style="padding:22px">
-        <div style="font-size:13px;font-weight:700;color:#818cf8;margin-bottom:16px">📊 Perfil Empresarial</div>
-        <div style="display:grid;gap:12px">
-          <div>
-            <label style="display:block;font-size:11px;font-weight:700;color:#a1a1aa;margin-bottom:7px;text-transform:uppercase;letter-spacing:0.8px">Segmento / Setor</label>
-            <select id="pf-segmento" style="width:100%;background:#0d0d14;border:1.5px solid rgba(255,255,255,0.08);border-radius:10px;padding:12px 15px;font-size:14px;color:#f1f1f5;outline:none;font-family:'DM Sans',sans-serif;cursor:pointer;box-sizing:border-box">
-              <option value="">Selecione...</option>
-              <option>Tecnologia</option><option>Construção Civil</option><option>Imobiliário</option><option>Saúde</option><option>Educação</option><option>Financeiro</option><option>Varejo</option><option>Indústria</option><option>Logística</option><option>Marketing & Comunicação</option><option>Jurídico</option><option>Consultoria</option><option>Alimentação</option><option>Turismo & Hotelaria</option><option>Agronegócio</option><option>Outro</option>
-            </select>
-          </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-            <div>
-              <label style="display:block;font-size:11px;font-weight:700;color:#a1a1aa;margin-bottom:7px;text-transform:uppercase;letter-spacing:0.8px">Porte</label>
-              <select id="pf-porte" style="width:100%;background:#0d0d14;border:1.5px solid rgba(255,255,255,0.08);border-radius:10px;padding:12px 15px;font-size:14px;color:#f1f1f5;outline:none;font-family:'DM Sans',sans-serif;cursor:pointer;box-sizing:border-box">
-                <option value="">Selecione</option>
-                <option value="micro">Micro (1-9)</option>
-                <option value="pequena">Pequena (10-49)</option>
-                <option value="media">Média (50-249)</option>
-                <option value="grande">Grande (250+)</option>
-              </select>
-            </div>
-            <div>
-              <label style="display:block;font-size:11px;font-weight:700;color:#a1a1aa;margin-bottom:7px;text-transform:uppercase;letter-spacing:0.8px">Fundação</label>
-              <input id="pf-fundacao" type="number" placeholder="2010" min="1900" max="2025" style="width:100%;background:rgba(255,255,255,0.04);border:1.5px solid rgba(255,255,255,0.08);border-radius:10px;padding:12px 15px;font-size:14px;color:#f1f1f5;outline:none;font-family:'DM Sans',sans-serif;box-sizing:border-box;transition:all 0.2s" onfocus="this.style.borderColor='#6366f1';this.style.boxShadow='0 0 0 3px rgba(99,102,241,0.12)'" onblur="this.style.borderColor='rgba(255,255,255,0.08)';this.style.boxShadow='none'">
-            </div>
-          </div>
-          <div>
-            <label style="display:block;font-size:11px;font-weight:700;color:#a1a1aa;margin-bottom:7px;text-transform:uppercase;letter-spacing:0.8px">Nº de Funcionários</label>
-            <select id="pf-funcionarios" style="width:100%;background:#0d0d14;border:1.5px solid rgba(255,255,255,0.08);border-radius:10px;padding:12px 15px;font-size:14px;color:#f1f1f5;outline:none;font-family:'DM Sans',sans-serif;cursor:pointer;box-sizing:border-box">
-              <option value="">Selecione...</option>
-              <option>1-10</option><option>11-50</option><option>51-100</option><option>101-250</option><option>251-500</option><option>500+</option>
-            </select>
-          </div>
-        </div>
-      </div>
-
-      <div style="grid-column:1/-1" class="card" style="padding:22px">
-        <div style="font-size:13px;font-weight:700;color:#818cf8;margin-bottom:16px">🔗 Presença Digital</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
-          <div>
-            <label style="display:block;font-size:11px;font-weight:700;color:#a1a1aa;margin-bottom:7px;text-transform:uppercase;letter-spacing:0.8px">🌐 Site</label>
-            <input id="pf-site" placeholder="https://empresa.com.br" style="width:100%;background:rgba(255,255,255,0.04);border:1.5px solid rgba(255,255,255,0.08);border-radius:10px;padding:12px 15px;font-size:14px;color:#f1f1f5;outline:none;font-family:'DM Sans',sans-serif;box-sizing:border-box;transition:all 0.2s" onfocus="this.style.borderColor='#6366f1';this.style.boxShadow='0 0 0 3px rgba(99,102,241,0.12)'" onblur="this.style.borderColor='rgba(255,255,255,0.08)';this.style.boxShadow='none'">
-          </div>
-          <div>
-            <label style="display:block;font-size:11px;font-weight:700;color:#a1a1aa;margin-bottom:7px;text-transform:uppercase;letter-spacing:0.8px">💼 LinkedIn</label>
-            <input id="pf-linkedin" placeholder="linkedin.com/company/..." style="width:100%;background:rgba(255,255,255,0.04);border:1.5px solid rgba(255,255,255,0.08);border-radius:10px;padding:12px 15px;font-size:14px;color:#f1f1f5;outline:none;font-family:'DM Sans',sans-serif;box-sizing:border-box;transition:all 0.2s" onfocus="this.style.borderColor='#6366f1';this.style.boxShadow='0 0 0 3px rgba(99,102,241,0.12)'" onblur="this.style.borderColor='rgba(255,255,255,0.08)';this.style.boxShadow='none'">
-          </div>
-          <div>
-            <label style="display:block;font-size:11px;font-weight:700;color:#a1a1aa;margin-bottom:7px;text-transform:uppercase;letter-spacing:0.8px">📸 Instagram</label>
-            <input id="pf-instagram" placeholder="@empresa" style="width:100%;background:rgba(255,255,255,0.04);border:1.5px solid rgba(255,255,255,0.08);border-radius:10px;padding:12px 15px;font-size:14px;color:#f1f1f5;outline:none;font-family:'DM Sans',sans-serif;box-sizing:border-box;transition:all 0.2s" onfocus="this.style.borderColor='#6366f1';this.style.boxShadow='0 0 0 3px rgba(99,102,241,0.12)'" onblur="this.style.borderColor='rgba(255,255,255,0.08)';this.style.boxShadow='none'">
-          </div>
-        </div>
-      </div>
-
+  <div class="pf-card">
+    <div class="pf-card-title">🏢 Dados da Empresa</div>
+    <div class="pf-row" style="margin-bottom:14px">
+      <div><label class="pf-label">Nome da Empresa</label><input id="pf-nome" class="pf-input" placeholder="Ex: Tibério Construtora"></div>
+    </div>
+    <div class="pf-row pf-row-2">
+      <div><label class="pf-label">CNPJ</label><input id="pf-cnpj" class="pf-input" placeholder="00.000.000/0001-00"></div>
+      <div><label class="pf-label">Telefone / WhatsApp</label><input id="pf-telefone" class="pf-input" placeholder="(11) 99999-0000"></div>
     </div>
   </div>
 
-  <!-- ABA 1: Sobre -->
-  <div id="pp-1" style="display:none;width:100%">
-    <div style="display:grid;gap:18px;width:100%">
-
-      <div class="card" style="padding:22px">
-        <div style="font-size:13px;font-weight:700;color:#818cf8;margin-bottom:6px">📝 Sobre a Empresa</div>
-        <div style="font-size:12px;color:#52525b;margin-bottom:14px">Apresentação geral usada em vagas, posts e candidaturas</div>
-        <textarea id="pf-sobre" rows="5" placeholder="Ex: A Tibério Construtora é uma empresa de referência no mercado imobiliário de São Paulo, com mais de 15 anos de experiência na construção e venda de imóveis residenciais e comerciais..." style="width:100%;background:rgba(255,255,255,0.04);border:1.5px solid rgba(255,255,255,0.08);border-radius:10px;padding:13px 15px;font-size:14px;color:#f1f1f5;outline:none;font-family:'DM Sans',sans-serif;resize:vertical;box-sizing:border-box;transition:all 0.2s" onfocus="this.style.borderColor='#6366f1';this.style.boxShadow='0 0 0 3px rgba(99,102,241,0.12)'" onblur="this.style.borderColor='rgba(255,255,255,0.08)';this.style.boxShadow='none'"></textarea>
-      </div>
-
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px">
-        <div class="card" style="padding:22px">
-          <div style="font-size:13px;font-weight:700;color:#22c55e;margin-bottom:6px">🎯 Missão</div>
-          <div style="font-size:11px;color:#52525b;margin-bottom:12px">Por que a empresa existe</div>
-          <textarea id="pf-missao" rows="4" placeholder="Ex: Conectar pessoas ao imóvel dos seus sonhos com transparência e agilidade..." style="width:100%;background:rgba(255,255,255,0.04);border:1.5px solid rgba(255,255,255,0.08);border-radius:10px;padding:12px 14px;font-size:13px;color:#f1f1f5;outline:none;font-family:'DM Sans',sans-serif;resize:vertical;box-sizing:border-box;transition:all 0.2s" onfocus="this.style.borderColor='#22c55e';this.style.boxShadow='0 0 0 3px rgba(34,197,94,0.12)'" onblur="this.style.borderColor='rgba(255,255,255,0.08)';this.style.boxShadow='none'"></textarea>
-        </div>
-        <div class="card" style="padding:22px">
-          <div style="font-size:13px;font-weight:700;color:#f59e0b;margin-bottom:6px">🔭 Visão</div>
-          <div style="font-size:11px;color:#52525b;margin-bottom:12px">Onde a empresa quer chegar</div>
-          <textarea id="pf-visao" rows="4" placeholder="Ex: Ser a construtora mais inovadora do interior paulista até 2030..." style="width:100%;background:rgba(255,255,255,0.04);border:1.5px solid rgba(255,255,255,0.08);border-radius:10px;padding:12px 14px;font-size:13px;color:#f1f1f5;outline:none;font-family:'DM Sans',sans-serif;resize:vertical;box-sizing:border-box;transition:all 0.2s" onfocus="this.style.borderColor='#f59e0b';this.style.boxShadow='0 0 0 3px rgba(245,158,11,0.12)'" onblur="this.style.borderColor='rgba(255,255,255,0.08)';this.style.boxShadow='none'"></textarea>
-        </div>
-        <div class="card" style="padding:22px">
-          <div style="font-size:13px;font-weight:700;color:#a78bfa;margin-bottom:6px">💡 Valores</div>
-          <div style="font-size:11px;color:#52525b;margin-bottom:12px">Princípios que guiam a empresa</div>
-          <textarea id="pf-valores" rows="4" placeholder="Ex: Integridade, Inovação, Foco no cliente, Respeito às pessoas..." style="width:100%;background:rgba(255,255,255,0.04);border:1.5px solid rgba(255,255,255,0.08);border-radius:10px;padding:12px 14px;font-size:13px;color:#f1f1f5;outline:none;font-family:'DM Sans',sans-serif;resize:vertical;box-sizing:border-box;transition:all 0.2s" onfocus="this.style.borderColor='#a78bfa';this.style.boxShadow='0 0 0 3px rgba(167,139,250,0.12)'" onblur="this.style.borderColor='rgba(255,255,255,0.08)';this.style.boxShadow='none'"></textarea>
+  <div class="pf-row pf-row-2" style="gap:20px">
+    <div class="pf-card" style="margin-bottom:0">
+      <div class="pf-card-title">📍 Localização</div>
+      <div class="pf-row pf-row-2" style="margin-bottom:0">
+        <div><label class="pf-label">Cidade</label><input id="pf-cidade" class="pf-input" placeholder="São Paulo"></div>
+        <div><label class="pf-label">Estado</label>
+          <select id="pf-estado" class="pf-select">
+            <option value="">UF</option>
+            <option>SP</option><option>RJ</option><option>MG</option><option>RS</option><option>PR</option><option>SC</option><option>BA</option><option>CE</option><option>PE</option><option>GO</option><option>DF</option><option>AM</option><option>PA</option><option>ES</option><option>MT</option><option>MS</option><option>MA</option><option>PB</option><option>RN</option><option>AL</option><option>SE</option><option>PI</option>
+          </select>
         </div>
       </div>
+    </div>
 
-      <div class="card" style="padding:22px">
-        <div style="font-size:13px;font-weight:700;color:#818cf8;margin-bottom:6px">📜 História</div>
-        <div style="font-size:11px;color:#52525b;margin-bottom:12px">Trajetória da empresa (usada em textos institucionais)</div>
-        <textarea id="pf-historia" rows="4" placeholder="Ex: Fundada em 2008 por João Silva e Maria Santos, a empresa nasceu com o objetivo de..." style="width:100%;background:rgba(255,255,255,0.04);border:1.5px solid rgba(255,255,255,0.08);border-radius:10px;padding:13px 15px;font-size:14px;color:#f1f1f5;outline:none;font-family:'DM Sans',sans-serif;resize:vertical;box-sizing:border-box;transition:all 0.2s" onfocus="this.style.borderColor='#6366f1';this.style.boxShadow='0 0 0 3px rgba(99,102,241,0.12)'" onblur="this.style.borderColor='rgba(255,255,255,0.08)';this.style.boxShadow='none'"></textarea>
+    <div class="pf-card" style="margin-bottom:0">
+      <div class="pf-card-title">📊 Perfil Empresarial</div>
+      <div class="pf-row pf-row-2" style="margin-bottom:14px">
+        <div><label class="pf-label">Segmento</label>
+          <select id="pf-segmento" class="pf-select">
+            <option value="">Selecione...</option>
+            <option>Tecnologia</option><option>Construção Civil</option><option>Imobiliário</option><option>Saúde</option><option>Educação</option><option>Financeiro</option><option>Varejo</option><option>Indústria</option><option>Logística</option><option>Marketing</option><option>Jurídico</option><option>Consultoria</option><option>Outro</option>
+          </select>
+        </div>
+        <div><label class="pf-label">Porte</label>
+          <select id="pf-porte" class="pf-select">
+            <option value="">Selecione</option>
+            <option value="micro">Micro (1–9)</option>
+            <option value="pequena">Pequena (10–49)</option>
+            <option value="media">Média (50–249)</option>
+            <option value="grande">Grande (250+)</option>
+          </select>
+        </div>
       </div>
-
+      <div class="pf-row pf-row-2" style="margin-bottom:0">
+        <div><label class="pf-label">Fundação</label><input id="pf-fundacao" class="pf-input" type="number" placeholder="2010" min="1900" max="2030"></div>
+        <div><label class="pf-label">Nº Funcionários</label>
+          <select id="pf-funcionarios" class="pf-select">
+            <option value="">Selecione</option>
+            <option>1–10</option><option>11–50</option><option>51–100</option><option>101–250</option><option>251–500</option><option>500+</option>
+          </select>
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- ABA 2: Cultura -->
-  <div id="pp-2" style="display:none;width:100%">
-    <div style="display:grid;gap:18px;width:100%">
-
-      <div class="card" style="padding:22px">
-        <div style="font-size:13px;font-weight:700;color:#818cf8;margin-bottom:6px">🏠 Cultura Organizacional</div>
-        <div style="font-size:11px;color:#52525b;margin-bottom:14px">Como é o ambiente de trabalho, o dia a dia e o estilo de liderança</div>
-        <textarea id="pf-cultura" rows="4" placeholder="Ex: Ambiente colaborativo e descontraído, com foco em resultados. Valorizamos autonomia e crescimento profissional. Times enxutos com impacto direto nos resultados da empresa..." style="width:100%;background:rgba(255,255,255,0.04);border:1.5px solid rgba(255,255,255,0.08);border-radius:10px;padding:13px 15px;font-size:14px;color:#f1f1f5;outline:none;font-family:'DM Sans',sans-serif;resize:vertical;box-sizing:border-box;transition:all 0.2s" onfocus="this.style.borderColor='#6366f1';this.style.boxShadow='0 0 0 3px rgba(99,102,241,0.12)'" onblur="this.style.borderColor='rgba(255,255,255,0.08)';this.style.boxShadow='none'"></textarea>
-      </div>
-
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
-        <div class="card" style="padding:22px">
-          <div style="font-size:13px;font-weight:700;color:#22c55e;margin-bottom:6px">🎁 Benefícios Padrão</div>
-          <div style="font-size:11px;color:#52525b;margin-bottom:12px">Benefícios que todos os cargos recebem</div>
-          <textarea id="pf-beneficios" rows="6" placeholder="• Vale-refeição R$50/dia&#10;• Plano de saúde Bradesco&#10;• Vale-transporte&#10;• PLR anual&#10;• Gympass&#10;• Home office 2x/semana" style="width:100%;background:rgba(255,255,255,0.04);border:1.5px solid rgba(255,255,255,0.08);border-radius:10px;padding:12px 14px;font-size:13px;color:#f1f1f5;outline:none;font-family:'DM Sans',sans-serif;resize:vertical;box-sizing:border-box;transition:all 0.2s" onfocus="this.style.borderColor='#22c55e';this.style.boxShadow='0 0 0 3px rgba(34,197,94,0.12)'" onblur="this.style.borderColor='rgba(255,255,255,0.08)';this.style.boxShadow='none'"></textarea>
-        </div>
-        <div class="card" style="padding:22px">
-          <div style="font-size:13px;font-weight:700;color:#f59e0b;margin-bottom:6px">⭐ Diferenciais</div>
-          <div style="font-size:11px;color:#52525b;margin-bottom:12px">Por que alguém escolheria trabalhar aqui</div>
-          <textarea id="pf-diferenciais" rows="6" placeholder="• Crescimento rápido — 80% dos gerentes foram promovidos internamente&#10;• Comissões acima do mercado&#10;• Treinamentos semanais&#10;• Parceria com CRECI&#10;• Carteira de clientes já formada" style="width:100%;background:rgba(255,255,255,0.04);border:1.5px solid rgba(255,255,255,0.08);border-radius:10px;padding:12px 14px;font-size:13px;color:#f1f1f5;outline:none;font-family:'DM Sans',sans-serif;resize:vertical;box-sizing:border-box;transition:all 0.2s" onfocus="this.style.borderColor='#f59e0b';this.style.boxShadow='0 0 0 3px rgba(245,158,11,0.12)'" onblur="this.style.borderColor='rgba(255,255,255,0.08)';this.style.boxShadow='none'"></textarea>
-        </div>
-      </div>
-
-      <div class="card" style="padding:22px">
-        <div style="font-size:13px;font-weight:700;color:#818cf8;margin-bottom:6px">🎯 Público-Alvo de Candidatos</div>
-        <div style="font-size:11px;color:#52525b;margin-bottom:14px">Perfil ideal de profissional que a empresa busca</div>
-        <textarea id="pf-publico" rows="3" placeholder="Ex: Profissionais com perfil comercial forte, orientados a resultado, com habilidade interpessoal e interesse no mercado imobiliário. De 25 a 45 anos, com ou sem experiência prévia no setor..." style="width:100%;background:rgba(255,255,255,0.04);border:1.5px solid rgba(255,255,255,0.08);border-radius:10px;padding:13px 15px;font-size:14px;color:#f1f1f5;outline:none;font-family:'DM Sans',sans-serif;resize:vertical;box-sizing:border-box;transition:all 0.2s" onfocus="this.style.borderColor='#6366f1';this.style.boxShadow='0 0 0 3px rgba(99,102,241,0.12)'" onblur="this.style.borderColor='rgba(255,255,255,0.08)';this.style.boxShadow='none'"></textarea>
-      </div>
-
+  <div class="pf-card" style="margin-top:20px">
+    <div class="pf-card-title">🔗 Presença Digital</div>
+    <div class="pf-row pf-row-3" style="margin-bottom:0">
+      <div><label class="pf-label">🌐 Site</label><input id="pf-site" class="pf-input" placeholder="https://empresa.com.br"></div>
+      <div><label class="pf-label">💼 LinkedIn</label><input id="pf-linkedin" class="pf-input" placeholder="linkedin.com/company/..."></div>
+      <div><label class="pf-label">📸 Instagram</label><input id="pf-instagram" class="pf-input" placeholder="@empresa"></div>
     </div>
   </div>
 
-  <!-- ABA 3: Visual & IA -->
-  <div id="pp-3" style="display:none;width:100%">
-    <div style="display:grid;gap:18px;width:100%">
+</div>
 
-      <div class="card" style="padding:22px">
-        <div style="font-size:13px;font-weight:700;color:#818cf8;margin-bottom:16px">🎨 Identidade Visual</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
-          <div>
-            <label style="display:block;font-size:11px;font-weight:700;color:#a1a1aa;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.8px">Cor Primária</label>
-            <div style="display:flex;gap:10px;align-items:center">
-              <input id="pf-cor1" type="color" value="#6366f1" style="width:48px;height:40px;border:none;border-radius:8px;cursor:pointer;background:none">
-              <input id="pf-cor1-hex" value="#6366f1" style="flex:1;background:rgba(255,255,255,0.04);border:1.5px solid rgba(255,255,255,0.08);border-radius:10px;padding:10px 14px;font-size:13px;color:#f1f1f5;outline:none;font-family:'DM Sans',sans-serif" oninput="document.getElementById('pf-cor1').value=this.value">
-            </div>
-          </div>
-          <div>
-            <label style="display:block;font-size:11px;font-weight:700;color:#a1a1aa;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.8px">Cor Secundária</label>
-            <div style="display:flex;gap:10px;align-items:center">
-              <input id="pf-cor2" type="color" value="#818cf8" style="width:48px;height:40px;border:none;border-radius:8px;cursor:pointer;background:none">
-              <input id="pf-cor2-hex" value="#818cf8" style="flex:1;background:rgba(255,255,255,0.04);border:1.5px solid rgba(255,255,255,0.08);border-radius:10px;padding:10px 14px;font-size:13px;color:#f1f1f5;outline:none;font-family:'DM Sans',sans-serif" oninput="document.getElementById('pf-cor2').value=this.value">
-            </div>
-          </div>
-        </div>
-        <div style="margin-top:14px;padding:14px;border-radius:10px;background:linear-gradient(135deg,var(--p1,#6366f1),var(--p2,#818cf8));display:flex;align-items:center;justify-content:center;font-weight:700;color:white;font-size:14px" id="pf-preview-cores">Preview das cores</div>
-      </div>
+<!-- ABA 1: Sobre -->
+<div id="pfa-1" style="display:none">
 
-      <div class="card" style="padding:22px">
-        <div style="font-size:13px;font-weight:700;color:#818cf8;margin-bottom:16px">🤖 Configurações de IA</div>
-        <div style="display:grid;gap:14px">
-          <div>
-            <label style="display:block;font-size:11px;font-weight:700;color:#a1a1aa;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.8px">Tom de Voz</label>
-            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
-              <button onclick="pfSelecionarTom(this,'formal')" id="tom-formal" class="tom-btn" style="padding:10px 8px;border-radius:8px;border:1.5px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.03);color:#a1a1aa;font-size:12px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s">🎩 Formal</button>
-              <button onclick="pfSelecionarTom(this,'profissional')" id="tom-profissional" class="tom-btn" style="padding:10px 8px;border-radius:8px;border:1.5px solid #6366f1;background:rgba(99,102,241,0.12);color:#818cf8;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s">💼 Profissional</button>
-              <button onclick="pfSelecionarTom(this,'descontraido')" id="tom-descontraido" class="tom-btn" style="padding:10px 8px;border-radius:8px;border:1.5px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.03);color:#a1a1aa;font-size:12px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s">😄 Descontraído</button>
-              <button onclick="pfSelecionarTom(this,'jovem')" id="tom-jovem" class="tom-btn" style="padding:10px 8px;border-radius:8px;border:1.5px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.03);color:#a1a1aa;font-size:12px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s">🚀 Jovem</button>
-            </div>
-            <input type="hidden" id="pf-tom-voz" value="profissional">
-          </div>
+  <div class="pf-card">
+    <div class="pf-card-title">📝 Sobre a Empresa</div>
+    <div style="font-size:12px;color:#52525b;margin-bottom:12px">Apresentação geral usada em vagas, posts e candidaturas</div>
+    <textarea id="pf-sobre" class="pf-textarea" rows="5" placeholder="Ex: A Tibério Construtora é referência no mercado imobiliário de São Paulo, com mais de 15 anos de experiência na construção e venda de imóveis residenciais e comerciais..."></textarea>
+  </div>
 
-          <div style="background:rgba(99,102,241,0.05);border:1px solid rgba(99,102,241,0.15);border-radius:12px;padding:16px">
-            <div style="font-size:12px;font-weight:600;color:#818cf8;margin-bottom:8px">📱 WhatsApp Bot de Captação</div>
-            <div style="font-size:11px;color:#52525b;margin-bottom:12px">Número dedicado para receber candidatos via WhatsApp</div>
-            <input id="pf-whatsapp-bot" placeholder="5511999990000 (só números com DDI)" style="width:100%;background:rgba(255,255,255,0.04);border:1.5px solid rgba(255,255,255,0.08);border-radius:10px;padding:12px 15px;font-size:14px;color:#f1f1f5;outline:none;font-family:'DM Sans',sans-serif;box-sizing:border-box;transition:all 0.2s" onfocus="this.style.borderColor='#6366f1';this.style.boxShadow='0 0 0 3px rgba(99,102,241,0.12)'" onblur="this.style.borderColor='rgba(255,255,255,0.08)';this.style.boxShadow='none'">
-          </div>
-        </div>
-      </div>
-
-      <!-- Preview IA -->
-      <div class="card" style="padding:22px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-          <div>
-            <div style="font-size:13px;font-weight:700;color:#818cf8">🤖 Preview — Como a IA te conhece</div>
-            <div style="font-size:11px;color:#52525b;margin-top:3px">Resumo do perfil que será enviado ao GPT-4o ao gerar conteúdo</div>
-          </div>
-          <button onclick="gerarPreviewIA()" style="padding:8px 16px;background:rgba(99,102,241,0.12);border:1px solid rgba(99,102,241,0.3);border-radius:8px;color:#818cf8;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">Atualizar preview</button>
-        </div>
-        <div id="pf-preview-ia" style="background:rgba(0,0,0,0.3);border-radius:10px;padding:16px;font-size:12px;color:#71717a;font-family:monospace;white-space:pre-wrap;min-height:100px;line-height:1.6">Salve o perfil para ver o preview...</div>
-      </div>
-
+  <div class="pf-row pf-row-3" style="gap:20px">
+    <div class="pf-card" style="margin-bottom:0;border-color:rgba(34,197,94,0.2)">
+      <div class="pf-card-title" style="color:#22c55e">🎯 Missão</div>
+      <div style="font-size:11px;color:#52525b;margin-bottom:12px">Por que a empresa existe</div>
+      <textarea id="pf-missao" class="pf-textarea" rows="5" placeholder="Ex: Conectar pessoas ao imóvel dos seus sonhos com transparência..."></textarea>
+    </div>
+    <div class="pf-card" style="margin-bottom:0;border-color:rgba(245,158,11,0.2)">
+      <div class="pf-card-title" style="color:#f59e0b">🔭 Visão</div>
+      <div style="font-size:11px;color:#52525b;margin-bottom:12px">Onde a empresa quer chegar</div>
+      <textarea id="pf-visao" class="pf-textarea" rows="5" placeholder="Ex: Ser a construtora mais inovadora do interior paulista..."></textarea>
+    </div>
+    <div class="pf-card" style="margin-bottom:0;border-color:rgba(167,139,250,0.2)">
+      <div class="pf-card-title" style="color:#a78bfa">💡 Valores</div>
+      <div style="font-size:11px;color:#52525b;margin-bottom:12px">Princípios que guiam a empresa</div>
+      <textarea id="pf-valores" class="pf-textarea" rows="5" placeholder="Ex: Integridade, Inovação, Foco no cliente..."></textarea>
     </div>
   </div>
 
-  <!-- Botão Salvar fixo -->
-  <div style="position:sticky;bottom:24px;display:flex;justify-content:flex-end;margin-top:24px;pointer-events:none">
-    <button onclick="salvarPerfil()" style="pointer-events:all;padding:13px 28px;background:linear-gradient(135deg,#059669,#10b981);border:none;border-radius:12px;color:white;font-size:14px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;box-shadow:0 8px 32px rgba(16,185,129,0.4),0 0 0 1px rgba(255,255,255,0.1);transition:all 0.2s" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 12px 40px rgba(16,185,129,0.5)'" onmouseout="this.style.transform='none';this.style.boxShadow='0 8px 32px rgba(16,185,129,0.4)'">
-      💾 Salvar Perfil
-    </button>
+  <div class="pf-card" style="margin-top:20px">
+    <div class="pf-card-title">📜 História</div>
+    <div style="font-size:12px;color:#52525b;margin-bottom:12px">Trajetória da empresa (usada em textos institucionais)</div>
+    <textarea id="pf-historia" class="pf-textarea" rows="4" placeholder="Ex: Fundada em 2008 por João Silva, a empresa nasceu com o objetivo de..."></textarea>
   </div>
 
-</section>
+</div>
+
+<!-- ABA 2: Cultura -->
+<div id="pfa-2" style="display:none">
+
+  <div class="pf-card">
+    <div class="pf-card-title">🏠 Cultura Organizacional</div>
+    <div style="font-size:12px;color:#52525b;margin-bottom:12px">Como é o ambiente de trabalho, o dia a dia e o estilo de liderança</div>
+    <textarea id="pf-cultura" class="pf-textarea" rows="4" placeholder="Ex: Ambiente colaborativo e descontraído, com foco em resultados. Valorizamos autonomia..."></textarea>
+  </div>
+
+  <div class="pf-row pf-row-2" style="gap:20px">
+    <div class="pf-card" style="margin-bottom:0;border-color:rgba(34,197,94,0.2)">
+      <div class="pf-card-title" style="color:#22c55e">🎁 Benefícios Padrão</div>
+      <div style="font-size:11px;color:#52525b;margin-bottom:12px">Benefícios que todos os cargos recebem</div>
+      <textarea id="pf-beneficios" class="pf-textarea" rows="7" placeholder="• Vale-refeição R$50/dia&#10;• Plano de saúde&#10;• Vale-transporte&#10;• PLR anual&#10;• Gympass"></textarea>
+    </div>
+    <div class="pf-card" style="margin-bottom:0;border-color:rgba(245,158,11,0.2)">
+      <div class="pf-card-title" style="color:#f59e0b">⭐ Diferenciais</div>
+      <div style="font-size:11px;color:#52525b;margin-bottom:12px">Por que alguém escolheria trabalhar aqui</div>
+      <textarea id="pf-diferenciais" class="pf-textarea" rows="7" placeholder="• Crescimento rápido&#10;• Comissões acima do mercado&#10;• Treinamentos semanais&#10;• Carteira de clientes formada"></textarea>
+    </div>
+  </div>
+
+  <div class="pf-card" style="margin-top:20px">
+    <div class="pf-card-title">🎯 Público-Alvo de Candidatos</div>
+    <div style="font-size:12px;color:#52525b;margin-bottom:12px">Perfil ideal de profissional que a empresa busca</div>
+    <textarea id="pf-publico" class="pf-textarea" rows="3" placeholder="Ex: Profissionais com perfil comercial forte, orientados a resultado, com habilidade interpessoal..."></textarea>
+  </div>
+
+</div>
+
+<!-- ABA 3: Visual & IA -->
+<div id="pfa-3" style="display:none">
+
+  <div class="pf-row pf-row-2" style="gap:20px">
+    <div class="pf-card" style="margin-bottom:0">
+      <div class="pf-card-title">🎨 Identidade Visual</div>
+      <div class="pf-row pf-row-2" style="margin-bottom:16px">
+        <div>
+          <label class="pf-label">Cor Primária</label>
+          <div style="display:flex;gap:10px;align-items:center">
+            <input id="pf-cor1" type="color" value="#6366f1" style="width:44px;height:40px;border:none;border-radius:8px;cursor:pointer">
+            <input id="pf-cor1-hex" value="#6366f1" class="pf-input" style="flex:1" oninput="document.getElementById('pf-cor1').value=this.value;pfPreviewCores()">
+          </div>
+        </div>
+        <div>
+          <label class="pf-label">Cor Secundária</label>
+          <div style="display:flex;gap:10px;align-items:center">
+            <input id="pf-cor2" type="color" value="#818cf8" style="width:44px;height:40px;border:none;border-radius:8px;cursor:pointer">
+            <input id="pf-cor2-hex" value="#818cf8" class="pf-input" style="flex:1" oninput="document.getElementById('pf-cor2').value=this.value;pfPreviewCores()">
+          </div>
+        </div>
+      </div>
+      <div id="pf-preview-cores" style="height:48px;border-radius:10px;background:linear-gradient(135deg,#6366f1,#818cf8);display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:13px;transition:background 0.3s">Preview das cores</div>
+    </div>
+
+    <div class="pf-card" style="margin-bottom:0">
+      <div class="pf-card-title">📱 WhatsApp de Captação</div>
+      <div style="font-size:12px;color:#52525b;margin-bottom:14px">Número dedicado para receber candidatos automaticamente</div>
+      <label class="pf-label">Número (com DDI)</label>
+      <input id="pf-whatsapp-bot" class="pf-input" placeholder="5511999990000">
+      <div style="font-size:11px;color:#52525b;margin-top:8px">Candidatos mandam "Oi" e o bot coleta os dados automaticamente 24h</div>
+    </div>
+  </div>
+
+  <div class="pf-card" style="margin-top:20px">
+    <div class="pf-card-title">🎙️ Tom de Voz</div>
+    <div style="font-size:12px;color:#52525b;margin-bottom:16px">Como a IA escreve para sua empresa — vagas, posts, mensagens de WhatsApp</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button onclick="pfTom(this,'formal')" id="pft-formal" class="pf-tom-btn">🎩 Formal</button>
+      <button onclick="pfTom(this,'profissional')" id="pft-profissional" class="pf-tom-btn active">💼 Profissional</button>
+      <button onclick="pfTom(this,'descontraido')" id="pft-descontraido" class="pf-tom-btn">😄 Descontraído</button>
+      <button onclick="pfTom(this,'jovem')" id="pft-jovem" class="pf-tom-btn">🚀 Jovem & Dinâmico</button>
+    </div>
+    <input type="hidden" id="pf-tom-voz" value="profissional">
+  </div>
+
+  <div class="pf-card" style="margin-top:20px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <div>
+        <div class="pf-card-title" style="margin-bottom:4px">🤖 Preview — O que a IA sabe sobre você</div>
+        <div style="font-size:11px;color:#52525b">Contexto enviado ao GPT-4o ao gerar conteúdo para sua empresa</div>
+      </div>
+      <button onclick="pfGerarPreview()" style="padding:8px 16px;background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.25);border-radius:8px;color:#818cf8;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">↻ Atualizar</button>
+    </div>
+    <div id="pf-preview-ia" style="background:rgba(0,0,0,0.3);border-radius:10px;padding:16px;font-size:12px;color:#71717a;font-family:monospace;white-space:pre-wrap;min-height:120px;line-height:1.7;border:1px solid rgba(255,255,255,0.04)">Salve o perfil para ver o preview da IA...</div>
+  </div>
+
+</div>
+
+<!-- Botão Salvar fixo -->
+<button class="pf-salvar-btn" onclick="pfSalvar()">💾 Salvar Perfil</button>
 
 <script>
-// ── PERFIL DA EMPRESA ──────────────────────────────────────────
-var perfilAbaAtual = 0;
+(function() {
+  var _pfAba = 0;
 
-function perfilAba(idx) {
-  [0,1,2,3].forEach(function(i) {
-    document.getElementById('pp-'+i).style.display = i===idx ? 'block' : 'none';
-    var tab = document.getElementById('pt-'+i);
-    if (i===idx) { tab.style.background='linear-gradient(135deg,#4338ca,#6366f1)'; tab.style.color='white'; tab.style.boxShadow='0 2px 8px rgba(99,102,241,0.3)'; }
-    else { tab.style.background='transparent'; tab.style.color='#71717a'; tab.style.boxShadow='none'; }
-  });
-  perfilAbaAtual = idx;
-}
-
-function pfSelecionarTom(btn, valor) {
-  document.querySelectorAll('.tom-btn').forEach(function(b) {
-    b.style.borderColor='rgba(255,255,255,0.1)'; b.style.background='rgba(255,255,255,0.03)'; b.style.color='#a1a1aa'; b.style.fontWeight='500';
-  });
-  btn.style.borderColor='#6366f1'; btn.style.background='rgba(99,102,241,0.12)'; btn.style.color='#818cf8'; btn.style.fontWeight='600';
-  document.getElementById('pf-tom-voz').value = valor;
-}
-
-document.getElementById('pf-cor1').addEventListener('input', function() {
-  document.getElementById('pf-cor1-hex').value = this.value;
-  atualizarPreviewCores();
-});
-document.getElementById('pf-cor2').addEventListener('input', function() {
-  document.getElementById('pf-cor2-hex').value = this.value;
-  atualizarPreviewCores();
-});
-
-function atualizarPreviewCores() {
-  var c1 = document.getElementById('pf-cor1').value;
-  var c2 = document.getElementById('pf-cor2').value;
-  var prev = document.getElementById('pf-preview-cores');
-  if (prev) prev.style.background = 'linear-gradient(135deg,' + c1 + ',' + c2 + ')';
-}
-
-function calcularCompletude() {
-  var campos = ['pf-nome','pf-sobre','pf-missao','pf-visao','pf-valores','pf-cultura','pf-beneficios','pf-diferenciais','pf-segmento','pf-cidade'];
-  var preenchidos = campos.filter(function(id) { var el=document.getElementById(id); return el && (el.value||'').trim().length > 0; }).length;
-  var pct = Math.round((preenchidos/campos.length)*100);
-  document.getElementById('perfil-pct').textContent = pct + '%';
-  document.getElementById('perfil-bar').style.width = pct + '%';
-}
-
-function gerarPreviewIA() {
-  var nome = document.getElementById('pf-nome').value || '';
-  var segmento = document.getElementById('pf-segmento').value || '';
-  var sobre = document.getElementById('pf-sobre').value || '';
-  var missao = document.getElementById('pf-missao').value || '';
-  var valores = document.getElementById('pf-valores').value || '';
-  var cultura = document.getElementById('pf-cultura').value || '';
-  var beneficios = document.getElementById('pf-beneficios').value || '';
-  var tom = document.getElementById('pf-tom-voz').value || 'profissional';
-  var preview = '=== PERFIL DA EMPRESA (contexto para IA) ===\n\n';
-  if (nome) preview += 'EMPRESA: ' + nome + '\n';
-  if (segmento) preview += 'SEGMENTO: ' + segmento + '\n';
-  if (sobre) preview += '\nSOBRE: ' + sobre.substring(0,200) + (sobre.length>200?'...':'') + '\n';
-  if (missao) preview += '\nMISSÃO: ' + missao.substring(0,150) + '\n';
-  if (valores) preview += 'VALORES: ' + valores.substring(0,150) + '\n';
-  if (cultura) preview += '\nCULTURA: ' + cultura.substring(0,200) + '\n';
-  if (beneficios) preview += '\nBENEFÍCIOS: ' + beneficios.substring(0,200) + '\n';
-  preview += '\nTOM DE VOZ: ' + tom;
-  document.getElementById('pf-preview-ia').textContent = preview || 'Preencha o perfil para ver o preview...';
-}
-
-async function carregarPerfil() {
-  try {
-    const r = await fetch(BASE_URL + '/ats-empresa-perfil?empresa_id=' + empresaId);
-    const data = r.ok ? await r.json() : {};
-    const p = data.perfil || {};
-    var campos = {
-      'pf-nome': p.nome, 'pf-cnpj': p.cnpj, 'pf-telefone': p.telefone,
-      'pf-cidade': p.cidade_sede, 'pf-site': p.site, 'pf-linkedin': p.linkedin_url, 'pf-instagram': p.instagram_url,
-      'pf-sobre': p.sobre, 'pf-missao': p.missao, 'pf-visao': p.visao,
-      'pf-valores': p.valores, 'pf-historia': p.historia, 'pf-cultura': p.cultura,
-      'pf-beneficios': p.beneficios_padrao, 'pf-diferenciais': p.diferenciais,
-      'pf-publico': p.publico_alvo, 'pf-whatsapp-bot': p.whatsapp_bot_numero
-    };
-    Object.entries(campos).forEach(function([id,val]) {
-      var el = document.getElementById(id);
-      if (el && val) el.value = val;
+  window.pfAba = function(idx) {
+    [0,1,2,3].forEach(function(i) {
+      var pane = document.getElementById('pfa-'+i);
+      var tab = document.getElementById('pft-'+i);
+      if (!pane || !tab) return;
+      pane.style.display = i === idx ? 'block' : 'none';
+      if (i === idx) { tab.className = 'pf-tab active'; }
+      else { tab.className = 'pf-tab'; }
     });
-    if (p.segmento) document.getElementById('pf-segmento').value = p.segmento;
-    if (p.porte) document.getElementById('pf-porte').value = p.porte;
-    if (p.estado_sede) document.getElementById('pf-estado').value = p.estado_sede;
-    if (p.num_funcionarios) document.getElementById('pf-funcionarios').value = p.num_funcionarios;
-    if (p.ano_fundacao) document.getElementById('pf-fundacao').value = p.ano_fundacao;
-    if (p.cor_primaria) { document.getElementById('pf-cor1').value = p.cor_primaria; document.getElementById('pf-cor1-hex').value = p.cor_primaria; }
-    if (p.cor_secundaria) { document.getElementById('pf-cor2').value = p.cor_secundaria; document.getElementById('pf-cor2-hex').value = p.cor_secundaria; }
-    if (p.tom_voz) { document.getElementById('pf-tom-voz').value = p.tom_voz; var btn = document.getElementById('tom-'+p.tom_voz); if (btn) pfSelecionarTom(btn, p.tom_voz); }
-    atualizarPreviewCores();
-    calcularCompletude();
-  } catch(e) { console.error('Erro ao carregar perfil:', e); }
-}
-
-async function salvarPerfil() {
-  calcularCompletude();
-  var payload = {
-    empresa_id: parseInt(empresaId),
-    nome: document.getElementById('pf-nome').value, cnpj: document.getElementById('pf-cnpj').value,
-    telefone: document.getElementById('pf-telefone').value, site: document.getElementById('pf-site').value,
-    linkedin_url: document.getElementById('pf-linkedin').value, instagram_url: document.getElementById('pf-instagram').value,
-    sobre: document.getElementById('pf-sobre').value, missao: document.getElementById('pf-missao').value,
-    visao: document.getElementById('pf-visao').value, valores: document.getElementById('pf-valores').value,
-    historia: document.getElementById('pf-historia').value, cultura: document.getElementById('pf-cultura').value,
-    beneficios_padrao: document.getElementById('pf-beneficios').value, diferenciais: document.getElementById('pf-diferenciais').value,
-    segmento: document.getElementById('pf-segmento').value, porte: document.getElementById('pf-porte').value,
-    ano_fundacao: document.getElementById('pf-fundacao').value || null,
-    num_funcionarios: document.getElementById('pf-funcionarios').value,
-    cor_primaria: document.getElementById('pf-cor1-hex').value, cor_secundaria: document.getElementById('pf-cor2-hex').value,
-    tom_voz: document.getElementById('pf-tom-voz').value, publico_alvo: document.getElementById('pf-publico').value,
-    cidade_sede: document.getElementById('pf-cidade').value, estado_sede: document.getElementById('pf-estado').value,
-    whatsapp_bot_numero: document.getElementById('pf-whatsapp-bot').value
+    _pfAba = idx;
   };
-  try {
-    const r = await fetch(BASE_URL + '/ats-salvar-perfil', {
-      method: 'POST', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify(payload), signal: AbortSignal.timeout(10000)
-    });
-    const data = await r.json();
-    if (!data.success) throw new Error('Erro ao salvar');
-    showToast('✅ Perfil salvo! A IA agora conhece sua empresa.', 'success');
-    gerarPreviewIA();
-  } catch(e) { showToast('Erro ao salvar perfil.', 'error'); }
-}
 
-// Atualizar completude ao digitar
-['pf-nome','pf-sobre','pf-missao','pf-visao','pf-valores','pf-cultura','pf-beneficios','pf-diferenciais'].forEach(function(id) {
-  var el = document.getElementById(id);
-  if (el) el.addEventListener('input', calcularCompletude);
-});
+  window.pfTom = function(btn, val) {
+    document.querySelectorAll('.pf-tom-btn').forEach(function(b) { b.className = 'pf-tom-btn'; });
+    btn.className = 'pf-tom-btn active';
+    document.getElementById('pf-tom-voz').value = val;
+  };
+
+  window.pfPreviewCores = function() {
+    var c1 = document.getElementById('pf-cor1').value;
+    var c2 = document.getElementById('pf-cor2').value;
+    var el = document.getElementById('pf-preview-cores');
+    if (el) el.style.background = 'linear-gradient(135deg,' + c1 + ',' + c2 + ')';
+  };
+
+  document.getElementById('pf-cor1').addEventListener('input', function() {
+    document.getElementById('pf-cor1-hex').value = this.value;
+    pfPreviewCores();
+  });
+  document.getElementById('pf-cor2').addEventListener('input', function() {
+    document.getElementById('pf-cor2-hex').value = this.value;
+    pfPreviewCores();
+  });
+
+  window.pfCompletude = function() {
+    var ids = ['pf-nome','pf-sobre','pf-missao','pf-visao','pf-valores','pf-cultura','pf-beneficios','pf-diferenciais','pf-segmento','pf-cidade'];
+    var ok = ids.filter(function(id) { var el=document.getElementById(id); return el && el.value.trim().length > 2; }).length;
+    var pct = Math.round((ok/ids.length)*100);
+    var bar = document.getElementById('pf-bar');
+    var lbl = document.getElementById('pf-pct');
+    if (bar) bar.style.width = pct + '%';
+    if (lbl) lbl.textContent = pct + '%';
+    if (lbl) lbl.style.color = pct >= 80 ? '#22c55e' : pct >= 50 ? '#f59e0b' : '#818cf8';
+  };
+
+  window.pfGerarPreview = function() {
+    var campos = {
+      'EMPRESA': document.getElementById('pf-nome'), 'SEGMENTO': document.getElementById('pf-segmento'),
+      'SOBRE': document.getElementById('pf-sobre'), 'MISSÃO': document.getElementById('pf-missao'),
+      'VALORES': document.getElementById('pf-valores'), 'CULTURA': document.getElementById('pf-cultura'),
+      'BENEFÍCIOS': document.getElementById('pf-beneficios'), 'DIFERENCIAIS': document.getElementById('pf-diferenciais'),
+    };
+    var tom = (document.getElementById('pf-tom-voz')||{}).value || 'profissional';
+    var lines = ['=== PERFIL DA EMPRESA (contexto IA) ===', ''];
+    Object.entries(campos).forEach(function(pair) {
+      var el = pair[1]; var label = pair[0];
+      if (el && el.value.trim()) {
+        lines.push(label + ': ' + el.value.trim().substring(0, 180) + (el.value.trim().length > 180 ? '...' : ''));
+      }
+    });
+    lines.push('', 'TOM DE VOZ: ' + tom);
+    var el = document.getElementById('pf-preview-ia');
+    if (el) el.textContent = lines.join('\n');
+  };
+
+  ['pf-nome','pf-sobre','pf-missao','pf-visao','pf-valores','pf-cultura','pf-beneficios','pf-diferenciais'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.addEventListener('input', pfCompletude);
+  });
+
+  window.carregarPerfil = async function() {
+    if (typeof empresaId === 'undefined' || !empresaId) return;
+    try {
+      var r = await fetch(BASE_URL + '/ats-empresa-perfil?empresa_id=' + empresaId);
+      var data = r.ok ? await r.json() : {};
+      var p = data.perfil || {};
+      var map = {
+        'pf-nome': p.nome, 'pf-cnpj': p.cnpj, 'pf-telefone': p.telefone,
+        'pf-cidade': p.cidade_sede, 'pf-site': p.site, 'pf-linkedin': p.linkedin_url,
+        'pf-instagram': p.instagram_url, 'pf-sobre': p.sobre, 'pf-missao': p.missao,
+        'pf-visao': p.visao, 'pf-valores': p.valores, 'pf-historia': p.historia,
+        'pf-cultura': p.cultura, 'pf-beneficios': p.beneficios_padrao,
+        'pf-diferenciais': p.diferenciais, 'pf-publico': p.publico_alvo,
+        'pf-whatsapp-bot': p.whatsapp_bot_numero, 'pf-fundacao': p.ano_fundacao
+      };
+      Object.entries(map).forEach(function(pair) {
+        var el = document.getElementById(pair[0]);
+        if (el && pair[1]) el.value = pair[1];
+      });
+      var selects = { 'pf-segmento': p.segmento, 'pf-porte': p.porte, 'pf-estado': p.estado_sede, 'pf-funcionarios': p.num_funcionarios };
+      Object.entries(selects).forEach(function(pair) {
+        var el = document.getElementById(pair[0]);
+        if (el && pair[1]) el.value = pair[1];
+      });
+      if (p.cor_primaria) { document.getElementById('pf-cor1').value = p.cor_primaria; document.getElementById('pf-cor1-hex').value = p.cor_primaria; }
+      if (p.cor_secundaria) { document.getElementById('pf-cor2').value = p.cor_secundaria; document.getElementById('pf-cor2-hex').value = p.cor_secundaria; }
+      if (p.tom_voz) { document.getElementById('pf-tom-voz').value = p.tom_voz; var btn = document.getElementById('pft-' + p.tom_voz); if (btn) pfTom(btn, p.tom_voz); }
+      pfPreviewCores();
+      pfCompletude();
+    } catch(e) { console.error('Erro ao carregar perfil:', e); }
+  };
+
+  window.pfSalvar = async function() {
+    pfCompletude();
+    var btn = document.querySelector('.pf-salvar-btn');
+    var txt = btn ? btn.textContent : '';
+    if (btn) { btn.textContent = 'Salvando...'; btn.disabled = true; }
+    try {
+      var r = await fetch(BASE_URL + '/ats-salvar-perfil', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          empresa_id: parseInt(empresaId),
+          nome: document.getElementById('pf-nome').value,
+          cnpj: document.getElementById('pf-cnpj').value,
+          telefone: document.getElementById('pf-telefone').value,
+          site: document.getElementById('pf-site').value,
+          linkedin_url: document.getElementById('pf-linkedin').value,
+          instagram_url: document.getElementById('pf-instagram').value,
+          sobre: document.getElementById('pf-sobre').value,
+          missao: document.getElementById('pf-missao').value,
+          visao: document.getElementById('pf-visao').value,
+          valores: document.getElementById('pf-valores').value,
+          historia: document.getElementById('pf-historia').value,
+          cultura: document.getElementById('pf-cultura').value,
+          beneficios_padrao: document.getElementById('pf-beneficios').value,
+          diferenciais: document.getElementById('pf-diferenciais').value,
+          segmento: document.getElementById('pf-segmento').value,
+          porte: document.getElementById('pf-porte').value,
+          ano_fundacao: document.getElementById('pf-fundacao').value || null,
+          num_funcionarios: document.getElementById('pf-funcionarios').value,
+          cor_primaria: document.getElementById('pf-cor1-hex').value,
+          cor_secundaria: document.getElementById('pf-cor2-hex').value,
+          tom_voz: document.getElementById('pf-tom-voz').value,
+          publico_alvo: document.getElementById('pf-publico').value,
+          cidade_sede: document.getElementById('pf-cidade').value,
+          estado_sede: document.getElementById('pf-estado').value,
+          whatsapp_bot_numero: document.getElementById('pf-whatsapp-bot').value
+        }),
+        signal: AbortSignal.timeout(10000)
+      });
+      var data = await r.json();
+      if (!data.success) throw new Error();
+      if (typeof showToast === 'function') showToast('✅ Perfil salvo! A IA agora conhece sua empresa.', 'success');
+      pfGerarPreview();
+    } catch(e) {
+      if (typeof showToast === 'function') showToast('Erro ao salvar perfil.', 'error');
+    } finally {
+      if (btn) { btn.textContent = txt; btn.disabled = false; }
+    }
+  };
+})();
 </script>
+</section>
+
 
     <!-- Modal Nova Vaga – Profissional com Abas -->
     <div id="modal-nova-vaga" style="display:none;position:fixed;inset:0;z-index:1000;align-items:center;justify-content:center;padding:16px" onclick="if(event.target===this)fecharModalNovaVaga()">
