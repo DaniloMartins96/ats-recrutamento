@@ -1169,7 +1169,7 @@ async function carregarSecao(secao) {
   else if (secao === 'banco') await carregarBancoTalentos();
   else if (secao === 'campanhas') await carregarCampanhas();
   else if (secao === 'metricas') await carregarMetricas();
-  else if (secao === 'perfil') await carregarPerfil();
+  else if (secao === 'perfil') { /* perfil carrega apenas ao abrir, sem auto-refresh */ }
 }
 
 // ── API HELPER ──
@@ -1401,8 +1401,12 @@ async function salvarNovaVaga() {
     await carregarVagas();
   } catch(err) { showToast(err.message || 'Erro ao criar vaga.', 'error'); }
 }
-function verVaga(id) { showToast('Funcionalidade em desenvolvimento', 'info'); }
-function verCandidato(id) { showToast('Funcionalidade em desenvolvimento', 'info'); }
+function verVaga(id) {
+  mostrarSecao('candidatos');
+}
+function verCandidato(id) {
+  window.open('https://ats.danns.com.br/admin.html#candidatos', '_blank');
+}
 function verCandidatosVaga(id) { mostrarSecao('candidatos'); }
 function copiarLinkVaga(id) {
   const link = `${window.location.origin}/vagas.html?empresa=${empresaId}`;
