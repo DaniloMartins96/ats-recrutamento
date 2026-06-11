@@ -541,14 +541,14 @@
       <span>👥</span> Candidatos
       <span class="nav-badge" id="badge-cands" style="display:none">0</span>
     </button>
-    <button class="nav-item" onclick="mostrarSecao('testes')">
-      <span>🧪</span> Testes
-    </button>
+
+    <div class="nav-section-label">Captação</div>
     <button class="nav-item" onclick="mostrarSecao('dp')">
       <span>📁</span> Depto. Pessoal
     </button>
-
-    <div class="nav-section-label">Captação</div>
+    <button class="nav-item" onclick="mostrarSecao('testes')">
+      <span>🧪</span> Testes
+    </button>
     <button class="nav-item" onclick="mostrarSecao('campanhas')">
       <span>🚀</span> Campanhas
       <span class="nav-badge" id="badge-campanhas" style="display:none">0</span>
@@ -606,6 +606,23 @@
       </div>
     </section>
 
+    <!-- DP -->
+    <section class="section" id="secao-dp">
+      <div class="stats-row" id="dp-stats-empresa"></div>
+      <div class="table-card">
+        <div class="table-header"><h3>Admissões em Andamento</h3></div>
+        <div id="dp-content-empresa"><div class="empty-state"><div class="empty-icon">📁</div><h4>Carregando...</h4></div></div>
+      </div>
+    </section>
+
+    <!-- TESTES -->
+    <section class="section" id="secao-testes">
+      <div class="table-card">
+        <div class="table-header"><h3>Testes das suas Vagas</h3></div>
+        <div id="testes-content-empresa"><div class="empty-state"><div class="empty-icon">🧪</div><h4>Carregando...</h4></div></div>
+      </div>
+    </section>
+
     <!-- CANDIDATOS -->
     <section class="section" id="secao-candidatos">
       <div class="stats-row" id="cands-stats"></div>
@@ -618,26 +635,6 @@
         <div id="cands-content">
           <div class="empty-state"><div class="empty-icon">👥</div><h4>Carregando...</h4></div>
         </div>
-      </div>
-    </section>
-
-    <!-- TESTES -->
-    <section class="section" id="secao-testes">
-      <div class="table-card">
-        <div class="table-header">
-          <h3>Testes Técnicos</h3>
-        </div>
-        <div id="testes-content">
-          <div class="empty-state"><div class="empty-icon">🧪</div><h4>Carregando...</h4></div>
-        </div>
-      </div>
-    </section>
-
-    <!-- DP -->
-    <section class="section" id="secao-dp">
-      <div class="stats-row" id="dp-stats"></div>
-      <div id="dp-content">
-        <div class="empty-state"><div class="empty-icon">📁</div><h4>Carregando...</h4></div>
       </div>
     </section>
 
@@ -1139,9 +1136,9 @@ function logout() {
 const SECOES = {
   vagas:      { title: 'Vagas', subtitle: 'Gerencie as vagas da sua empresa', actions: '<button class="btn btn-outline" onclick="copiarPortalVagas()" style="margin-right:8px">🔗 Copiar Link do Portal</button><button class="btn btn-ghost" onclick="abrirPortalVagas()" style="margin-right:8px">👁️ Ver Portal</button><button class="btn btn-primary" onclick="novaVaga()">+ Nova Vaga</button>' },
   candidatos: { title: 'Candidatos', subtitle: 'Pipeline de candidatos por vaga', actions: '' },
-  testes:     { title: 'Testes Técnicos', subtitle: 'Avalie candidatos com testes personalizados', actions: '' },
-  dp:         { title: 'Depto. Pessoal', subtitle: 'Gestão de admissões e documentação', actions: '' },
   campanhas:  { title: 'Campanhas de Captação', subtitle: 'Atraia candidatos ativamente', actions: '<button class="btn btn-primary" onclick="novaCampanha()">+ Nova Campanha</button>' },
+  dp:         { title: 'Depto. Pessoal', subtitle: 'Admissões e documentação da sua empresa', actions: '' },
+  testes:     { title: 'Testes Técnicos', subtitle: 'Testes vinculados às suas vagas', actions: '' },
   banco:      { title: 'Banco de Talentos', subtitle: 'Pool global de candidatos disponíveis', actions: '<button class="btn btn-success" onclick="convidarTodos()">📲 Disparar WhatsApp</button>' },
   perfil:     { title: 'Perfil da Empresa', subtitle: 'Informações que a IA usa para gerar conteúdo personalizado', actions: '' },
   metricas:   { title: 'Métricas', subtitle: 'Performance do recrutamento', actions: '' },
@@ -1167,6 +1164,8 @@ async function carregarSecao(secao) {
   if (secao === 'vagas') await carregarVagas();
   else if (secao === 'candidatos') await carregarCandidatos();
   else if (secao === 'banco') await carregarBancoTalentos();
+  else if (secao === 'dp') await carregarEmpresaDP();
+  else if (secao === 'testes') await carregarEmpresaTestes();
   else if (secao === 'campanhas') await carregarCampanhas();
   else if (secao === 'metricas') await carregarMetricas();
   else if (secao === 'perfil') { /* perfil carrega apenas ao abrir, sem auto-refresh */ }
@@ -1696,6 +1695,52 @@ function nvMudarAba(idx) {
 function fecharModalNovaVaga() {
   document.getElementById('modal-nova-vaga').style.display = 'none';
   nvMudarAba(0);
+}
+
+// ── EMPRESA DP ──
+async function carregarEmpresaDP() {
+  try {
+    const r = await apiFetch('/ats-empresa-dp?empresa_id=' + empresaId);
+    const data = r || {};
+    const admissoes = data.admissoes || [];
+    document.getElementById('dp-stats-empresa').innerHTML = `
+      <div class="stat-card"><div class="stat-label">Total Admissões</div><div class="stat-value">${data.total||0}</div></div>
+      <div class="stat-card"><div class="stat-label">Em Processo</div><div class="stat-value" style="color:var(--warn)">${data.em_processo||0}</div></div>
+      <div class="stat-card"><div class="stat-label">Admitidos</div><div class="stat-value" style="color:var(--success)">${data.admitidos||0}</div></div>`;
+    if (!admissoes.length) {
+      document.getElementById('dp-content-empresa').innerHTML = '<div class="empty-state"><div class="empty-icon">📁</div><h4>Nenhuma admissão ainda</h4><p>Admissões aparecem aqui após liberar candidatos aprovados.</p></div>';
+      return;
+    }
+    document.getElementById('dp-content-empresa').innerHTML = `<table><thead><tr><th>Candidato</th><th>Vaga</th><th>Status</th><th>Documentos</th></tr></thead><tbody>
+      ${admissoes.map(a => `<tr>
+        <td><div style="font-weight:600">${a.nome||'—'}</div><div style="font-size:11px;color:var(--muted)">${a.email||''}</div></td>
+        <td style="font-size:12px;color:var(--muted)">${a.vaga_titulo||'—'}</td>
+        <td><span class="badge ${a.status==='admitido'?'badge-green':a.status==='documentos_pendentes'?'badge-yellow':'badge-blue'}" style="font-size:10px">${a.status||'—'}</span></td>
+        <td style="font-size:12px">${a.docs_enviados||0}/${a.docs_total||0}</td>
+      </tr>`).join('')}
+    </tbody></table>`;
+  } catch(e) { document.getElementById('dp-content-empresa').innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div><h4>Erro ao carregar</h4></div>'; }
+}
+
+// ── EMPRESA TESTES ──
+async function carregarEmpresaTestes() {
+  try {
+    const r = await apiFetch('/ats-empresa-testes?empresa_id=' + empresaId);
+    const testes = (r||{}).testes || [];
+    if (!testes.length) {
+      document.getElementById('testes-content-empresa').innerHTML = '<div class="empty-state"><div class="empty-icon">🧪</div><h4>Nenhum teste criado</h4><p>Crie testes técnicos no painel master e vincule às suas vagas.</p></div>';
+      return;
+    }
+    document.getElementById('testes-content-empresa').innerHTML = `<table><thead><tr><th>Teste</th><th>Vaga</th><th>Perguntas</th><th>Tentativas</th><th>Concluídos</th></tr></thead><tbody>
+      ${testes.map(t => `<tr>
+        <td><div style="font-weight:600">${t.titulo||'—'}</div><div style="font-size:11px;color:var(--muted)">${t.tipo||''}</div></td>
+        <td style="font-size:12px;color:var(--muted)">${t.vaga_titulo||'—'}</td>
+        <td style="text-align:center;font-weight:600">${t.total_perguntas||0}</td>
+        <td style="text-align:center">${t.total_tentativas||0}</td>
+        <td style="text-align:center;color:var(--success)">${t.total_concluidos||0}</td>
+      </tr>`).join('')}
+    </tbody></table>`;
+  } catch(e) { document.getElementById('testes-content-empresa').innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div><h4>Erro ao carregar</h4></div>'; }
 }
 
 async function salvarNovaVaga() {
