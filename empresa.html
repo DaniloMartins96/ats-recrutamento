@@ -1168,7 +1168,7 @@ async function carregarSecao(secao) {
   else if (secao === 'testes') await carregarEmpresaTestes();
   else if (secao === 'campanhas') await carregarCampanhas();
   else if (secao === 'metricas') await carregarMetricas();
-  else if (secao === 'perfil') { /* perfil carrega apenas ao abrir, sem auto-refresh */ }
+  else if (secao === 'perfil') { if (typeof carregarPerfil === 'function') carregarPerfil(); }
 }
 
 // ── API HELPER ──
@@ -1377,29 +1377,6 @@ async function carregarMetricas() {
 
 // ── AÇÕES ──
 function novaVaga() { document.getElementById('modal-nova-vaga').style.display = 'flex'; }
-function fecharModalNovaVaga() { document.getElementById('modal-nova-vaga').style.display = 'none'; }
-
-async function salvarNovaVaga() {
-  const titulo = document.getElementById('nv-titulo').value.trim();
-  const departamento = document.getElementById('nv-departamento').value.trim();
-  const modalidade = document.getElementById('nv-modalidade').value;
-  const tipo_contrato = document.getElementById('nv-contrato').value;
-  const descricao = document.getElementById('nv-descricao').value.trim();
-  const cidade = document.getElementById('nv-cidade').value.trim();
-  if (!titulo) { showToast('Título é obrigatório.', 'info'); return; }
-  try {
-    const r = await fetch(BASE_URL + '/ats-admin-criar-vaga', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ titulo, departamento, modalidade, tipo_contrato, descricao, cidade, empresa_id: parseInt(localStorage.getItem('tr_empresa_id') || '1'), status: 'ativa' }),
-      signal: AbortSignal.timeout(15000)
-    });
-    const data = await r.json();
-    if (!data.success) throw new Error('Erro ao criar vaga');
-    fecharModalNovaVaga();
-    showToast('Vaga criada com sucesso!', 'success');
-    await carregarVagas();
-  } catch(err) { showToast(err.message || 'Erro ao criar vaga.', 'error'); }
-}
 function verVaga(id) {
   mostrarSecao('candidatos');
 }
@@ -1423,7 +1400,33 @@ function copiarPortalVagas() {
   showToast('Link do portal copiado! 🔗', 'success');
 }
 function novaCampanha() { showToast('Sistema de campanhas em implementação', 'info'); }
-function convidarTalento(id) { showToast('Convite enviado via WhatsApp!', 'success'); }
+async function convidarTalento(candidatoId) {
+  if (!candidatoId) return;
+  const btn = event && event.target ? event.target : null;
+  if (btn) { btn.textContent = '⏳'; btn.disabled = true; }
+  try {
+    const r = await fetch('https://webhook.danns.com.br/webhook/ats-convidar-talento', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        candidato_id: candidatoId,
+        empresa_id: parseInt(empresaId),
+        empresa_nome: localStorage.getItem('tr_empresa_nome') || 'Empresa'
+      }),
+      signal: AbortSignal.timeout(15000)
+    });
+    const data = await r.json().catch(() => ({}));
+    if (r.ok && data.success) {
+      showToast('✅ Convite enviado via WhatsApp!', 'success');
+    } else {
+      showToast(data.message || 'Erro ao enviar convite.', 'error');
+    }
+  } catch(err) {
+    showToast('Não foi possível enviar o convite.', 'error');
+  } finally {
+    if (btn) { btn.textContent = '📲 Convidar'; btn.disabled = false; }
+  }
+}
 function convidarParaVaga() { showToast('Selecione uma vaga primeiro', 'info'); }
 function convidarTodos() { showToast('Disparo em massa em desenvolvimento', 'info'); }
 
