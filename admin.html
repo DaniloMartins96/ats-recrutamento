@@ -1886,7 +1886,7 @@ document.getElementById('input-busca-vagas').oninput = renderVagas;
 // ─── PAUSAR / ATIVAR VAGA ─────────────────────────────────────────
 async function atualizarStatusVaga(id, novoStatus) {
   try {
-    const r = await fetch(BASE_URL + '/ats-admin-atualizar-status-vaga', {
+    const r = await fetch(BASE_URL + '/ats-status-vaga', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ vaga_id: id, status: novoStatus }),
@@ -1904,7 +1904,7 @@ async function atualizarStatusVaga(id, novoStatus) {
 async function deletarVaga(id, titulo) {
   if (!confirm("Tem certeza que deseja apagar a vaga '" + titulo + "'?")) return;
   try {
-    const r = await fetch(BASE_URL + '/ats-admin-deletar-vaga', {
+    const r = await fetch(BASE_URL + '/ats-deletar-item', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ vaga_id: id }),
@@ -1922,7 +1922,7 @@ async function deletarVaga(id, titulo) {
 async function deletarCandidato(id, nome) {
   if (!confirm("Tem certeza que deseja apagar o candidato '" + nome + "'?")) return;
   try {
-    const r = await fetch(BASE_URL + '/ats-admin-deletar-candidato', {
+    const r = await fetch(BASE_URL + '/ats-deletar-item', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ candidato_id: id }),
@@ -2153,7 +2153,7 @@ function copiarLinkLinkedIn() {
 async function gerarPostLinkedIn(vagaId) {
   showToast('Gerando post LinkedIn...', 'info');
   try {
-    const r = await fetch(BASE_URL + '/ats-gerar-linkedin?vaga_id=' + vagaId, {
+    const r = await fetch(BASE_URL + '/ats-linkedin-post?vaga_id=' + vagaId, {
       signal: AbortSignal.timeout(30000)
     });
     if (!r.ok) throw new Error('HTTP ' + r.status);
@@ -2521,7 +2521,7 @@ async function exportarExcel() {
   }
 
   try {
-    const r = await fetch(BASE_URL + '/ats-exportar-candidatos' + (vagaId ? '?vaga_id=' + vagaId : ''));
+    const r = await fetch(BASE_URL + '/ats-exportar-cands' + (vagaId ? '?vaga_id=' + vagaId : ''));
     const data = await r.json();
     if (!data.rows || data.rows.length === 0) {
       showToast('Nenhum candidato para exportar.', 'error');
@@ -3692,7 +3692,7 @@ async function aprovarCandidato(candidaturaId) {
   if (!confirm('Aprovar este candidato? Ele será marcado como aprovado e você poderá liberar o processo de admissão.')) return;
   showToast('Aprovando candidato...', 'info');
   try {
-    const r = await fetch(BASE_URL + '/ats-aprovar-candidato', {
+    const r = await fetch(BASE_URL + '/ats-aprovar-cand', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ candidatura_id: candidaturaId }),
       signal: AbortSignal.timeout(8000)
@@ -3789,7 +3789,7 @@ async function carregarDP() {
   const tbody = document.getElementById('dp-table-body');
   if (tbody) tbody.innerHTML = '<div style="padding:20px;color:var(--muted);text-align:center">Carregando admissões...</div>';
   try {
-    const r    = await fetch(BASE_URL + '/ats-dp-admissoes', { signal: AbortSignal.timeout(10000) });
+    const r    = await fetch(BASE_URL + '/ats-listar-dp', { signal: AbortSignal.timeout(10000) });
     const data = await r.json();
     // success:true é sempre válido, mesmo com lista vazia — nunca lança erro aqui
     if (data.success === true) {
@@ -4021,7 +4021,11 @@ async function atualizarInfoContratoModal() {
   const el = document.getElementById('dp-template-info');
   if (!el) return;
   try {
-    const res = await fetch(BASE_URL + '/ats-get-contrato-modelo');
+    const res = await fetch(BASE_URL + '/ats-modelo-contrato', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ acao: 'get' })
+    });
     const data = res.ok ? await res.json() : {};
     if (data.tem_template && data.template) {
       const t = data.template;
@@ -4319,7 +4323,7 @@ async function gerarContrato(admissaoId) {
   if (textarea) textarea.value = '';
 
   try {
-    const r = await fetch('https://webhook.danns.com.br/webhook/ats-dp-gerar-contrato', {
+    const r = await fetch('https://webhook.danns.com.br/webhook/ats-gerar-contrato-v2', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ admissao_id: admissaoId }),
@@ -5338,7 +5342,11 @@ async function carregarInfoContrato() {
   statusEl.style.color = 'var(--muted)';
   if (btnVer) btnVer.style.display = 'none';
   try {
-    const res  = await fetch(BASE_URL + '/ats-get-contrato-modelo');
+    const res = await fetch(BASE_URL + '/ats-modelo-contrato', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ acao: 'get' })
+    });
     const data = res.ok ? await res.json() : {};
     if (data.tem_template && data.template) {
       const t = data.template;
@@ -5413,13 +5421,10 @@ async function uploadContratoModelo() {
       reader.onerror = reject;
       reader.readAsDataURL(arquivoContratoSelecionado);
     });
-    const res = await fetch(BASE_URL + '/ats-upload-contrato-modelo', {
+    const res = await fetch(BASE_URL + '/ats-modelo-contrato', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        nome_arquivo: arquivoContratoSelecionado.name,
-        arquivo_base64: base64
-      })
+      body: JSON.stringify({ acao: 'upload', nome_arquivo: arquivoContratoSelecionado.name, arquivo_base64: base64 })
     });
     const data = await res.json();
     if (data.success) {
